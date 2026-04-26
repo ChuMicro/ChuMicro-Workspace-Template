@@ -43,3 +43,22 @@ for the full workflow walkthrough.
 - `_templates/` — tool-owned template sources for files like
   `secrets.yml`.  `setup` materializes them; `update` refreshes them
   from upstream.
+
+## ChuMicro-dev mode (optional)
+
+Co-developing chumicro libraries / `chumicro-workspace` from a sibling
+clone of the [`ChuMicro` mono-repo](https://github.com/ChuMicro/ChuMicro)
+(or a fork)?  Drop a `chumicro-dev.toml` next to `run.py` with:
+
+```toml
+chumicro_path = "../chumicro"
+```
+
+When `chumicro-dev.toml` is present, `python3 run.py setup` walks
+`<chumicro_path>/libraries/*` and `<chumicro_path>/workbench/*` and
+pip-installs every package found there as editable, BEFORE installing
+the workspace's own pyproject deps.  Edits to your chumicro checkouts
+flow into the workspace immediately — no rebuild, no republish.
+Delete the file (or unset the path) to revert to the PyPI install
+path.  `chumicro-dev.toml` is gitignored by default since different
+contributors keep their checkouts in different places.

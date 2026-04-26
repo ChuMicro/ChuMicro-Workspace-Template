@@ -11,6 +11,14 @@ things/*/_generated/
 # Materialized from _templates/ at setup time; never commit credentials.
 /secrets.yml
 
+# chumicro-dev mode — per-user; gitignored.  When this file exists,
+# `python3 run.py setup` walks the chumicro mono-repo path it points at
+# and pip-installs every libraries/<name>/ + workbench/<name>/ as
+# editable instead of resolving them from PyPI.  Different contributors
+# keep their mono-repo checkouts in different places, so this never
+# travels with the workspace.
+/chumicro-dev.toml
+
 # Workspace-template hides external libs here.  The packages/.gitignore
 # inside that dir handles "ignore everything except itself" so the dir
 # itself stays tracked.
