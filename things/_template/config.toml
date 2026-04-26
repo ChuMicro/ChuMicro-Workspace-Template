@@ -1,6 +1,8 @@
 # Per-thing config — deep-merged over workspace.yml's `defaults:` block
-# (Decision 0035 §5).  Reference credentials from secrets.yml as
-# `password = "!secret <name>"` — they get resolved at deploy time.
+# at deploy time.  Values here win at any nesting depth.  Reference
+# credentials from secrets.yml as `password = "!secret <name>"`; those
+# get resolved during the merge so the on-device runtime never sees
+# the literal "!secret ..." token.
 
 # [wifi]
 # ssid = "MyNetwork"

@@ -4,11 +4,13 @@
 #
 #   defaults:        Workspace-wide defaults that every thing inherits.
 #                    Per-thing config under things/<name>/config.toml
-#                    deep-merges over this; see Decision 0035 §5.
+#                    deep-merges over this — values in the per-thing
+#                    file win at any nesting depth.
 #
 #   library_sources: Local paths or pinned overrides for shared libs.
-#                    Empty by default — fall through to libs/ + packages/.
-#                    See Decision 0029 §7.
+#                    Empty by default — falls through to libs/ +
+#                    packages/.  Use this to point a library at a
+#                    local clone (development) or a non-default version.
 #
 #   environments:    Reserved for the env / use commands (planned).
 

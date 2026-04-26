@@ -1,4 +1,4 @@
-# devices.yml — board registry.  Three-zone shape (Decision 0029 §9):
+# devices.yml — board registry.  Three-zone shape:
 #
 #   USER-OWNED      Never overwritten without --force.  Edit freely.
 #   HARDWARE-ONCE   Written on first probe; prompts before re-overwriting
