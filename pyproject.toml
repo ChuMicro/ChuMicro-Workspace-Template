@@ -1,0 +1,24 @@
+# Workspace dependencies + dev tooling.  Tool-owned —
+# `chumicro-workspace update` will overwrite it.  If you need extra
+# dependencies, add them to a sibling file or extend the dependency
+# tree in your fork of the template (then push the fork to git so
+# `update --from <fork>` picks them up).
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "my-workspace"
+version = "0.1.0"
+description = "ChuMicro project workspace."
+requires-python = ">=3.11"
+dependencies = [
+    # Pin chumicro-workspace here so `python run.py setup` can install
+    # it editable into the workspace's venv.  The host CLI carries
+    # `init` / `update` / `deploy` / `repl` / etc.
+    "chumicro-workspace",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["things"]

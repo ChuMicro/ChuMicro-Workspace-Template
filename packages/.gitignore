@@ -1,0 +1,4 @@
+# Mirror cache for external libraries the workspace deploys.  Filled
+# by `chumicro-workspace` deploy paths; never commit these.
+*
+!.gitignore

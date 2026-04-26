@@ -1,0 +1,21 @@
+# ChuMicro workspace gitignore.
+.venv/
+__pycache__/
+*.pyc
+*.mpy
+.pytest_cache/
+
+# Generated runtime config msgpacks (regenerated on every deploy).
+things/*/_generated/
+
+# Materialized from _templates/ at setup time; never commit credentials.
+/secrets.yml
+
+# Workspace-template hides external libs here.  The packages/.gitignore
+# inside that dir handles "ignore everything except itself" so the dir
+# itself stays tracked.
+
+# IDE / editor noise.
+.idea/
+.vscode/
+.DS_Store
