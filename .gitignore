@@ -11,6 +11,12 @@ things/*/_generated/
 # Materialized from _templates/ at setup time; never commit credentials.
 /secrets.yml
 
+# Materialized from _templates/devices.yml at setup time and mutated
+# in place by `add-device` / `rename` / `probe`.  Per-user / per-host
+# (port paths and UIDs vary), so it never travels with the workspace
+# — each contributor builds their own with `add-device`.
+/devices.yml
+
 # chumicro-dev mode — per-user; gitignored.  When this file exists,
 # `python3 run.py setup` walks the chumicro mono-repo path it points at
 # and pip-installs every libraries/<name>/ + workbench/<name>/ as
