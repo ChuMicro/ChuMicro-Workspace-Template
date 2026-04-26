@@ -122,12 +122,23 @@ def _radio_for_runtime():
         return None
 
 
-def _build_socket(mqtt_section, radio):
+def _make_socket_factory(mqtt_section, radio):
+    """Return a closure that builds a fresh connected socket.
+
+    Passed to ``MQTTClient`` so the client can self-heal after a
+    wifi-drop: the next tick after the socket dies builds a new one
+    via this factory and re-issues CONNECT automatically.
+    """
     host = mqtt_section["broker"]
     port = mqtt_section["port"]
-    if mqtt_section.get("tls", False):
-        return tls_client_socket(host, port, radio=radio)
-    return tcp_client_socket(host, port, radio=radio)
+    use_tls = mqtt_section.get("tls", False)
+
+    def build_socket():
+        if use_tls:
+            return tls_client_socket(host, port, radio=radio)
+        return tcp_client_socket(host, port, radio=radio)
+
+    return build_socket
 
 
 def run():
@@ -153,9 +164,9 @@ def run():
     print(f"sensor: wifi connected at {wifi.ip}")
 
     radio = _radio_for_runtime()
-    socket = _build_socket(mqtt_section, radio)
+    socket_factory = _make_socket_factory(mqtt_section, radio)
     mqtt_client = MQTTClient(
-        socket,
+        socket_factory=socket_factory,
         client_id=mqtt_section["client_id"],
         keep_alive_seconds=mqtt_section.get("keep_alive_seconds", 60),
     )
