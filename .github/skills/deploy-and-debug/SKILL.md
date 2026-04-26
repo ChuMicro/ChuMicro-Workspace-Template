@@ -1,0 +1,157 @@
+---
+name: deploy-and-debug
+description: Deploy a thing, follow REPL output, and diagnose common failure modes.  Use when a deploy fails, when the user wants to see what their thing is printing on-device, or when a thing isn't behaving as expected after a successful deploy.
+---
+
+# Deploy and debug
+
+The deploy → REPL → fix cycle is the inner loop of workspace
+work.  `chumicro-deploy`'s recovery layer classifies most failures
+into precise messages — read them before guessing.
+
+## The happy path
+
+```bash
+python run.py deploy my_thing
+```
+
+Successful output ends with the entrypoint's stdout (or the
+"executing entrypoint" line followed by your thing's prints).
+For things with `while True: runner.tick()` style loops, the
+deploy stays open until you Ctrl-C or the device errors out.
+
+To follow REPL output afterwards (or in a different shell):
+
+```bash
+python run.py repl              # interactive — Ctrl-X to exit
+python run.py repl --tail 30    # stream for 30 seconds
+```
+
+## When deploy fails — what the message means
+
+`chumicro-deploy` classifies failures into named kinds.  When
+you see one of these, the message itself usually tells you what
+to do:
+
+| `DeployFailureKind` | What it means | First fix |
+|---|---|---|
+| `PORT_UNAVAILABLE` | serial port busy or missing | close any open REPL session against the same port; replug the board |
+| `BOOTLOADER_DETECTED` | board is in UF2 / DFU bootloader, not running Python | `python run.py install-firmware` first, then retry deploy |
+| `MACOS_FSKIT_WEDGED` | macOS's FSKit wedged on a FAT12 error (CP only) | unplug for 5+ seconds, replug; if persistent, reboot the Mac |
+| `CIRCUITPY_DRIVE_MISSING` | CP flash mode but the CIRCUITPY USB drive isn't mounted | wait a few seconds for macOS to mount; check `/Volumes/`; force-eject + replug |
+| `BOOTSTRAP_EXEC_FAILED` | the staged code raised on import / first run | the message includes the traceback from the device — read it |
+| `UNRESOLVED_FIRMWARE` | install-firmware can't derive a URL for this board | pass `--url` explicitly, or set `hardware.firmware_source` in `devices.yml` |
+| `SERIAL_TIMEOUT` | the device stopped responding mid-deploy | usually a wedged board — soft-reset (Ctrl-D in REPL) or replug |
+
+If the failure doesn't match any of these, the deploy output
+will include the raw transport error — read it carefully before
+guessing.
+
+## When the deploy succeeds but the thing misbehaves
+
+These are the most common patterns; each maps to a precise fix:
+
+### "messages stop after the first publish" / "boot counter doesn't increment"
+
+The thing depends on persistent on-device state (a kvstore
+counter, a connection that needs the runtime config msgpack at a
+canonical absolute path, etc.) but the device is in **RAM mode**.
+
+In RAM mode the host mounts source as `/remote/` on the device,
+so absolute paths like `/runtime_config.msgpack` aren't visible.
+Switch to flash mode for this device:
+
+```yaml
+# devices.yml
+- id: my-board
+  ...
+  deploy_mode: flash    # add or uncomment this line
+```
+
+### "ImportError: no module named X" on boot
+
+The deploy didn't ship `X` to the device.  Read the error's
+module path and check:
+
+- Is `X` part of a chumicro library?  The deploy's import-graph
+  walker should have picked it up — if not, surface the gap as
+  an upstream issue.
+- Is `X` a thing-local helper under `things/<name>/`?  Make sure
+  it's imported with the right path (`from . import X` for
+  same-dir, or under `libs/` for shared code).
+- Is `X` an external pip package?  Add it to
+  `pyproject.toml`'s deps and re-run `setup`; for device-side
+  packages, drop the package source under `packages/` so the
+  deploy ships it.
+
+### "wifi connected but mqtt never publishes"
+
+Two common causes:
+
+1. **Broker unreachable from the device's network.**  If the
+   broker is on the host (`mosquitto` running locally), the
+   device's wifi network must route to the host's LAN IP.  Try
+   `mosquitto_pub` from the host targeting the host's own LAN IP
+   (not `127.0.0.1`) — if that fails, the broker isn't bound to
+   the right interface.
+
+2. **TLS handshake failed silently.**  TLS errors on MicroPython
+   can manifest as the connection just stopping.  If the cert
+   chain is the problem, the message is "invalid cert"; if the
+   device clock is wrong, "validity starts in the future."  Set
+   the device RTC after wifi-up (NTP-style) before opening any
+   TLS sockets.
+
+### "the thing crashes on boot with no clear error"
+
+Connect via REPL and force a soft reset:
+
+```bash
+python run.py repl
+# then Ctrl-D inside the REPL to soft-reboot
+```
+
+The boot output will show the traceback.  If the traceback
+points at `things/<name>/app.py`, that's your code.  If it's
+under `chumicro_*`, file an upstream issue with the traceback.
+
+### "I can't even tell if the deploy ran"
+
+Add a print at the top of `run()`:
+
+```python
+def run():
+    print("my_thing: boot")
+    ...
+```
+
+Re-deploy.  If you see `my_thing: boot` in the REPL output, the
+deploy fired.  If not, the device isn't running your code —
+check the entrypoint (`code.py` on CP, `main.py` on MP).
+
+## Useful diagnostic patterns
+
+```bash
+# What's actually on the device's flash?
+python -m mpremote connect <port> fs ls /
+
+# Check the device's runtime config
+python -m mpremote connect <port> fs cat /runtime_config.msgpack | xxd | head
+
+# Run a one-off command to inspect device state
+python -m mpremote connect <port> exec "import sys; print(sys.implementation)"
+```
+
+## Rules
+
+- **Read the deploy output before guessing.**  The recovery
+  layer's messages are precise; they're usually the answer.
+- **Surface the failure to the user verbatim** — don't paraphrase
+  errors.  The exact `OSError(...)` or `ImportError: ...` text is
+  what diagnostic searches latch onto.
+- **Don't repeat-deploy on the same failure.**  If the error
+  classifies, fix the root cause; if it doesn't, escalate to the
+  user.
+- **Try `install-firmware` early** for bootloader-detected /
+  no-firmware errors.  Many "broken board" reports turn out to
+  be a fresh-flash device with no Python firmware loaded.
