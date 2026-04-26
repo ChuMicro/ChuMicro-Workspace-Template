@@ -29,6 +29,19 @@ from chumicro_wifi import WifiConfig, WifiService, WifiState
 _KV_BOOT_COUNT_KEY = "boot_count"
 _RECONNECT_BACKOFF_MS = 1000
 
+#: Flag the main loop in ``run()`` polls every tick.  Setting this to
+#: ``True`` (from the REPL, a test harness, or a same-process callback)
+#: tells the loop to exit cleanly after the current tick finishes.
+#: Ctrl-C from the REPL is the convenient interactive path; the flag is
+#: the general path for embedded test runs and future supervisor hooks.
+_SHUTDOWN_REQUESTED = False
+
+
+def request_shutdown():
+    """Ask ``run()``'s tick loop to exit on the next iteration."""
+    global _SHUTDOWN_REQUESTED
+    _SHUTDOWN_REQUESTED = True
+
 
 class _TemperatureProbe:
     """Reads a temperature value.
@@ -159,5 +172,9 @@ def run():
     runner.add(publisher)
 
     print(f"sensor: publishing to {sensor_section['topic']}")
-    while True:
-        runner.tick()
+    try:
+        while not _SHUTDOWN_REQUESTED:
+            runner.tick()
+    except KeyboardInterrupt:
+        pass
+    print("sensor: shutdown")

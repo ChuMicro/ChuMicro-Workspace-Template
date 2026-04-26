@@ -34,7 +34,7 @@ for the full workflow walkthrough.
 
 - `things/<name>/` — your apps.  `def run()` in `app.py`.
   - `things/_template/` — the "blank thing" copied by `python run.py new`.
-  - `things/example-sensor/` — a worked example (wifi → mqtt heartbeat
+  - `things/example_sensor/` — a worked example (wifi → mqtt heartbeat
     with persistent boot counter).  See the walkthrough below.
 - `devices.yml` — gitignored, materialized from `_templates/devices.yml`.
   Mutated in place by `add-device` / `rename` / `probe`.
@@ -48,9 +48,9 @@ for the full workflow walkthrough.
   these sources from upstream so newer template skeletons reach
   existing workspaces.
 
-## Worked example: `example-sensor`
+## Worked example: `example_sensor`
 
-The shipped `things/example-sensor/` exercises the full ChuMicro
+The shipped `things/example_sensor/` exercises the full ChuMicro
 runtime stack (wifi + sockets + mqtt + kvstore + workspace).  Boot
 to first heartbeat on a plugged-in board:
 
@@ -67,13 +67,13 @@ python run.py add-device my-board --address /dev/cu.usbmodem1101 --runtime micro
 $EDITOR secrets.yml          # set wifi_password to your AP passphrase
 
 # 4. Point the sensor at your AP + a broker (one line each)
-$EDITOR things/example-sensor/config.toml
+$EDITOR things/example_sensor/config.toml
 #   [wifi]    ssid = "YourNetwork"
 #   [mqtt]    broker = "broker.hivemq.com"   # public test broker; swap for your own
 #   [sensor]  topic  = "chumicro/example/temperature"
 
 # 5. Deploy + watch
-python run.py deploy example-sensor
+python run.py deploy example_sensor
 
 # Or, if you want to follow the REPL output afterward:
 python run.py repl
@@ -85,7 +85,7 @@ see one JSON message every 5 seconds carrying the boot counter, the
 on-board temperature reading, and a sequence number.  Reset the board
 and the boot counter increments — `chumicro-kvstore` persisted it.
 
-`things/example-sensor/app.py` is short on purpose — it's the
+`things/example_sensor/app.py` is short on purpose — it's the
 canonical reference for how to wire `WifiService` + `MQTTClient` +
 `KVStore` into a tick-shaped `Runner`.  Copy + tweak.
 

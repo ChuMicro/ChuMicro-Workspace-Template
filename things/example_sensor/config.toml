@@ -1,4 +1,4 @@
-# Per-thing config for example-sensor — deep-merged over workspace.yml's
+# Per-thing config for example_sensor — deep-merged over workspace.yml's
 # `defaults:` block at deploy time.  Values here win at any nesting depth.
 # Reference credentials from secrets.yml as `password = "!secret <name>"`;
 # those get resolved during the merge so the on-device runtime never sees
@@ -14,7 +14,7 @@ password = "!secret wifi_password"
 [mqtt]
 broker = "broker.hivemq.com"          # public test broker; swap for your own
 port = 1883
-client_id = "chumicro-example-sensor"
+client_id = "chumicro-example_sensor"
 # tls = false                         # set true to use port 8883 + TLS
 # keep_alive_seconds = 60             # broker idle timeout (PINGREQ runs at half)
 
