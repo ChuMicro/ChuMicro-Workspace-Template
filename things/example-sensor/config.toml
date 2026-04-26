@@ -1,0 +1,23 @@
+# Per-thing config for example-sensor — deep-merged over workspace.yml's
+# `defaults:` block at deploy time.  Values here win at any nesting depth.
+# Reference credentials from secrets.yml as `password = "!secret <name>"`;
+# those get resolved during the merge so the on-device runtime never sees
+# the literal "!secret ..." token.
+
+[wifi]
+# ssid is set per-network — fill in your AP name here.
+ssid = "MyNetwork"
+password = "!secret wifi_password"
+# hostname = "chu-sensor"             # optional: name the board on the AP
+# connect_timeout_ms = 15000          # optional: cap per single connect attempt
+
+[mqtt]
+broker = "broker.hivemq.com"          # public test broker; swap for your own
+port = 1883
+client_id = "chumicro-example-sensor"
+# tls = false                         # set true to use port 8883 + TLS
+# keep_alive_seconds = 60             # broker idle timeout (PINGREQ runs at half)
+
+[sensor]
+topic = "chumicro/example/temperature"
+publish_period_ms = 5000              # one heartbeat every 5 s

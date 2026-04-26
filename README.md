@@ -33,16 +33,61 @@ for the full workflow walkthrough.
 ## Layout
 
 - `things/<name>/` — your apps.  `def run()` in `app.py`.
-- `devices.yml` — registered boards.  Edit via `add-device` or by hand.
+  - `things/_template/` — the "blank thing" copied by `python run.py new`.
+  - `things/example-sensor/` — a worked example (wifi → mqtt heartbeat
+    with persistent boot counter).  See the walkthrough below.
+- `devices.yml` — gitignored, materialized from `_templates/devices.yml`.
+  Mutated in place by `add-device` / `rename` / `probe`.
 - `workspace.yml` — defaults every thing inherits.
-- `secrets.yml` — gitignored credentials, materialized from
-  `_templates/secrets.yml` by `setup`.  Reference via
-  `!secret <name>`.
+- `secrets.yml` — gitignored, materialized from `_templates/secrets.yml`.
+  Reference values via `!secret <name>`.
 - `libs/` — shared user code.  Things `import` from here.
 - `packages/` — gitignored, mirror-cached external libs.
-- `_templates/` — tool-owned template sources for files like
-  `secrets.yml`.  `setup` materializes them; `update` refreshes them
-  from upstream.
+- `_templates/` — tool-owned template sources.  `setup` materializes
+  any missing destination at the workspace root; `update` refreshes
+  these sources from upstream so newer template skeletons reach
+  existing workspaces.
+
+## Worked example: `example-sensor`
+
+The shipped `things/example-sensor/` exercises the full ChuMicro
+runtime stack (wifi + sockets + mqtt + kvstore + workspace).  Boot
+to first heartbeat on a plugged-in board:
+
+```bash
+# 1. Bootstrap the workspace (one-time, after clone)
+python3 run.py setup
+
+# 2. Tell the workspace about your board
+python run.py add-device my-board --address /dev/cu.usbmodem1101 --runtime micropython
+
+# 3. Fill in your wifi password (edit secrets.yml directly — it was
+#    materialized from _templates/secrets.yml during setup, so just
+#    open and edit; no copy needed)
+$EDITOR secrets.yml          # set wifi_password to your AP passphrase
+
+# 4. Point the sensor at your AP + a broker (one line each)
+$EDITOR things/example-sensor/config.toml
+#   [wifi]    ssid = "YourNetwork"
+#   [mqtt]    broker = "broker.hivemq.com"   # public test broker; swap for your own
+#   [sensor]  topic  = "chumicro/example/temperature"
+
+# 5. Deploy + watch
+python run.py deploy example-sensor
+
+# Or, if you want to follow the REPL output afterward:
+python run.py repl
+```
+
+Subscribe to the topic from any MQTT client (`mosquitto_sub -h
+broker.hivemq.com -t 'chumicro/example/temperature'`) and you should
+see one JSON message every 5 seconds carrying the boot counter, the
+on-board temperature reading, and a sequence number.  Reset the board
+and the boot counter increments — `chumicro-kvstore` persisted it.
+
+`things/example-sensor/app.py` is short on purpose — it's the
+canonical reference for how to wire `WifiService` + `MQTTClient` +
+`KVStore` into a tick-shaped `Runner`.  Copy + tweak.
 
 ## ChuMicro-dev mode (optional)
 
