@@ -20,17 +20,24 @@ copy under `things/`, then `python run.py deploy garage/heater`.
 |---|---|
 | [`hello_world/`](hello_world/) | Trivial print loop — proves your deploy chain works end-to-end before you bring wifi into the picture. |
 | [`wifi_only/`](wifi_only/) | Wifi up + status print on a heartbeat — minimum that exercises `chumicro-wifi` + the merged-config flow. |
+| [`periodic_get/`](periodic_get/) | Wifi + non-blocking HTTP GET on a heartbeat — exercises the `chumicro-sockets` + `chumicro-requests` upper-layer stack. |
+| [`telemetry_publisher/`](telemetry_publisher/) | Wifi + MQTT publish on a heartbeat — `chumicro-mqtt` over `chumicro-sockets`, with self-heal-on-drop via the socket-factory shape. |
+| [`two_things/`](two_things/) | Multi-thing LAN demo — a sensor board POSTs JSON readings to a server board running `chumicro-http-server`. |
 
-## Planned (not yet shipped)
+## How they fit together
 
-The Phase 1 plan calls for three more examples that will land in
-follow-on commits:
+A natural progression for someone new to a board:
 
-* `periodic_get/` — wifi + `chumicro-requests` heartbeat fetch.
-* `telemetry_publisher/` — wifi + `chumicro-mqtt` periodic publish.
-* `two_things/{server,sensor}/` — multi-thing LAN demo (HTTP server
-  on one board, sensor poster on another).
+1. **`hello_world/`** — verify the deploy chain works.  No wifi.
+2. **`wifi_only/`** — verify your wifi credentials reach the
+   device.  No upper-layer protocol.
+3. **`periodic_get/`** — verify the network stack moves real
+   bytes.  HTTP client, no server.
+4. **`telemetry_publisher/`** — same shape, MQTT instead of HTTP.
+   Confirms publish-only telemetry flows.
+5. **`two_things/`** — two boards, one network, one workspace.
+   The smallest "device A talks to device B" pattern.
 
-Until they ship, the `things/example_sensor/` thing in this template
-repo serves as the "full network stack" reference — wifi → sockets →
-mqtt → kvstore → workspace, end-to-end.
+For the full network reference (wifi → sockets → mqtt →
+kvstore → workspace, with persistent state across resets),
+see `things/example_sensor/` in this template repo.

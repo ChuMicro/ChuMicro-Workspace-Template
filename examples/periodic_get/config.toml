@@ -1,0 +1,15 @@
+# Per-thing config — deep-merged over workspace.yml's `defaults:`
+# block at deploy time.  Reference credentials from secrets.yml as
+# `password = "!secret <name>"`; those resolve before the runtime
+# config msgpack lands on the device.
+
+[wifi]
+# ssid = "MyNetwork"   # set here or in workspace.yml's [defaults.wifi]
+password = "!secret wifi_password"
+
+[fetch]
+# What to GET, and how often (milliseconds).  Pick a small JSON or
+# a static landing page — the example prints status code + body
+# size on each tick, so no JSON parsing is required.
+url = "http://example.com/"
+period_ms = 30000

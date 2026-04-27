@@ -1,0 +1,25 @@
+# Per-thing config — deep-merged over workspace.yml's `defaults:`
+# block at deploy time.
+
+[wifi]
+# ssid = "MyNetwork"  # set here or in workspace.yml's [defaults.wifi]
+password = "!secret wifi_password"
+
+[mqtt]
+# Broker connection — `broker.hivemq.com` is a public test broker
+# useful for first-deploy validation; swap for your own once round-
+# trip is confirmed.
+broker = "broker.hivemq.com"
+port = 1883
+tls = false
+
+# Identity + topic.  The client_id must be unique per device on
+# the broker; adding a board suffix to the workspace prefix is a
+# safe convention.
+client_id = "chumicro-telemetry-pub-1"
+topic = "chumicro/example/telemetry"
+
+# Publish cadence + keep-alive.  Both honour wraparound-safe
+# millisecond ticks.
+publish_period_ms = 5000
+keep_alive_seconds = 60

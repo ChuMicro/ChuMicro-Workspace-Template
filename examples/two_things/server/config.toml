@@ -1,0 +1,15 @@
+# Per-thing config — deep-merged over workspace.yml's `defaults:`
+# block at deploy time.
+
+[wifi]
+# ssid = "MyNetwork"  # set here or in workspace.yml's [defaults.wifi]
+password = "!secret wifi_password"
+
+[server]
+# Port the HTTP server listens on.  Pick something unprivileged
+# (>1023) — you'll see the bound URL in the deploy output.
+listen_port = 8080
+
+# Bound parallel HTTP connections.  Two is plenty for the
+# sensor → server demo; bump for shop-floor multi-sensor scenes.
+max_connections = 2
