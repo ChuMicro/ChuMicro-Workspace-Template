@@ -26,8 +26,6 @@ for the workflow primer.
 | `python run.py devices` | Print every entry in `devices.yml`. |
 | `python run.py deploy <thing>` | Ship a thing to the default board. |
 | `python run.py deploy <thing> --device-id <id>` | Override the default. |
-| `python run.py deploy <a> <b> <c> --boot-shim --active <a>` | Multi-thing deploy. |
-| `python run.py switch <thing>` | Re-point `/active.py` without re-flashing. |
 | `python run.py repl` | Open an interactive REPL on the board. |
 | `python run.py repl --tail 30` | Stream output for 30 seconds (good for post-deploy follow). |
 | `python run.py install-firmware --method uf2` | Auto-derived firmware download + flash. |
