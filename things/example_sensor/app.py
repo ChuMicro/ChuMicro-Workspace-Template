@@ -25,7 +25,6 @@ from chumicro_sockets import tcp_client_socket, tls_client_socket
 from chumicro_timing import ticks_add, ticks_diff, ticks_ms
 from chumicro_wifi import WifiConfig, WifiService, WifiState
 
-
 _KV_BOOT_COUNT_KEY = "boot_count"
 _RECONNECT_BACKOFF_MS = 1000
 

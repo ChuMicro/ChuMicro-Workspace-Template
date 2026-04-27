@@ -20,5 +20,72 @@ dependencies = [
     "chumicro-workspace",
 ]
 
+[project.optional-dependencies]
+# `python run.py setup` installs both the runtime and dev extras by
+# default.  The split exists so a deploy-only environment (CI runner
+# that flashes boards but never runs unit tests) can install just the
+# runtime deps with `pip install .` and skip the dev tooling.
+dev = [
+    # Real-network functional-test plugin.  Auto-registers via
+    # ``pytest11`` entry point on `pip install` — no extra config in
+    # the workspace's conftest.py needed.  Activates only for paths
+    # under ``functional_tests/``.
+    "chumicro-pytest-device",
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "ruff>=0.6",
+]
+
 [tool.hatch.build.targets.wheel]
 packages = ["things"]
+
+
+# ---------------------------------------------------------------------------
+# Test + coverage
+# ---------------------------------------------------------------------------
+
+[tool.pytest.ini_options]
+addopts = "-ra --strict-markers"
+# Workspace tests live at the root and inside each thing.  Functional
+# tests sit under each thing's ``functional_tests/`` and run only
+# when explicitly targeted (the ``chumicro-pytest-device`` plugin
+# routes those to a connected board).
+testpaths = ["tests", "things"]
+
+[tool.coverage.run]
+branch = true
+source = ["things"]
+omit = [
+    # Generated runtime config artifacts the deploy pipeline emits.
+    "things/*/_generated/*",
+]
+
+[tool.coverage.report]
+fail_under = 85
+show_missing = true
+skip_covered = false
+
+
+# ---------------------------------------------------------------------------
+# Lint
+# ---------------------------------------------------------------------------
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = [".venv", "packages", "libs", "things/*/_generated"]
+
+[tool.ruff.lint]
+# Mirrors the chumicro mono-repo's tone: pyflakes + import sorting +
+# bugbear + pyupgrade + relative-import ban.  Tests get the same
+# style; relative imports are fine in tests / examples / functional
+# tests.
+select = ["E", "F", "I", "B", "UP", "TID252"]
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["TID252"]
+"things/*/tests/**" = ["TID252"]
+"things/*/functional_tests/**" = ["TID252"]

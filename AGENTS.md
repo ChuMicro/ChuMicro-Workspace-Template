@@ -30,7 +30,8 @@ for the workflow primer.
 | `python run.py repl --tail 30` | Stream output for 30 seconds (good for post-deploy follow). |
 | `python run.py install-firmware --method uf2` | Auto-derived firmware download + flash. |
 | `python run.py upgrade-firmware --method esptool` | Same handler, conventionally for re-flashes. |
-| `python run.py test [-- pytest-args]` | Forward to pytest at the workspace root. |
+| `python run.py test [-- pytest-args]` | Run pytest across `tests/` + `things/*/tests/`. |
+| `python run.py lint` | Run `ruff check` across the workspace.  Same config the chumicro mono-repo uses. |
 | `python run.py update` | Pull tool-owned file refreshes from the canonical workspace template. |
 
 ## File ownership
@@ -72,6 +73,20 @@ Procedural knowledge for common workflows lives under `.github/skills/`.  Read t
 - **Tight tick loop is the contract for networked things.**  Don't suggest adding `time.sleep_ms()` inside the `while True: runner.tick()` body — it loses MQTT keepalive timing and stalls inbound bytes.  If the user is concerned about CPU usage, the right answer is a different runner shape (deep-sleep + scheduled wake), not a sleep call.
 - **RAM mode is for single-library experiments.**  Anything that composes multiple libraries, depends on persistent state, or talks to a real broker needs flash mode.  Surface this when the user reports "messages stop after first publish" or `OSError: [Errno 2] ENOENT` on `/runtime_config.msgpack`.
 - **Run `python run.py test` before reporting work as done** when the user has tests under `things/<name>/tests/` or at the workspace root.
+
+## Tests + lint
+
+| Path | What lives there | Run with |
+|---|---|---|
+| `tests/` | Workspace-level smoke tests (e.g. "every thing exposes `run()`"). | `python run.py test tests` |
+| `things/<name>/tests/` | Per-thing host-side unit tests.  Scaffolded into every new thing by `python run.py new <name>`. | `python run.py test things/<name>/tests` |
+| `things/<name>/functional_tests/` | Real-network / real-hardware acceptance.  The `chumicro-pytest-device` plugin routes these to a connected board.  Tests skip cleanly when no board is configured. | `python run.py test things/<name>/functional_tests` |
+
+`python run.py test` with no args runs **everything** under `tests/` + `things/`.  Functional tests deselect themselves on a sweep with no `functional_tests` path argument — only fire when targeted.
+
+`python run.py lint` runs `ruff check` with the same config the chumicro mono-repo uses (line-length 100, imports sorted, relative-import ban, pyflakes / bugbear / pyupgrade).  Tests + functional tests get the relative-import rule relaxed.
+
+Coverage gate: `[tool.coverage.report] fail_under = 85` in `pyproject.toml`.  Lift it for stricter projects or drop it entirely for prototyping.
 
 ## Working in a fresh workspace
 

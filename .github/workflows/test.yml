@@ -1,0 +1,49 @@
+# Test + lint on every push and pull request.
+#
+# Tool-owned: `chumicro-workspace update` rewrites this file.  If
+# you need a custom job, add a sibling workflow file under
+# .github/workflows/ and `update` will leave that one alone.
+
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Set up workspace
+        run: python run.py setup
+
+      - name: Lint
+        run: python run.py lint
+
+      - name: Test
+        run: python run.py test
+
+      # Functional tests against real hardware are intentionally
+      # NOT run here — CI runners don't have boards plugged in.
+      # Run them locally before releasing:
+      #
+      #     python run.py test things/<thing>/functional_tests
+      #
+      # The chumicro-pytest-device plugin auto-skips when
+      # devices.yml has no targets, so you can run the same
+      # command on a runner without boards as a sanity check.
