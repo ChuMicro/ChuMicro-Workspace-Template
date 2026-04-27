@@ -51,7 +51,9 @@ sibling clone, see the README's "ChuMicro-dev mode" section.
 A typical session has four moves:
 
 ```bash
-# 1. Register a board (once per physical board)
+# 1. Register a board (once per physical board).  Use `bootstrap`
+#    if you want the wizard to walk pick-port → probe → register
+#    in one command.
 python run.py add-device my-board --address /dev/cu.usbmodem1101 --runtime micropython
 
 # 2. Scaffold a new thing
@@ -59,10 +61,15 @@ python run.py new my_sensor    # creates things/my_sensor/ from things/_template
 
 # 3. Edit things/my_sensor/{app.py, config.toml}, plus secrets.yml for credentials.
 
-# 4. Deploy + watch
-python run.py deploy my_sensor
-python run.py repl              # follow REPL output afterward
+# 4. Deploy + watch — one command via `repl <thing>` (deploys, then
+#    tails for 30s).  For longer windows pass --tail SECONDS.
+python run.py repl my_sensor
 ```
+
+`python run.py status` (or the stricter `doctor`) is a useful
+between-step sanity check — surfaces common mistakes before deploy
+(`secrets.yml` still carrying `replace-me`, `app.py` missing a
+`run()` definition, an unresolved `!secret` reference).
 
 The shipped `things/example_sensor/` is the canonical reference —
 it wires `chumicro-wifi` + `chumicro-mqtt` + `chumicro-kvstore`
@@ -76,6 +83,47 @@ digits, underscores; no hyphens, no dots, no leading digit.  The
 runtime imports `things.<your-name>.app`, so a hyphen breaks
 deploy.  `python run.py new` checks this up-front and fails fast
 with a clear message.
+
+Nested layouts are first-class.  Slash- or dotted-form names land
+under a parallel namespace tree:
+
+```bash
+python run.py new garage/sensors/door_open
+python run.py new garage.sensors.door_open      # dotted form, same effect
+```
+
+Each path segment is validated independently against the same
+identifier rules, and intermediate namespace directories
+(`things/garage/`, `things/garage/sensors/`) are auto-created with
+empty `__init__.py` markers.  `python run.py things` shows the tree
+(`--flat` switches to one-line-per-thing slash-form).
+
+### Scaffolding from an example
+
+Instead of starting from the blank `things/_template/`, scaffold
+from any directory under `examples/`:
+
+```bash
+python run.py new garage/heater --from examples/wifi_only
+```
+
+That copies `examples/wifi_only/`'s tree into
+`things/garage/heater/`.  The example folder itself is read-only
+(tool-owned, refreshed on `update`); your edits live under `things/`.
+
+### Workspace health checks
+
+Two commands surface common pre-deploy mistakes:
+
+```bash
+python run.py status     # one-line-per-check snapshot
+python run.py doctor     # stricter — adds AST scan for run() + !secret resolution
+```
+
+`status` catches un-edited `secrets.yml` placeholders, missing
+`devices.yml`, malformed `workspace.yml`.  `doctor` adds Python
+version, per-thing `app.py` AST scan ("did you forget the `def run()`?"),
+and a config-merge dry-run that rejects unresolved `!secret` references.
 
 ### Device modes — RAM vs. flash
 
@@ -207,14 +255,19 @@ humans too.
 
 Sanity-check ladder:
 
-1. Is the board actually plugged in?  `python run.py discover`.
-2. Is the right runtime registered for that port?  `python run.py
+1. Is the workspace itself well-formed?  `python run.py status`
+   (or `doctor` for the strict version).
+2. Is the board actually plugged in?  `python run.py discover`.
+3. Is the right runtime registered for that port?  `python run.py
    devices` to inspect the registry.
-3. Is the deploy actually reaching the device?  `python run.py
+4. Is the deploy actually reaching the device?  `python run.py
    repl` and look for the boot banner.
-4. Is the failure in your code or in the chumicro stack?  Read
+5. Is the failure in your code or in the chumicro stack?  Read
    the traceback's first line — `things/<name>/app.py` is yours;
    anything under `chumicro_*` is the library stack and the fix
-   probably belongs upstream (file an issue).
+   probably belongs upstream (file an issue).  Failed deploys also
+   carry a `--- hints ---` block under the traceback when the
+   error matches a known pattern (missing `!secret`, library not
+   installed, etc.).
 
 Welcome aboard.  Have fun.

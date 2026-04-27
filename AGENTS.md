@@ -17,21 +17,30 @@ for the workflow primer.
 | Command | Purpose |
 |---|---|
 | `python3 run.py setup` | One-time: create `.venv`, install deps, materialize `_templates/`. |
+| `python run.py bootstrap [--with-demo]` | End-to-end onboarding wizard: pick a port → probe → register → optionally deploy demo.  Skip prompts with `--port` / `--device-id`. |
+| `python run.py status` | Workspace health snapshot — `workspace.yml` validity, `devices.yml` count, `secrets.yml` placeholder detection, things-tree summary.  Exit 1 only on errors. |
+| `python run.py doctor` | Strict sibling of `status` — adds Python ≥3.11, AST scan for `def run`, and a config-merge dry-run that catches unresolved `!secret` references. |
 | `python run.py new <name>` | Scaffold a new thing under `things/<name>/`.  Name may be nested (`upstairs/bedroom_sensor` or dotted `upstairs.bedroom_sensor`); each segment must be a valid Python identifier. |
 | `python run.py new <name> --from <path>` | Scaffold from an existing tree instead of `things/_template/`, e.g. `--from examples/wifi_only`. |
+| `python run.py new <name> --library [--into <dir>]` | Scaffold a chumicro-style library tree (full `src/`, `tests/`, `docs/`, `examples/` layout).  Defaults to `<workspace>/libraries/<name>/`. |
 | `python run.py things` | Tree view of every thing.  `--flat` for one-line-per-thing slash-form output. |
 | `python run.py discover` | List serial ports the host can see. |
-| `python run.py add-device <id> --address <port> --runtime <cp\|mp>` | Probe + register a board. |
+| `python run.py add-device <id> --address <port> [--runtime <cp\|mp>]` | Probe + register a board.  Runtime auto-detected when omitted. |
 | `python run.py probe` | Read `sys.implementation` from the default device. |
 | `python run.py devices` | Print every entry in `devices.yml`. |
-| `python run.py deploy <thing>` | Ship a thing to the default board. |
-| `python run.py deploy <thing> --device-id <id>` | Override the default. |
+| `python run.py deploy <thing>` | Ship a thing to the default board.  Name accepts bare / slash / dotted; bare names disambiguate against the live tree. |
+| `python run.py deploy <thing> --device-id <id>` | Override the default device. |
+| `python run.py deploy <thing> --dry-run` | Print the file map without writing — useful for "did the !secret merge flatten?" debugging. |
+| `python run.py deploy <thing> --all-devices` | Loop over every device in `devices.yml`.  Failures don't abort the loop; exit code reflects whether any failed. |
+| `python run.py demo` | Deploy a built-in print-loop payload to the default board (no wifi, ~5s). |
 | `python run.py repl` | Open an interactive REPL on the board. |
 | `python run.py repl --tail 30` | Stream output for 30 seconds (good for post-deploy follow). |
+| `python run.py repl <thing>` | Deploy a thing then tail (default 30s window).  `--tail SECONDS` overrides. |
+| `python run.py rename --thing OLD NEW` | Rename a thing dir.  Both sides accept slash/dotted paths; intermediate namespace dirs auto-created. |
 | `python run.py install-firmware --method uf2` | Auto-derived firmware download + flash. |
 | `python run.py upgrade-firmware --method esptool` | Same handler, conventionally for re-flashes. |
-| `python run.py test [-- pytest-args]` | Run pytest across `tests/` + `things/*/tests/`. |
-| `python run.py lint` | Run `ruff check` across the workspace.  Same config the chumicro mono-repo uses. |
+| `python run.py test [-- pytest-args]` | Run pytest across `tests/` + `things/*/tests/`.  `workspace.yml`'s `quality.coverage_threshold` (when set) prepends `--cov-fail-under=N`. |
+| `python run.py lint` | Run `ruff check` across the workspace.  `workspace.yml`'s `quality.lint.enabled = false` skips with a hint; `quality.lint.select` prepends `--select <list>`. |
 | `python run.py update` | Pull tool-owned file refreshes from the canonical workspace template. |
 
 ## File ownership
@@ -85,9 +94,9 @@ Procedural knowledge for common workflows lives under `.github/skills/`.  Read t
 
 `python run.py test` with no args runs **everything** under `tests/` + `things/`.  Functional tests deselect themselves on a sweep with no `functional_tests` path argument — only fire when targeted.
 
-`python run.py lint` runs `ruff check` with the same config the chumicro mono-repo uses (line-length 100, imports sorted, relative-import ban, pyflakes / bugbear / pyupgrade).  Tests + functional tests get the relative-import rule relaxed.
+`python run.py lint` runs `ruff check` with the same config the chumicro mono-repo uses (line-length 100, imports sorted, relative-import ban, pyflakes / bugbear / pyupgrade).  Tests + functional tests get the relative-import rule relaxed.  Set `quality.lint.enabled: false` in `workspace.yml` to skip lint without uninstalling ruff.  Set `quality.lint.select: ["E", "F", "I"]` to override the rule list per-workspace.
 
-Coverage gate: `[tool.coverage.report] fail_under = 85` in `pyproject.toml`.  Lift it for stricter projects or drop it entirely for prototyping.
+Coverage gate: `[tool.coverage.report] fail_under = 85` in `pyproject.toml` — the per-package floor.  Override per-workspace via `quality.coverage_threshold: <N>` in `workspace.yml` (forwarded to pytest as `--cov-fail-under`); user CLI args after `--` win on conflict.
 
 ## Working in a fresh workspace
 
