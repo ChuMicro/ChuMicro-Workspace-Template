@@ -32,10 +32,18 @@ for the full workflow walkthrough.
 
 ## Layout
 
-- `things/<name>/` — your apps.  `def run()` in `app.py`.
+- `things/<name>/` — your apps.  `def run()` in `app.py`.  Names
+  may be nested (`things/upstairs/bedroom_sensor/`,
+  `things/garage/sensors/door_open/`); `python run.py things`
+  shows the tree.
   - `things/_template/` — the "blank thing" copied by `python run.py new`.
   - `things/example_sensor/` — a worked example (wifi → mqtt heartbeat
     with persistent boot counter).  See the walkthrough below.
+- `examples/` — read-only worked demos.  Scaffold a real thing from
+  one with `python run.py new <name> --from examples/<example>`;
+  see [examples/README.md](examples/README.md) for the index.  This
+  folder is tool-owned: `python run.py update` rewrites it from the
+  canonical template upstream.
 - `devices.yml` — gitignored, materialized from `_templates/devices.yml`.
   Mutated in place by `add-device` / `rename` / `probe`.
 - `workspace.yml` — defaults every thing inherits.

@@ -1,0 +1,46 @@
+# `hello_world`
+
+Trivial first deploy.  Prints a heartbeat once per second for ten
+seconds, then exits cleanly.
+
+## Why this example exists
+
+Brand-new boards often surface deploy-pipeline issues — wrong
+runtime, board not in `devices.yml`, wifi credentials still set to
+`replace-me`.  Running a wifi-free print loop first proves the host
+→ device path works *before* you bring the network stack into the
+picture.  When `hello_world` reaches its tenth tick, anything else
+that breaks is your code, not the deploy.
+
+## Try it
+
+```
+python run.py new my_first_thing --from examples/hello_world
+python run.py deploy my_first_thing
+python run.py repl --tail 15
+```
+
+Expected output:
+
+```
+hello from a ChuMicro thing
+  tick 1/10
+  tick 2/10
+  ...
+hello_world: done
+```
+
+## What it uses
+
+| Library | Why |
+|---|---|
+| `chumicro-timing` | wraparound-safe `ticks_ms` / `ticks_diff` — the canonical "wait N ms" idiom for code that runs on devices |
+
+That's it.  No wifi, no sockets, no MQTT, no I/O — pure host
+language plus `chumicro-timing`.
+
+## What's next
+
+Once `hello_world` ships, the natural follow-on is
+[`wifi_only/`](../wifi_only/) — same shape, but brings the wifi
+service up from the workspace's `secrets.yml`.

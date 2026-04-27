@@ -17,7 +17,9 @@ for the workflow primer.
 | Command | Purpose |
 |---|---|
 | `python3 run.py setup` | One-time: create `.venv`, install deps, materialize `_templates/`. |
-| `python run.py new <name>` | Scaffold a new thing under `things/<name>/`.  Name must be a valid Python identifier. |
+| `python run.py new <name>` | Scaffold a new thing under `things/<name>/`.  Name may be nested (`upstairs/bedroom_sensor` or dotted `upstairs.bedroom_sensor`); each segment must be a valid Python identifier. |
+| `python run.py new <name> --from <path>` | Scaffold from an existing tree instead of `things/_template/`, e.g. `--from examples/wifi_only`. |
+| `python run.py things` | Tree view of every thing.  `--flat` for one-line-per-thing slash-form output. |
 | `python run.py discover` | List serial ports the host can see. |
 | `python run.py add-device <id> --address <port> --runtime <cp\|mp>` | Probe + register a board. |
 | `python run.py probe` | Read `sys.implementation` from the default device. |
@@ -51,6 +53,7 @@ for the workflow primer.
 | `_templates/` | NEVER edit | rewrites |
 | `things/_template/` | NEVER edit | rewrites |
 | `.github/skills/` | NEVER edit | rewrites |
+| `examples/` | NEVER edit | rewrites |
 
 If the user asks for changes the tool-owned files would need, propose an upstream PR to the [`ChuMicro-Workspace-Template`](https://github.com/ChuMicro/ChuMicro-Workspace-Template) repo rather than editing in place.
 
