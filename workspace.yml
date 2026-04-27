@@ -1,6 +1,6 @@
 # workspace.yml — root configuration for this ChuMicro project.
 #
-# Three top-level blocks (all optional):
+# Four top-level blocks (all optional):
 #
 #   defaults:        Workspace-wide defaults that every thing inherits.
 #                    Per-thing config under things/<name>/config.toml
@@ -11,6 +11,12 @@
 #                    Empty by default — falls through to libs/ +
 #                    packages/.  Use this to point a library at a
 #                    local clone (development) or a non-default version.
+#
+#   quality:         Workspace-level lint / coverage / agent knobs.
+#                    Consumed by `python run.py lint` and
+#                    `python run.py test`.  Missing block → permissive
+#                    defaults (lint enabled, no coverage gate, agent
+#                    relaxed).
 #
 #   environments:    Reserved for the env / use commands (planned).
 
@@ -23,3 +29,22 @@ defaults:
 
 # library_sources:
 #   chumicro-deploy: ../chumicro-deploy   # example: editable local clone
+
+# quality:
+#   lint:
+#     # Disable to skip `python run.py lint` (CI keeps running its
+#     # own ruff via pyproject.toml's [tool.ruff] config).
+#     enabled: true
+#     # Optional ruff rule codes — `--select` is forwarded to ruff
+#     # before any user `--` passthrough so you can override per-call.
+#     # Omit to defer entirely to pyproject.toml's [tool.ruff.lint].
+#     # select: ["E", "F", "I"]
+#   # Forwarded to pytest as --cov-fail-under.  Pyproject.toml's
+#   # [tool.coverage.report] fail_under still applies; this lets
+#   # workspace.yml override the per-package gate without editing
+#   # pyproject.toml.  Omit for "no workspace-level gate".
+#   # coverage_threshold: 85
+#   # `relaxed` (default) or `strict`.  Reserved for future AST-level
+#   # checks (no naked except, no global state in things) — accepted
+#   # today, not yet enforced.
+#   agent_strictness: relaxed
