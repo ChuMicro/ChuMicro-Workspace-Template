@@ -35,13 +35,15 @@ to do:
 
 | `DeployFailureKind` | What it means | First fix |
 |---|---|---|
-| `PORT_UNAVAILABLE` | serial port busy or missing | close any open REPL session against the same port; replug the board |
-| `BOOTLOADER_DETECTED` | board is in UF2 / DFU bootloader, not running Python | `python run.py install-firmware` first, then retry deploy |
-| `MACOS_FSKIT_WEDGED` | macOS's FSKit wedged on a FAT12 error (CP only) | unplug for 5+ seconds, replug; if persistent, reboot the Mac |
-| `CIRCUITPY_DRIVE_MISSING` | CP flash mode but the CIRCUITPY USB drive isn't mounted | wait a few seconds for macOS to mount; check `/Volumes/`; force-eject + replug |
-| `BOOTSTRAP_EXEC_FAILED` | the staged code raised on import / first run | the message includes the traceback from the device — read it |
-| `UNRESOLVED_FIRMWARE` | install-firmware can't derive a URL for this board | pass `--url` explicitly, or set `hardware.firmware_source` in `devices.yml` |
-| `SERIAL_TIMEOUT` | the device stopped responding mid-deploy | usually a wedged board — soft-reset (Ctrl-D in REPL) or replug |
+| `PORT_UNAVAILABLE` | serial port busy or missing (board unplugged, port held by another tool, board is in bootloader) | close any open REPL / tool against the same port; replug the board; if it's in the bootloader run `python run.py install-firmware` first |
+| `RAW_REPL_UNRESPONSIVE` | the device's raw REPL didn't respond to the handshake | tap the RESET button or replug; if it persists, soft-reset via REPL Ctrl-D before next deploy |
+| `MACOS_FSKIT_WEDGED` | macOS's FSKit wedged on a FAT12 error (CP only) | the message prints an exact `sudo killall … && launchctl kickstart -k …` recovery command — paste it; if persistent, reboot the Mac |
+| `CIRCUITPY_DRIVE_MISSING` | CP flash mode but the CIRCUITPY USB drive isn't mounted (or is mounted but not writable) | wait a few seconds for macOS to mount; check `/Volumes/`; force-eject + replug |
+| `FLASH_COPY_FAILED` | rsync to CIRCUITPY balked mid-copy (drive full, payload too big, I/O error) | check free space on `/Volumes/CIRCUITPY*`; trim the deploy or wipe the drive; if I/O errors persist replug |
+| `BOOTSTRAP_EXEC_FAILED` | the staged code raised on import / first run | the message includes the traceback from the device — read it before guessing |
+| `TRACEBACK_RETURNED` | code deployed cleanly but the entrypoint raised on the device | not retryable by replugging — read the traceback in the deploy output and fix the source |
+| `INSUFFICIENT_MEMORY` | the inline (RAM-mode) payload exceeds the board's free heap | switch to `deploy_mode: flash` for this device, or split a fat module into smaller files |
+| `CONFIGURATION_ERROR` | the device or deploy was misconfigured (wrong runtime, bad device-file entry) | read the message — it points at the specific field; fix `devices.yml` or the CLI flags |
 
 If the failure doesn't match any of these, the deploy output
 will include the raw transport error — read it carefully before
