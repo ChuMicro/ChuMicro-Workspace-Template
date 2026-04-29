@@ -125,6 +125,82 @@ python run.py doctor     # stricter — adds AST scan for run() + !secret resolu
 version, per-thing `app.py` AST scan ("did you forget the `def run()`?"),
 and a config-merge dry-run that rejects unresolved `!secret` references.
 
+`deploy` runs the same fast checks `status` does as a pre-flight gate —
+ERROR-level findings (malformed YAML files) abort before sending bytes
+to the device; WARN-level findings (placeholder secrets, no devices
+registered) print but proceed.  Pass `deploy --skip-health-check`
+when you've already validated the workspace state externally and want
+to skip the gate (CI flows, scripted runs).
+
+### How config flows from your edits to the device
+
+Every thing receives a runtime config at boot.  That config is the
+merge of three host-side sources, with secret references resolved at
+deploy time:
+
+```
+secrets.yml                workspace.yml              things/<name>/config.toml
+   (host)                     (host)                          (host)
+      │                          │                              │
+      └──────────────┬───────────┴──────────────────────────────┘
+                     ▼
+                 deep merge                     (thing wins over workspace defaults)
+                     │
+                     ▼
+                 resolve "!secret <name>"       (replaces with secrets.yml value)
+                     │
+                     ▼
+                 packb (msgpack)                (single source of truth on the wire)
+                     │
+                     ▼
+       /runtime_config.msgpack on device
+                     │
+                     ▼
+              chumicro_config.runtime           (READS the msgpack on the device)
+```
+
+Use `python run.py dump-config <thing>` to print the merged dict
+your thing would receive without actually deploying — useful when
+debugging which config section a key landed in or whether a `!secret`
+resolved to what you expected.
+
+### Quality gate
+
+`python run.py preflight` runs `lint` then `test` as a single sanity
+gate (chumicro mono-repo's preflight shape, scaled down for workspaces
+without CI).  Set `quality:` knobs in `workspace.yml` to tune:
+
+```yaml
+quality:
+  lint:
+    enabled: true              # set to false to skip ruff
+    select: [E, F, I]          # ruff rule set
+  coverage_threshold: 70       # passed to pytest as --cov-fail-under
+```
+
+Both `lint` and `test` are also runnable on their own.
+
+### Library-shaped code — `libs/` vs `libraries/`
+
+Both hold code your things can `import`.  Pick by *weight*:
+
+| Want to ship… | Drop it under | Imports look like | Notes |
+|---|---|---|---|
+| A 50-line helper your things share | `libs/foo.py` | `from libs.foo import bar` | No tests, no version, no scaffolding. |
+| A full chumicro-style library you might publish someday | `libraries/<name>/` (via `python run.py new --library <name>`) | `import <name>` | Gets `src/`, `tests/`, `docs/`, `examples/`, `pyproject.toml`, `VERSION`. |
+| A third-party package | `packages/` (via `sync`) | `import <name>` | Gitignored mirror cache. |
+
+The import-graph search path resolves explicit `library_sources:`
+overrides → `libs/` → every `libraries/<name>/src/` (auto-discovered)
+→ `packages/`.  So a library scaffolded with `new --library` is
+importable as `import <name>` from any thing without further wiring.
+
+`python run.py new --workbench <name>` is the host-only sibling — it
+scaffolds the same shape but with a workbench-flavoured pyproject (CLI
+entry point, no cross-runtime concerns) under `workbench/<name>/`.
+Use this for tools you'd like to drive from the laptop alongside the
+chumicro workbench packages.
+
 ### Device modes — RAM vs. flash
 
 Every deploy chooses a mode:
