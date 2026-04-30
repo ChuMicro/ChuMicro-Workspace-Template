@@ -33,7 +33,7 @@ for the workflow primer.
 | `python run.py deploy <thing> --dry-run` | Print the file map without writing — useful for "did the !secret merge flatten?" debugging. |
 | `python run.py deploy <thing> --all-devices` | Loop over every device in `devices.yml`.  Failures don't abort the loop; exit code reflects whether any failed. |
 | `python run.py demo` | Deploy a built-in print-loop payload to the default board (no wifi, ~5s). |
-| `python run.py repl` | Open an interactive REPL on the board. |
+| `python run.py repl` | Open an interactive REPL on the board.  Defaults to **line mode** in a TTY: host-side line editor with persistent per-device history, `:edit` opens `$EDITOR` with the recent buffer pre-seeded, `:save NAME` / `:load NAME` / `:snippets` round-trip reusable code, Tab completes against keywords + the on-device namespace (use `:rescan` after a new `import`).  Add `--mode passthrough` for the byte-by-byte mpremote-style flow (raw REPL framing, paste mode). |
 | `python run.py repl --tail 30` | Stream output for 30 seconds (good for post-deploy follow). |
 | `python run.py repl <thing>` | Deploy a thing then tail (default 30s window).  `--tail SECONDS` overrides. |
 | `python run.py rename --thing OLD NEW` | Rename a thing dir.  Both sides accept slash/dotted paths; intermediate namespace dirs auto-created. |
