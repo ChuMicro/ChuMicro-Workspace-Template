@@ -80,7 +80,7 @@ def run():
     print("periodic_get: connecting ...")
     while not wifi.connected:
         runner.tick()
-        if wifi.state is WifiState.FAILED:
+        if wifi.state == WifiState.FAILED:
             raise SystemExit(f"wifi failed: {wifi.last_error}")
     print(f"periodic_get: connected at {wifi.ip}")
 

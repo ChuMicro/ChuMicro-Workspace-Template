@@ -44,10 +44,10 @@ class _StatusBeacon:
         return ticks_diff(now_ms, self._next_at) >= 0
 
     def handle(self, now_ms: int) -> None:
-        if self._wifi.state is WifiState.CONNECTED:
+        if self._wifi.state == WifiState.CONNECTED:
             print(f"wifi: connected at {self._wifi.ip}")
         else:
-            print(f"wifi: {self._wifi.state.value}")
+            print(f"wifi: {self._wifi.state}")
         self._next_at = ticks_add(now_ms, self._period_ms)
 
 

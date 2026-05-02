@@ -52,7 +52,7 @@ def run() -> None:
     print("server: connecting to wifi ...")
     while not wifi.connected:
         runner.tick()
-        if wifi.state is WifiState.FAILED:
+        if wifi.state == WifiState.FAILED:
             raise SystemExit(f"wifi failed: {wifi.last_error}")
     print(f"server: wifi at {wifi.ip}")
 

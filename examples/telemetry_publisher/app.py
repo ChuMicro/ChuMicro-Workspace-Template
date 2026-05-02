@@ -38,7 +38,7 @@ class _HeartbeatPublisher:
         self._sequence = 0
 
     def check(self, now_ms):
-        if self._mqtt.state is not ProtocolState.CONNECTED:
+        if self._mqtt.state != ProtocolState.CONNECTED:
             return False
         return ticks_diff(now_ms, self._next_at) >= 0
 
@@ -95,7 +95,7 @@ def run():
     print("telemetry_publisher: connecting to wifi ...")
     while not wifi.connected:
         runner.tick()
-        if wifi.state is WifiState.FAILED:
+        if wifi.state == WifiState.FAILED:
             raise SystemExit(f"wifi failed: {wifi.last_error}")
     print(f"telemetry_publisher: wifi at {wifi.ip}")
 
