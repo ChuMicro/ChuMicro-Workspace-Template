@@ -1,6 +1,6 @@
 # workspace.yml — root configuration for this ChuMicro project.
 #
-# Four top-level blocks (all optional):
+# Five top-level blocks (all optional):
 #
 #   defaults:        Workspace-wide defaults that every thing inherits.
 #                    Per-thing config under things/<name>/config.toml
@@ -11,6 +11,13 @@
 #                    Empty by default — falls through to libs/ +
 #                    packages/.  Use this to point a library at a
 #                    local clone (development) or a non-default version.
+#
+#   deploy_targets:  Per-thing → per-device default mapping.  When set,
+#                    a bare `deploy <thing>` (no --device) picks the
+#                    thing's mapped target; `deploy --all-things`
+#                    walks the whole mapping at once.  Empty by default
+#                    — single-thing deploys fall back to devices.yml's
+#                    `defaults:` block.
 #
 #   quality:         Workspace-level lint / coverage / agent knobs.
 #                    Consumed by `python run.py lint` and
@@ -29,6 +36,15 @@ defaults:
 
 # library_sources:
 #   chumicro-deploy: ../chumicro-deploy   # example: editable local clone
+
+# deploy_targets:
+#   # Single device — bare string or one-element list, both fine.
+#   garage/door: pi-pico-w-circuitpython-board
+#   # Multiple devices — each value can be a list; `deploy --all-things`
+#   # ships to every entry in declaration order.
+#   garage/server:
+#     - pi-pico-w-micropython-board
+#     - lolin-s2-micropython-board
 
 # quality:
 #   lint:
