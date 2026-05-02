@@ -27,10 +27,11 @@ two-board pattern:
   via `chumicro-requests`.
 
 Both boards run the same boot-shim flow as the single-thing
-examples.  No multi-thing-on-one-device staging, no `switch`
-command — those were retired in Slice 7 of the workspace
-ecosystem (multi-thing-staging blew the flash budget on
-Decision 0015 minimum boards).
+examples — one thing per board, deployed independently.
+Multi-thing-on-one-device staging is not supported: on the
+minimum-supported board class (256 KB RAM, 4 MB flash) the
+flash budget doesn't accommodate two thing payloads side by
+side.  If you need two cooperating things, use two boards.
 
 ## Try it
 
@@ -75,8 +76,7 @@ either:
 * assign the server a static IP via your router's DHCP
   reservation table; or
 * use mDNS so the sensor can resolve `chu-server.local` instead
-  of an IP (not yet wired through the workspace template — see
-  `plans/next-up.md` for the open MDNS thread).
+  of an IP (not yet wired through the workspace template).
 
 ## What it uses
 
