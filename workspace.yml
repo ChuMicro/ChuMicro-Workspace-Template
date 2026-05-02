@@ -60,7 +60,3 @@ defaults:
 #   # workspace.yml override the per-package gate without editing
 #   # pyproject.toml.  Omit for "no workspace-level gate".
 #   # coverage_threshold: 85
-#   # `relaxed` (default) or `strict`.  Reserved for future AST-level
-#   # checks (no naked except, no global state in things) — accepted
-#   # today, not yet enforced.
-#   agent_strictness: relaxed
