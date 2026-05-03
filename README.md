@@ -1,6 +1,40 @@
 # my-workspace
 
-A ChuMicro project workspace.
+A clone-and-go ChuMicro project layout.  Safer than editing
+`code.py` directly on the device — atomic deploys, no FAT-filesystem
+wear from save-on-every-keystroke, no losing files when CIRCUITPY
+hiccups.
+
+**Recommended even if you only have one project on one board.**
+
+> Rename this directory + this README's title to whatever you want
+> to call your workspace.  This is your repo now.
+
+## Why a workspace (instead of editing on the device)
+
+When you mount a CircuitPython board and edit files on the
+`/CIRCUITPY` drive, every save writes to the board's FAT filesystem.
+Three things go wrong over time:
+
+* **Flash wear.** CP boards typically have 2–4 MB of flash with
+  modest erase-cycle budgets.  Save-on-every-keystroke editing eats
+  through it faster than you'd think.
+* **FAT corruption.**  CIRCUITPY uses FAT12/FAT16/FAT32, which isn't
+  crash-safe.  An interrupted write — host suspending, cable jiggling,
+  board resetting mid-save — leaves files truncated or corrupt.
+  Worst case the drive becomes unmountable.
+* **Lost work.**  When the drive does hiccup (on macOS, see the
+  FSKit / DiskArbitration wedge documented in the
+  [chumicro troubleshooting guide](https://github.com/ChuMicro/ChuMicro/blob/main/docs/troubleshooting/macos-circuitpy.md)),
+  files you thought were saved may be gone.
+
+A workspace keeps your code on your laptop in version control, runs
+lint + tests against it like any normal Python project, and ships
+it to the board only when you ask.  Deploys are atomic
+(write-then-rename in flash mode, or RAM-mode for fast iteration
+with no flash writes at all).  Your editor, your VCS, your tests,
+your habits — no special "are you sure?" dance because the device
+filesystem isn't in your edit loop.
 
 ## Quickstart
 
@@ -8,53 +42,59 @@ A ChuMicro project workspace.
 # Option A: clone this template
 git clone --depth 1 https://github.com/ChuMicro/ChuMicro-Workspace-Template my-workspace
 cd my-workspace
-rm -rf .git && git init
+rm -rf .git && git init                 # start your own history
 
 # Option B: GitHub UI -> "Use this template" -> clone the resulting repo
 
 # Then, with the workspace cloned:
-python3 run.py setup           # creates .venv, installs chumicro-workspace, materializes secrets.yml
+python3 run.py setup                    # creates .venv, installs chumicro-workspace, materializes secrets.yml
 python run.py add-device my-board --address /dev/cu.usbmodem1101 --runtime micropython
-python run.py new my-thing     # scaffolds things/my-thing/
-# Edit things/my-thing/{config.toml, app.py} and secrets.yml as needed
-python run.py deploy my-thing
+python run.py new my_project            # scaffolds things/my_project/
+# Edit things/my_project/{config.toml, app.py} and secrets.yml as needed
+python run.py deploy my_project
 ```
 
-`python3 run.py setup` is self-bootstrapping: it creates a virtualenv at
-`.venv/`, installs `chumicro-workspace` and the workspace's
-dependencies, materializes any files declared under `_templates/` (e.g.
-`secrets.yml`), and then re-execs into the venv for any subsequent
-command.  No prerequisite `pip install` is required — system Python
-3.11+ is enough.
+`python3 run.py setup` is self-bootstrapping: creates `.venv/`,
+installs `chumicro-workspace`, materializes templated files
+(`secrets.yml`), and re-execs into the venv.  No `pip install`
+prerequisite — system Python 3.11+ is enough.
 
-See [chumicro-workspace's guide](https://github.com/ChuMicro/ChuMicro/blob/main/workbench/workspace/docs/guide.md)
-for the full workflow walkthrough.
+For the full workflow walkthrough — including multi-board / multi-
+project flows once you've outgrown a single project — see
+[chumicro-workspace's guide](https://github.com/ChuMicro/ChuMicro/blob/main/workbench/workspace/docs/guide.md).
 
 ## Layout
 
-- `things/<name>/` — your apps.  `def run()` in `app.py`.  Names
+- `things/<name>/` — your projects.  `def run()` in `app.py`.  Names
   may be nested (`things/upstairs/bedroom_sensor/`,
-  `things/garage/sensors/door_open/`); `python run.py things`
-  shows the tree.
-  - `things/_template/` — the "blank thing" copied by `python run.py new`.
-  - `things/example_sensor/` — a worked example (wifi → mqtt heartbeat
-    with persistent boot counter).  See the walkthrough below.
-- `examples/` — read-only worked demos.  Scaffold a real thing from
-  one with `python run.py new <name> --from examples/<example>`;
-  see [examples/README.md](examples/README.md) for the index.  This
-  folder is tool-owned: `python run.py update` rewrites it from the
-  canonical template upstream.
+  `things/garage/sensors/door_open/`); `python run.py things` shows
+  the tree.
+  - `things/_template/` — the blank project copied by `python run.py new`.
+  - `things/example_sensor/` — a worked example (wifi → mqtt
+    heartbeat with persistent boot counter).  See the walkthrough
+    below.
+- `examples/` — read-only worked demos.  Scaffold a real project
+  from one with `python run.py new <name> --from examples/<example>`;
+  see [`examples/README.md`](examples/README.md) for the index.
+  This folder is tool-owned: `python run.py update` rewrites it from
+  the canonical template upstream.
 - `devices.yml` — gitignored, materialized from `_templates/devices.yml`.
   Mutated in place by `add-device` / `rename` / `probe`.
-- `workspace.yml` — defaults every thing inherits.
+- `workspace.yml` — defaults every project inherits.
 - `secrets.yml` — gitignored, materialized from `_templates/secrets.yml`.
   Reference values via `!secret <name>`.
-- `libs/` — shared user code.  Things `import` from here.
+- `libs/` — shared user code.  Projects `import` from here.
 - `packages/` — gitignored, mirror-cached external libs.
 - `_templates/` — tool-owned template sources.  `setup` materializes
   any missing destination at the workspace root; `update` refreshes
-  these sources from upstream so newer template skeletons reach
-  existing workspaces.
+  these sources from upstream.
+
+> **Heads-up on terminology.**  The directory is currently `things/`
+> and a few CLI helpers (`python run.py things`) still use the
+> "thing" noun.  Prose in this README has switched to "project" as
+> part of the upcoming rename — the directory + CLI surface follow
+> in a separate breaking change.  Track it in the chumicro mono-repo's
+> `plans/next-up.md` under the beginner-comfort onramp.
 
 ## Worked example: `example_sensor`
 
@@ -90,14 +130,17 @@ python run.py repl
 Subscribe to the topic from any MQTT client (`mosquitto_sub -h
 broker.hivemq.com -t 'chumicro/example/temperature'`) and you should
 see one JSON message every 5 seconds carrying the boot counter, the
-on-board temperature reading, and a sequence number.  Reset the board
-and the boot counter increments — `chumicro-kvstore` persisted it.
+on-board temperature reading, and a sequence number.  Reset the
+board and the boot counter increments — `chumicro-kvstore` persisted
+it across resets.
 
 `things/example_sensor/app.py` is short on purpose — it's the
 canonical reference for how to wire `WifiService` + `MQTTClient` +
-`KVStore` into a tick-shaped `Runner`.  Copy + tweak.
+`KVStore` into a tick-shaped `Runner`.  Copy + tweak rather than
+starting from scratch.
 
-## ChuMicro-dev mode (optional)
+<details>
+<summary>ChuMicro-dev mode — for co-developing chumicro libraries alongside the workspace</summary>
 
 Co-developing chumicro libraries / `chumicro-workspace` from a sibling
 clone of the [`ChuMicro` mono-repo](https://github.com/ChuMicro/ChuMicro)
@@ -115,3 +158,5 @@ flow into the workspace immediately — no rebuild, no republish.
 Delete the file (or unset the path) to revert to the PyPI install
 path.  `chumicro-dev.toml` is gitignored by default since different
 contributors keep their checkouts in different places.
+
+</details>
