@@ -83,8 +83,15 @@ project flows once you've outgrown a single project — see
 - `workspace.yml` — defaults every project inherits.
 - `secrets.yml` — gitignored, materialized from `_templates/secrets.yml`.
   Reference values via `!secret <name>`.
-- `libs/` — shared user code.  Projects `import` from here.
-- `packages/` — gitignored, mirror-cached external libs.
+- `shared/` — flat user-authored helper modules shared between
+  projects.  Drop a `.py` file and `import` it as `from shared.foo
+  import bar`.  See [`shared/README.md`](shared/README.md).
+- `packages/` — gitignored manual-drop area for third-party
+  Python source trees that the workspace's projects import on the
+  device.  See [`packages/README.md`](packages/README.md).
+- `libraries/` — *not present by default.*  `python run.py new
+  --library <name>` materialises it the first time you scaffold a
+  full chumicro-style library package.
 - `_templates/` — tool-owned template sources.  `setup` materializes
   any missing destination at the workspace root; `update` refreshes
   these sources from upstream.

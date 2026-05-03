@@ -73,7 +73,7 @@ skip_covered = false
 [tool.ruff]
 line-length = 100
 target-version = "py311"
-extend-exclude = [".venv", "packages", "libs", "projects/*/_generated"]
+extend-exclude = [".venv", "packages", "shared", "projects/*/_generated"]
 
 [tool.ruff.lint]
 # Mirrors the chumicro mono-repo's tone: pyflakes + import sorting +

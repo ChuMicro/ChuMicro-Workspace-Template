@@ -7,10 +7,11 @@
 #                    deep-merges over this — values in the per-project
 #                    file win at any nesting depth.
 #
-#   library_sources: Local paths or pinned overrides for shared libs.
-#                    Empty by default — falls through to libs/ +
-#                    packages/.  Use this to point a library at a
-#                    local clone (development) or a non-default version.
+#   library_sources: Local paths or pinned overrides for shared libraries.
+#                    Empty by default — falls through to shared/ +
+#                    libraries/<name>/src/ + packages/.  Use this to point
+#                    a library at a local clone (development) or a
+#                    non-default version.
 #
 #   deploy_targets:  Per-project → per-device default mapping.  When set,
 #                    a bare `deploy <project>` (no --device) picks the

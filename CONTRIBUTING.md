@@ -180,20 +180,20 @@ quality:
 
 Both `lint` and `test` are also runnable on their own.
 
-### Library-shaped code — `libs/` vs `libraries/`
+### Library-shaped code — `shared/` vs `libraries/`
 
 Both hold code your projects can `import`.  Pick by *weight*:
 
 | Want to ship… | Drop it under | Imports look like | Notes |
 |---|---|---|---|
-| A 50-line helper your projects share | `libs/foo.py` | `from libs.foo import bar` | No tests, no version, no scaffolding. |
-| A full chumicro-style library you might publish someday | `libraries/<name>/` (via `python run.py new --library <name>`) | `import <name>` | Gets `src/`, `tests/`, `docs/`, `examples/`, `pyproject.toml`, `VERSION`. |
-| A third-party package | `packages/` (via `sync`) | `import <name>` | Gitignored mirror cache. |
+| A 50-line helper your projects share | `shared/foo.py` | `from shared.foo import bar` | No tests, no version, no scaffolding.  See [`shared/README.md`](shared/README.md). |
+| A full chumicro-style library you might publish someday | `libraries/<name>/` (via `python run.py new --library <name>`) | `import <name>` | Gets `src/`, `tests/`, `docs/`, `examples/`, `pyproject.toml`, `VERSION`.  Folder materialises lazily — only appears when you scaffold one. |
+| A third-party package source tree | `packages/<name>/` | `import <name>` | Gitignored manual-drop area.  See [`packages/README.md`](packages/README.md). |
 
 The import-graph search path resolves explicit `library_sources:`
-overrides → `libs/` → every `libraries/<name>/src/` (auto-discovered)
-→ `packages/`.  So a library scaffolded with `new --library` is
-importable as `import <name>` from any project without further wiring.
+overrides → `shared/` → every `libraries/<name>/src/` (auto-discovered)
+→ `packages/`.  Steps with no folder on disk skip silently, so a
+workspace with no `libraries/` doesn't pay the cost.
 
 `python run.py new --workbench <name>` is the host-only sibling — it
 scaffolds the same shape but with a workbench-flavoured pyproject (CLI
@@ -265,7 +265,7 @@ Three patterns that work well:
    `deploy-and-debug` skill."
 
 The agent can edit files freely under `projects/<your-name>/`,
-`libs/`, `workspace.yml`, `devices.yml`, and `secrets.yml`.  It
+`shared/`, `workspace.yml`, `devices.yml`, and `secrets.yml`.  It
 should *not* edit `run.py`, `AGENTS.md`, `CONTRIBUTING.md`,
 `pyproject.toml`, `projects/_template/`, `_templates/`, or anything
 under `.github/` — those are tool-owned and `python run.py
@@ -282,7 +282,7 @@ python run.py update --ref v0.5   # pin to a specific template version
 `AGENTS.md`, `CONTRIBUTING.md`, `pyproject.toml`, the
 `projects/_template/` skeleton, `_templates/` template sources, and
 the `.github/skills/` agent-skill index).  Your `projects/`,
-`devices.yml`, `secrets.yml`, `workspace.yml`, `libs/`, and
+`devices.yml`, `secrets.yml`, `workspace.yml`, `shared/`, and
 `packages/` are never touched.
 
 ## Where to look up help

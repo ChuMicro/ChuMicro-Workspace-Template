@@ -52,8 +52,9 @@ for the workflow primer.
 | `devices.yml` | tool (via `add-device` / `rename` / `probe`) | leaves alone |
 | `secrets.yml` | YOU (gitignored, materialized from `_templates/secrets.yml` by `setup`) | leaves alone |
 | `workspace.yml` | YOU | leaves alone |
-| `libs/` | YOU | leaves alone |
-| `packages/` | tool (mirror cache) | leaves alone |
+| `shared/` | YOU (drop a `.py`, import as `from shared.foo import bar`) | leaves alone |
+| `packages/` | YOU (manual-drop area; gitignored) | leaves alone |
+| `libraries/` | YOU (lazy-created by `new --library`; absent by default) | leaves alone |
 | `run.py` | NEVER edit | rewrites |
 | `AGENTS.md` | NEVER edit | rewrites |
 | `CONTRIBUTING.md` | NEVER edit | rewrites |
