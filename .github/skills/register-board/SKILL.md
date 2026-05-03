@@ -84,7 +84,7 @@ Or edit `devices.yml` directly:
 defaults:
   micropython: pi-pico-w-mp-back-porch
   circuitpython: null
-  deploy_mode: ram   # or `flash` per device class
+  deploy_mode: flash   # default; override to `ram` per-device for unit-style experiments
 ```
 
 ## 5. Verify

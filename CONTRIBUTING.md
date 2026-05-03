@@ -205,19 +205,33 @@ chumicro workbench packages.
 
 Every deploy chooses a mode:
 
-- **RAM mode** (`deploy_mode: ram`, the default) — the device
-  executes from host-mounted source.  Fast iteration, no flash
-  wear, but state doesn't persist across resets.  Best for
-  single-library experiments and testing one project at a time.
-- **Flash mode** (`deploy_mode: flash`) — files actually land on
-  the device's flash.  State persists, the device boots
-  standalone, but each deploy writes to flash.  Required for
-  multi-library compositions, persistent counters, OTA updates,
-  anything that depends on filesystem state surviving a reset.
+- **Flash mode** (`deploy_mode: flash`, the default) — files
+  actually land on the device's flash.  State persists, the
+  device boots standalone, deploys are atomic (write-then-rename),
+  and the runtime behavior matches what a production deploy looks
+  like.  This is what every project deploy + most functional tests
+  + every example should use.
+- **RAM mode** (`deploy_mode: ram`) — the device executes from
+  host-mounted source.  Fast iteration, no flash wear, but state
+  doesn't persist across resets and the runtime profile differs
+  from a real deploy (heavier libraries can OOM in RAM mode where
+  they fit fine in flash).  Best for single-library unit-style
+  tests and quick scratch-experiments.
 
-Set the default in `devices.yml` `defaults.deploy_mode` or
-override per-board with the `deploy_mode:` field on a device
-entry.
+`flash` is the default for project deploys, examples, and most
+functional tests.  Override per-board with the `deploy_mode:`
+field on a device entry, or per-deploy via the CLI's
+`--deploy-mode ram`.
+
+> **Auto-switch when libraries declare `requires_flash`.**  A few
+> heavier libraries (`chumicro-mqtt`, `chumicro-requests`,
+> `chumicro-http-server`, `chumicro-websockets`) declare
+> `[tool.chumicro] requires_flash = true` in their `pyproject.toml`.
+> When you deploy a project that imports any of those libraries
+> and the device's `deploy_mode` is `ram`, the deployer
+> auto-switches to flash mode for this run and prints why.  Pass
+> `--force-deploy-mode ram` to bypass the auto-switch (rare —
+> usually only when debugging the failure mode itself).
 
 ## Debugging — what to do when a deploy doesn't work
 

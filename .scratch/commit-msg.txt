@@ -1,58 +1,60 @@
-examples + projects/example_sensor: delete dead `_radio_for_runtime()` helpers
+flash is the default deploy mode (Decision 0047 from chumicro mono-repo)
 
-After the chumicro mono-repo's Phase 1 work auto-detected `wifi.radio`
-on CircuitPython (the `chumicro_sockets._adapters.cp._pool_for(None)`
-path), every callsite that used `radio=` ended up with a `None` value
-that was equivalent to passing `wifi.radio` explicitly.  The
-`_radio_for_runtime()` helper that every networked example carried —
+Implements the workspace-template half of the cross-repo deploy-mode
+flip specified by Decision 0047 in the chumicro mono-repo (commit
+`de99870`).
 
-```python
-def _radio_for_runtime():
-    try:
-        import wifi
-        return wifi.radio
-    except ImportError:
-        return None
-```
+Three concrete changes
+======================
 
-— was dead code on every supported board.  On CP it returned
-`wifi.radio`, which is exactly what `_pool_for(None)` would auto-
-detect.  On MP / CPython it returned `None`, which is also the
-default.  Five examples were carrying the helper plus the matching
-`radio=radio` plumbing through socket-factory closures.
+1. **`_templates/devices.yml`** gains an explicit
+   `defaults.deploy_mode: flash` line.  The previous template was
+   silent (let chumicro-deploy's `DEFAULT_DEPLOY_MODE` decide), but
+   silence forces the user to know what the default is — explicit
+   reads cleaner.  The accompanying comment explains why flash is
+   the default and how to opt back to ram per-device or via
+   `--deploy-mode ram`.
 
-This commit drops the helper from all five and threads the
-simpler signature back through:
+2. **`CONTRIBUTING.md`** — "Device modes — RAM vs. flash" section
+   reworked.  The old prose said "(`deploy_mode: ram`, the default)";
+   updated to "(`deploy_mode: flash`, the default)" with the
+   rationale (production-shaped, atomic, matches real deploys).  New
+   block-quote callout describes the `[tool.chumicro] requires_flash`
+   auto-switch behavior the chumicro mono-repo's Decision 0047
+   ships.
 
-* `projects/example_sensor/app.py` — helper removed; `_make_socket_factory`
-  loses its `radio` parameter; the `tls_client_socket` /
-  `tcp_client_socket` calls drop `radio=`.
-* `examples/periodic_get/app.py` — helper removed; `HttpClient`
-  constructor drops `connection_factory=chumicro_sockets_factory(radio=radio)`
-  to plain `chumicro_sockets_factory()`.
-* `examples/telemetry_publisher/app.py` — same shape as
-  example_sensor; `_make_socket_factory` loses its `radio` parameter.
-* `examples/two_projects/server/app.py` — helper removed; the
-  `tcp_listening_socket` call drops `radio=` from its lambda.
-* `examples/two_projects/sensor/app.py` — helper removed; the
-  `HttpClient` factory call drops `radio=`.
+3. **`AGENTS.md`** — "RAM mode is for single-library experiments"
+   bullet expanded to "Flash mode is the default; RAM mode is opt-in
+   for single-library experiments".  Now mentions the four heavier
+   libraries that declare `requires_flash = true` and explains the
+   auto-switch.  Same operational guidance for the agent ("surface
+   this when the user reports messages stop after first publish or
+   ENOENT on /runtime_config.msgpack") — flash being the default
+   means most users never hit the auto-switch, but when they do,
+   the agent should know what's happening.
 
-Net effect: 5 example files lose ~6 lines of pure boilerplate
-each.  Beginners reading the examples no longer have to figure out
-why every networked thing carries the same six-line wifi-import
-dance — the dance was load-bearing under the old API and is
-unnecessary now.
+4. **`.github/skills/register-board/SKILL.md`** — example YAML
+   snippet flipped from `deploy_mode: ram   # or flash per device
+   class` to `deploy_mode: flash   # default; override to ram per-
+   device for unit-style experiments`.  Surfaces the right default
+   to anyone reading the skill while registering a board.
 
-The library-side `radio=` kwarg stays in the public API for the
-rare multi-radio / AirLift / SAMD-M0 case
-(`chumicro_sockets._adapters.cp.py:35-40` documents it).  Just no
-need to surface it in every example.
+After this commit
+=================
+
+A user on the previous template who runs `python run.py setup`
+in a fresh clone gets `defaults.deploy_mode: flash` materialised
+into their `devices.yml`.  Existing workspaces aren't auto-
+migrated — `_templates/` is tool-owned, but `devices.yml`'s
+contents are user-owned (gitignored, mutated by `add-device` /
+`probe`).  Users on existing workspaces who want the new default
+edit `devices.yml` themselves or re-run `setup` after deleting
+the file.
 
 Tested
 ======
 
-3 template tests pass (`pytest tests/ projects/_template/tests/`).
-The example apps continue to import cleanly under the chumicro
-mono-repo's `verify-examples` step.  No behavior change on any
-board — the deleted helper was returning the same value
-`_pool_for(None)` now auto-detects.
+3 template tests pass (`pytest tests/ projects/_template/tests/`)
+against chumicro-workspace's existing version; the deploy-mode
+default flip is consumed transparently by the chumicro-deploy
+0.5.0 published in mono-repo `de99870`.
