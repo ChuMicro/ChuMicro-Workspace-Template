@@ -110,18 +110,7 @@ def _bump_boot_counter(kv_store):
     return next_count
 
 
-def _radio_for_runtime():
-    """Return the platform's wifi radio object on CircuitPython; ``None``
-    elsewhere (MicroPython and CPython adapters don't take a radio).
-    """
-    try:
-        import wifi
-        return wifi.radio
-    except ImportError:
-        return None
-
-
-def _make_socket_factory(mqtt_section, radio):
+def _make_socket_factory(mqtt_section):
     """Return a closure that builds a fresh connected socket.
 
     Passed to ``MQTTClient`` so the client can self-heal after a
@@ -134,8 +123,8 @@ def _make_socket_factory(mqtt_section, radio):
 
     def build_socket():
         if use_tls:
-            return tls_client_socket(host, port, radio=radio)
-        return tcp_client_socket(host, port, radio=radio)
+            return tls_client_socket(host, port)
+        return tcp_client_socket(host, port)
 
     return build_socket
 
@@ -162,8 +151,7 @@ def run():
             raise SystemExit(f"wifi failed: {wifi.last_error}")
     print(f"sensor: wifi connected at {wifi.ip}")
 
-    radio = _radio_for_runtime()
-    socket_factory = _make_socket_factory(mqtt_section, radio)
+    socket_factory = _make_socket_factory(mqtt_section)
     mqtt_client = MQTTClient(
         socket_factory=socket_factory,
         client_id=mqtt_section["client_id"],

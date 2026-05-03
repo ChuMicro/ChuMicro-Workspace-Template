@@ -55,16 +55,7 @@ class _HeartbeatPublisher:
             self._next_at = ticks_add(now_ms, self._period_ms)
 
 
-def _radio_for_runtime():
-    """CircuitPython exposes `wifi.radio`; MicroPython / CPython don't."""
-    try:
-        import wifi
-        return wifi.radio
-    except ImportError:
-        return None
-
-
-def _make_socket_factory(mqtt_section, radio):
+def _make_socket_factory(mqtt_section):
     """Closure that builds a fresh TCP / TLS socket on each connect.
 
     `MQTTClient` calls this every time it (re-)issues CONNECT, which
@@ -77,8 +68,8 @@ def _make_socket_factory(mqtt_section, radio):
 
     def build_socket():
         if use_tls:
-            return tls_client_socket(host, port, radio=radio)
-        return tcp_client_socket(host, port, radio=radio)
+            return tls_client_socket(host, port)
+        return tcp_client_socket(host, port)
 
     return build_socket
 
@@ -99,9 +90,8 @@ def run():
             raise SystemExit(f"wifi failed: {wifi.last_error}")
     print(f"telemetry_publisher: wifi at {wifi.ip}")
 
-    radio = _radio_for_runtime()
     mqtt_client = MQTTClient(
-        socket_factory=_make_socket_factory(mqtt_section, radio),
+        socket_factory=_make_socket_factory(mqtt_section),
         client_id=mqtt_section["client_id"],
         keep_alive_seconds=mqtt_section.get("keep_alive_seconds", 60),
     )

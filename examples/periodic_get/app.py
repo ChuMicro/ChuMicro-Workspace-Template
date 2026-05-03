@@ -59,15 +59,6 @@ class _PeriodicFetcher:
         self._next_at = ticks_add(now_ms, self._period_ms)
 
 
-def _radio_for_runtime():
-    """Return the platform's wifi radio on CircuitPython, ``None`` else."""
-    try:
-        import wifi
-        return wifi.radio
-    except ImportError:
-        return None
-
-
 def run():
     config = load_runtime_config()
     wifi_section = config["wifi"]
@@ -84,10 +75,7 @@ def run():
             raise SystemExit(f"wifi failed: {wifi.last_error}")
     print(f"periodic_get: connected at {wifi.ip}")
 
-    radio = _radio_for_runtime()
-    client = HttpClient(
-        connection_factory=chumicro_sockets_factory(radio=radio),
-    )
+    client = HttpClient(connection_factory=chumicro_sockets_factory())
     runner.add(client)
     runner.add(_PeriodicFetcher(
         http_client=client,

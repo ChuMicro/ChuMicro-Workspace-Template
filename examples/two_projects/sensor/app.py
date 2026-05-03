@@ -64,14 +64,6 @@ def _synthetic_reading(sequence: int) -> float:
     return 20.0 + (sequence % 10) * 0.5
 
 
-def _radio_for_runtime():
-    try:
-        import wifi
-        return wifi.radio
-    except ImportError:
-        return None
-
-
 def run() -> None:
     config = load_runtime_config()
     wifi_section = config["wifi"]
@@ -88,10 +80,7 @@ def run() -> None:
             raise SystemExit(f"wifi failed: {wifi.last_error}")
     print(f"sensor: wifi at {wifi.ip}")
 
-    radio = _radio_for_runtime()
-    client = HttpClient(
-        connection_factory=chumicro_sockets_factory(radio=radio),
-    )
+    client = HttpClient(connection_factory=chumicro_sockets_factory())
     runner.add(client)
     runner.add(_PeriodicSensorPoster(
         http_client=client,

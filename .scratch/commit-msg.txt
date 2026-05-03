@@ -1,82 +1,58 @@
-rename `libs/` -> `shared/` (with README), drop empty `libraries/`, packages/ now ships with README
+examples + projects/example_sensor: delete dead `_radio_for_runtime()` helpers
 
-Phase 2 / item 2 of the chumicro mono-repo's beginner-comfort onramp.
-Implements the template-repo half of the cross-repo workspace-shape
-update specified by Decision 0046 in the chumicro mono-repo
-(commit `283918b`).
+After the chumicro mono-repo's Phase 1 work auto-detected `wifi.radio`
+on CircuitPython (the `chumicro_sockets._adapters.cp._pool_for(None)`
+path), every callsite that used `radio=` ended up with a `None` value
+that was equivalent to passing `wifi.radio` explicitly.  The
+`_radio_for_runtime()` helper that every networked example carried —
 
-Three concrete changes
-======================
+```python
+def _radio_for_runtime():
+    try:
+        import wifi
+        return wifi.radio
+    except ImportError:
+        return None
+```
 
-1. **`libs/` -> `shared/`** — rename via `git mv libs shared`.  The
-   directory is empty in the default template (placeholder for
-   user code), so the move is mostly cosmetic + a few prose
-   touch-ups.  The new name reads as "shared between my projects"
-   rather than "library helpers" (which conflated with `libraries/`).
-   Replace the empty-folder `.gitkeep` with `shared/README.md`
-   that explains what goes in here, when to use it vs `libraries/`,
-   and the implicit-namespace-package import shape.
+— was dead code on every supported board.  On CP it returned
+`wifi.radio`, which is exactly what `_pool_for(None)` would auto-
+detect.  On MP / CPython it returned `None`, which is also the
+default.  Five examples were carrying the helper plus the matching
+`radio=radio` plumbing through socket-factory closures.
 
-2. **`libraries/` removed from the default template** (it was never
-   committed, so no actual file change).  The folder materialises
-   lazily — `python run.py new --library <name>` creates it the
-   first time the user opts in.  Most workspaces will never have a
-   `libraries/` and shouldn't have to learn what it is up-front.
+This commit drops the helper from all five and threads the
+simpler signature back through:
 
-3. **`packages/` now ships with a `README.md`** — same pattern as
-   `shared/`.  The folder already shipped with a self-ignoring
-   `.gitignore`; this commit extends the gitignore to except the
-   README so the README is committed even though the rest of the
-   folder's contents are not.  Honest framing: `packages/` is a
-   manual-drop area for third-party Python source trees the
-   workspace's projects import on the device — typically
-   MicroPython-only or CircuitPython-only libraries that don't
-   ship to PyPI in any installable form, or vendored copies of
-   upstream forks.  Not a package manager and not a contrast to
-   pip; just a place to drop source trees the import-graph walker
-   should know about.
+* `projects/example_sensor/app.py` — helper removed; `_make_socket_factory`
+  loses its `radio` parameter; the `tls_client_socket` /
+  `tcp_client_socket` calls drop `radio=`.
+* `examples/periodic_get/app.py` — helper removed; `HttpClient`
+  constructor drops `connection_factory=chumicro_sockets_factory(radio=radio)`
+  to plain `chumicro_sockets_factory()`.
+* `examples/telemetry_publisher/app.py` — same shape as
+  example_sensor; `_make_socket_factory` loses its `radio` parameter.
+* `examples/two_projects/server/app.py` — helper removed; the
+  `tcp_listening_socket` call drops `radio=` from its lambda.
+* `examples/two_projects/sensor/app.py` — helper removed; the
+  `HttpClient` factory call drops `radio=`.
 
-Files touched
-=============
+Net effect: 5 example files lose ~6 lines of pure boilerplate
+each.  Beginners reading the examples no longer have to figure out
+why every networked thing carries the same six-line wifi-import
+dance — the dance was load-bearing under the old API and is
+unnecessary now.
 
-* `libs/` -> `shared/` (git rename).
-* `shared/.gitkeep` removed; `shared/README.md` added.
-* `packages/README.md` added; `packages/.gitignore` extended to
-  except both itself and the README.
-* `README.md` — Layout section updated to describe the three
-  folders by their actual current state (`shared/` ships with a
-  README, `packages/` ships with a README, `libraries/` doesn't
-  ship at all and materialises on demand).
-* `CONTRIBUTING.md` — "libs/ vs libraries/" section retitled to
-  "shared/ vs libraries/", table updated, resolution-order prose
-  flipped.  Tool-owned-files paragraph now lists `shared/` instead
-  of `libs/`.
-* `AGENTS.md` — File-ownership table replaces the `libs/` row
-  with three rows for `shared/`, `packages/`, `libraries/` (the
-  last marked as lazy-created).
-* `workspace.yml` — `library_sources:` block comment updated to
-  reflect the new fall-through order (`shared/` + per-library
-  `src/` + `packages/`).
-* `pyproject.toml` — `[tool.ruff].extend-exclude` swaps `libs` for
-  `shared`.
+The library-side `radio=` kwarg stays in the public API for the
+rare multi-radio / AirLift / SAMD-M0 case
+(`chumicro_sockets._adapters.cp.py:35-40` documents it).  Just no
+need to surface it in every example.
 
 Tested
 ======
 
-3 template tests pass against chumicro-workspace 0.2.0 (mono-repo
-`283918b` provides the renamed `WorkspaceLayout.shared_dir` +
-search-path adjustments).
-
-After this commit
-=================
-
-A user on the previous template needs to manually:
-
-```bash
-git mv libs shared
-```
-
-if they care about preserving any user code under `libs/`.  Otherwise
-a fresh clone or `python run.py update` (once the upstream-template
-update flow tracks this rename) is the migration story.  No
-automated migration helper since the repo is private and pre-publish.
+3 template tests pass (`pytest tests/ projects/_template/tests/`).
+The example apps continue to import cleanly under the chumicro
+mono-repo's `verify-examples` step.  No behavior change on any
+board — the deleted helper was returning the same value
+`_pool_for(None)` now auto-detects.

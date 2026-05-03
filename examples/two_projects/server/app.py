@@ -32,14 +32,6 @@ class _LatestState:
         self.received_at_ms: int = 0
 
 
-def _radio_for_runtime():
-    try:
-        import wifi
-        return wifi.radio
-    except ImportError:
-        return None
-
-
 def run() -> None:
     config = load_runtime_config()
     wifi_section = config["wifi"]
@@ -56,13 +48,10 @@ def run() -> None:
             raise SystemExit(f"wifi failed: {wifi.last_error}")
     print(f"server: wifi at {wifi.ip}")
 
-    radio = _radio_for_runtime()
     listen_port = server_section.get("listen_port", 8080)
     state = _LatestState()
     server = HttpServer(
-        listener_factory=lambda: tcp_listening_socket(
-            "0.0.0.0", listen_port, radio=radio,
-        ),
+        listener_factory=lambda: tcp_listening_socket("0.0.0.0", listen_port),
         max_connections=server_section.get("max_connections", 2),
     )
 
