@@ -19,12 +19,12 @@ about wifi rather than the protocol layer above it.
    `wifi_password` to your AP's password (delete the `replace-me`
    placeholder).
 2. Either set `ssid` in `wifi_only/config.toml` (lives in the
-   thing's copy under `things/<name>/`) or in your workspace's
+   project's copy under `projects/<name>/`) or in your workspace's
    `workspace.yml` `[defaults.wifi]` block.
 
 ```
 python run.py new my_first_network --from examples/wifi_only
-# edit things/my_first_network/config.toml or workspace.yml
+# edit projects/my_first_network/config.toml or workspace.yml
 python run.py deploy my_first_network
 python run.py repl --tail 30
 ```
@@ -58,9 +58,9 @@ and the host SSID first.  The lower-level cause shows up in
 
 ## What's next
 
-Once `wifi_only` is solid, the natural follow-on is a thing that
-uses the network for something — `things/example_sensor/` in this
+Once `wifi_only` is solid, the natural follow-on is a project that
+uses the network for something — `projects/example_sensor/` in this
 template repo is the full reference (wifi → sockets → mqtt →
 kvstore → workspace), or wait for the upcoming `examples/`
 follow-ons (`periodic_get/`, `telemetry_publisher/`,
-`two_things/`) listed in [`examples/README.md`](../README.md).
+`two_projects/`) listed in [`examples/README.md`](../README.md).

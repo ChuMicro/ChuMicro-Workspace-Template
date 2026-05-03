@@ -1,4 +1,4 @@
-# Per-thing config — deep-merged over workspace.yml's `defaults:`
+# Per-project config — deep-merged over workspace.yml's `defaults:`
 # block at deploy time.
 
 [wifi]
@@ -7,10 +7,10 @@ password = "!secret wifi_password"
 
 [target]
 # Where the sensor posts its readings.  Deploy the
-# `two_things/server` thing first (`python run.py deploy
+# `two_projects/server` project first (`python run.py deploy
 # garage/server --device board-a`), watch the deploy output for
 # the listening IP, then paste the URL here before deploying
-# this thing.
+# this project.
 url = "http://192.168.0.42:8080/api/sensor"
 
 # Identifies this sensor in the server's status page + JSON view.

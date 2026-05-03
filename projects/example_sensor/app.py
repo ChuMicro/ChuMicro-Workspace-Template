@@ -1,4 +1,4 @@
-"""Example sensor thing — temperature publisher with persistent boot counter.
+"""Example sensor project — temperature publisher with persistent boot counter.
 
 End-to-end fixture that exercises the full ChuMicro stack:
 
@@ -9,7 +9,7 @@ End-to-end fixture that exercises the full ChuMicro stack:
 * `chumicro-runner`   — tick-based scheduling glue (no async, no threads)
 * `chumicro-config`   — reads the deploy-time-merged runtime config
 
-The thing's `run()` is invoked by the on-device boot module
+The project's `run()` is invoked by the on-device boot module
 (`workspace_runtime.boot()`).  Edit `config.toml` next to this file
 to change broker / topic / period; wifi credentials live in the
 workspace's gitignored `secrets.yml` and reach the device via the

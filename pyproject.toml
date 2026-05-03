@@ -37,7 +37,7 @@ dev = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["things"]
+packages = ["projects"]
 
 
 # ---------------------------------------------------------------------------
@@ -46,18 +46,18 @@ packages = ["things"]
 
 [tool.pytest.ini_options]
 addopts = "-ra --strict-markers"
-# Workspace tests live at the root and inside each thing.  Functional
-# tests sit under each thing's ``functional_tests/`` and run only
+# Workspace tests live at the root and inside each project.  Functional
+# tests sit under each project's ``functional_tests/`` and run only
 # when explicitly targeted (the ``chumicro-pytest-device`` plugin
 # routes those to a connected board).
-testpaths = ["tests", "things"]
+testpaths = ["tests", "projects"]
 
 [tool.coverage.run]
 branch = true
-source = ["things"]
+source = ["projects"]
 omit = [
     # Generated runtime config artifacts the deploy pipeline emits.
-    "things/*/_generated/*",
+    "projects/*/_generated/*",
 ]
 
 [tool.coverage.report]
@@ -73,7 +73,7 @@ skip_covered = false
 [tool.ruff]
 line-length = 100
 target-version = "py311"
-extend-exclude = [".venv", "packages", "libs", "things/*/_generated"]
+extend-exclude = [".venv", "packages", "libs", "projects/*/_generated"]
 
 [tool.ruff.lint]
 # Mirrors the chumicro mono-repo's tone: pyflakes + import sorting +
@@ -87,5 +87,5 @@ ban-relative-imports = "all"
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["TID252"]
-"things/*/tests/**" = ["TID252"]
-"things/*/functional_tests/**" = ["TID252"]
+"projects/*/tests/**" = ["TID252"]
+"projects/*/functional_tests/**" = ["TID252"]

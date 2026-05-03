@@ -1,4 +1,4 @@
-# Per-thing config for example_sensor — deep-merged over workspace.yml's
+# Per-project config for example_sensor — deep-merged over workspace.yml's
 # `defaults:` block at deploy time.  Values here win at any nesting depth.
 # Reference credentials from secrets.yml as `password = "!secret <name>"`;
 # those get resolved during the merge so the on-device runtime never sees

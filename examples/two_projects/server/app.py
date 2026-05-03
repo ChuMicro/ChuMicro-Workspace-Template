@@ -1,4 +1,4 @@
-"""two_things/server — accept POSTed sensor readings on a LAN.
+"""two_projects/server — accept POSTed sensor readings on a LAN.
 
 Listens on a TCP port via `chumicro-http-server`, exposes three
 routes:
@@ -8,10 +8,10 @@ routes:
 * ``POST /api/sensor`` — accept a JSON ``{"sensor_id": ..., "value": ...}``
   payload and remember it.
 
-Pair with [`two_things/sensor/`](../sensor/) on a second board.
+Pair with [`two_projects/sensor/`](../sensor/) on a second board.
 
 Scaffold a copy with
-``python run.py new <name> --from examples/two_things/server``,
+``python run.py new <name> --from examples/two_projects/server``,
 then ``python run.py deploy <name>``.
 """
 
@@ -70,13 +70,13 @@ def run() -> None:
     def index(_request):  # noqa: ARG001 — request unused
         if state.value is None:
             body = (
-                "<html><body><h1>chumicro two-thing demo</h1>"
+                "<html><body><h1>chumicro two-project demo</h1>"
                 "<p>No readings yet — waiting for sensor POST.</p>"
                 "</body></html>"
             )
         else:
             body = (
-                "<html><body><h1>chumicro two-thing demo</h1>"
+                "<html><body><h1>chumicro two-project demo</h1>"
                 f"<p>Latest from <b>{state.sensor_id}</b>: "
                 f"<b>{state.value}</b></p>"
                 f"<p>Received at: {state.received_at_ms} ms</p>"

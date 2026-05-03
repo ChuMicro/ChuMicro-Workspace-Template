@@ -15,15 +15,15 @@ that breaks is your code, not the deploy.
 ## Try it
 
 ```
-python run.py new my_first_thing --from examples/hello_world
-python run.py deploy my_first_thing
+python run.py new my_first_project --from examples/hello_world
+python run.py deploy my_first_project
 python run.py repl --tail 15
 ```
 
 Expected output:
 
 ```
-hello from a ChuMicro thing
+hello from a ChuMicro project
   tick 1/10
   tick 2/10
   ...

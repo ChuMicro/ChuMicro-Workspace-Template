@@ -1,0 +1,87 @@
+rename `things/` -> `projects/`, `examples/two_things/` -> `examples/two_projects/`, content rewrite to match
+
+Phase 2 / item 1 of the chumicro mono-repo's beginner-comfort onramp,
+landing the template-repo half of the cross-repo `thing` -> `project`
+rename.  Coordinated with chumicro mono-repo commits `236c229`
+(chumicro-workspace + chumicro-deploy + chumicro-repl + mono-repo
+docs) and `1b67be3` (false-positive revert + chumicro-repl
+pre-release floor restore).
+
+Why this rename
+===============
+
+"Thing" landed cold for every persona in the multi-persona repo
+audit.  A beginner reading this README needed to absorb that
+"thing = app / project" before any example made sense, and the
+term didn't match what Adafruit ("project") or Arduino ("sketch")
+call the equivalent concept.  "Project" is the universal noun.
+
+What changed
+============
+
+Directory moves:
+
+* `things/` -> `projects/` (`projects/_template/`,
+  `projects/example_sensor/`).
+* `examples/two_things/` -> `examples/two_projects/` (the demo's
+  whole point is two boards each running its own project; the
+  example name now matches the new noun).
+
+Content rewrite — every file under `projects/`, `examples/`,
+`tests/`, `_templates/`, and the four root files (`AGENTS.md`,
+`CONTRIBUTING.md`, `README.md`, `pyproject.toml`, `workspace.yml`)
+flipped from "thing" to "project" everywhere the surrounding
+context refers to the workspace concept.  Identifier renames
+(thing_name -> project_name, etc.) match what the upstream
+chumicro-workspace CLI now exposes.
+
+Heads-up box removed
+====================
+
+The "Heads-up on terminology" admonition added in `6b3473a` to
+flag the in-flight rename is gone — the rename is no longer in
+flight.
+
+False-positive reverts
+======================
+
+A handful of "things" (English plural) got swept up by the bulk
+substring rewrite where they meant "items / aspects," not
+chumicro projects.  Reverted:
+
+* `README.md:17` — "Three projects go wrong over time" -> "Three
+  things" (FAT corruption, flash wear, lost work — three issues).
+* `CONTRIBUTING.md:17` — "Conceptually it has three projects" ->
+  "three pieces" (projects/, devices.yml, run.py — three
+  components, only one of which is a project directory).
+* `examples/hello_world/app.py:26` — "never `time.sleep` in real
+  projects" -> "real apps" (idiomatic English, and "apps" reads
+  cleaner here than "things" because the surrounding context is
+  about runtime behavior).
+
+Validated
+=========
+
+Every file under projects/_template/, projects/example_sensor/,
+examples/* parses.  `tests/test_workspace.py` and
+`projects/_template/tests/test_app.py` pass against the renamed
+chumicro-workspace package (mono-repo `1b67be3` provides the
+0.1.0 CLI).  Manual spot-check confirms `workspace.yml`'s
+`deploy_targets:` example values (`garage/door`, `garage/server`)
+remain user-named paths — they didn't shift.
+
+After this commit
+=================
+
+A user who was on this template before today's pair of pushes
+needs to manually:
+
+```bash
+git mv things projects
+git mv examples/two_things examples/two_projects
+```
+
+if they care about preserving in-flight work.  Otherwise a fresh
+clone works.  No migration helper since the repo is private and
+pre-publish — Decision 0038 §6 already exempts pre-release
+packages from breakage rituals.

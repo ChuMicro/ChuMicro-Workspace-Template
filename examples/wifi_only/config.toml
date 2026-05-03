@@ -1,4 +1,4 @@
-# Per-thing config — deep-merged over workspace.yml's `defaults:`
+# Per-project config — deep-merged over workspace.yml's `defaults:`
 # block at deploy time.  Values here win at any nesting depth.
 # Reference credentials from secrets.yml as `password = "!secret <name>"`;
 # those get resolved during the merge so the on-device runtime never
@@ -6,12 +6,12 @@
 
 [wifi]
 # Set the SSID either here or in workspace.yml's [defaults.wifi]
-# block (workspace.yml is the right home if every thing in this
+# block (workspace.yml is the right home if every project in this
 # workspace uses the same network).
 # ssid = "MyNetwork"
 password = "!secret wifi_password"
 
 [status]
 # How often the heartbeat beacon prints state.  Override per
-# thing without touching the wifi section.
+# project without touching the wifi section.
 period_ms = 5000

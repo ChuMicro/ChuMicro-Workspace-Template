@@ -49,8 +49,8 @@ rm -rf .git && git init                 # start your own history
 # Then, with the workspace cloned:
 python3 run.py setup                    # creates .venv, installs chumicro-workspace, materializes secrets.yml
 python run.py add-device my-board --address /dev/cu.usbmodem1101 --runtime micropython
-python run.py new my_project            # scaffolds things/my_project/
-# Edit things/my_project/{config.toml, app.py} and secrets.yml as needed
+python run.py new my_project            # scaffolds projects/my_project/
+# Edit projects/my_project/{config.toml, app.py} and secrets.yml as needed
 python run.py deploy my_project
 ```
 
@@ -65,12 +65,12 @@ project flows once you've outgrown a single project — see
 
 ## Layout
 
-- `things/<name>/` — your projects.  `def run()` in `app.py`.  Names
-  may be nested (`things/upstairs/bedroom_sensor/`,
-  `things/garage/sensors/door_open/`); `python run.py things` shows
+- `projects/<name>/` — your projects.  `def run()` in `app.py`.  Names
+  may be nested (`projects/upstairs/bedroom_sensor/`,
+  `projects/garage/sensors/door_open/`); `python run.py projects` shows
   the tree.
-  - `things/_template/` — the blank project copied by `python run.py new`.
-  - `things/example_sensor/` — a worked example (wifi → mqtt
+  - `projects/_template/` — the blank project copied by `python run.py new`.
+  - `projects/example_sensor/` — a worked example (wifi → mqtt
     heartbeat with persistent boot counter).  See the walkthrough
     below.
 - `examples/` — read-only worked demos.  Scaffold a real project
@@ -89,16 +89,9 @@ project flows once you've outgrown a single project — see
   any missing destination at the workspace root; `update` refreshes
   these sources from upstream.
 
-> **Heads-up on terminology.**  The directory is currently `things/`
-> and a few CLI helpers (`python run.py things`) still use the
-> "thing" noun.  Prose in this README has switched to "project" as
-> part of the upcoming rename — the directory + CLI surface follow
-> in a separate breaking change.  Track it in the chumicro mono-repo's
-> `plans/next-up.md` under the beginner-comfort onramp.
-
 ## Worked example: `example_sensor`
 
-The shipped `things/example_sensor/` exercises the full ChuMicro
+The shipped `projects/example_sensor/` exercises the full ChuMicro
 runtime stack (wifi + sockets + mqtt + kvstore + workspace).  Boot
 to first heartbeat on a plugged-in board:
 
@@ -115,7 +108,7 @@ python run.py add-device my-board --address /dev/cu.usbmodem1101 --runtime micro
 $EDITOR secrets.yml          # set wifi_password to your AP passphrase
 
 # 4. Point the sensor at your AP + a broker (one line each)
-$EDITOR things/example_sensor/config.toml
+$EDITOR projects/example_sensor/config.toml
 #   [wifi]    ssid = "YourNetwork"
 #   [mqtt]    broker = "broker.hivemq.com"   # public test broker; swap for your own
 #   [sensor]  topic  = "chumicro/example/temperature"
@@ -134,7 +127,7 @@ on-board temperature reading, and a sequence number.  Reset the
 board and the boot counter increments — `chumicro-kvstore` persisted
 it across resets.
 
-`things/example_sensor/app.py` is short on purpose — it's the
+`projects/example_sensor/app.py` is short on purpose — it's the
 canonical reference for how to wire `WifiService` + `MQTTClient` +
 `KVStore` into a tick-shaped `Runner`.  Copy + tweak rather than
 starting from scratch.

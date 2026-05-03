@@ -1,7 +1,7 @@
-# `two_things`
+# `two_projects`
 
-Multi-thing LAN demo — a sensor board posts readings to a server
-board over HTTP on your local network.  Two boards, two things,
+Multi-project LAN demo — a sensor board posts readings to a server
+board over HTTP on your local network.  Two boards, two projects,
 one workspace.
 
 ```
@@ -11,14 +11,14 @@ sensor (board A)         server (board B)
                           /api/latest  (JSON view)
 ```
 
-Both things use the same wifi credentials from `secrets.yml`, so
+Both projects use the same wifi credentials from `secrets.yml`, so
 once that's set, you can flip between them with one
 `python run.py deploy` per board.
 
 ## Why this example exists
 
-Networked things rarely live alone — they talk to other
-networked things on the LAN.  This example shows the smallest
+Networked projects rarely live alone — they talk to other
+networked projects on the LAN.  This example shows the smallest
 two-board pattern:
 
 * **server** — opens a TCP listener via `chumicro-http-server`,
@@ -26,12 +26,12 @@ two-board pattern:
 * **sensor** — periodically POSTs a fake-but-real-looking reading
   via `chumicro-requests`.
 
-Both boards run the same boot-shim flow as the single-thing
-examples — one thing per board, deployed independently.
-Multi-thing-on-one-device staging is not supported: on the
+Both boards run the same boot-shim flow as the single-project
+examples — one project per board, deployed independently.
+Multi-project-on-one-device staging is not supported: on the
 minimum-supported board class (256 KB RAM, 4 MB flash) the
-flash budget doesn't accommodate two thing payloads side by
-side.  If you need two cooperating things, use two boards.
+flash budget doesn't accommodate two project payloads side by
+side.  If you need two cooperating projects, use two boards.
 
 ## Try it
 
@@ -42,11 +42,11 @@ python run.py add-device board-a --address /dev/cu.usbmodem1101
 python run.py add-device board-b --address /dev/cu.usbmodem2201
 ```
 
-Scaffold the things from the examples:
+Scaffold the projects from the examples:
 
 ```
-python run.py new garage/server --from examples/two_things/server
-python run.py new garage/sensor --from examples/two_things/sensor
+python run.py new garage/server --from examples/two_projects/server
+python run.py new garage/sensor --from examples/two_projects/sensor
 ```
 
 Set the server's IP in the sensor's config (you'll know it after
@@ -57,7 +57,7 @@ python run.py deploy garage/server --device board-a
 python run.py repl board-a --tail 30
 # note the IP printed: e.g. "server: listening on http://192.168.0.42:8080/"
 
-# Edit things/garage/sensor/config.toml — set [target] url to that.
+# Edit projects/garage/sensor/config.toml — set [target] url to that.
 python run.py deploy garage/sensor --device board-b
 python run.py repl board-b --tail 30
 ```
@@ -80,7 +80,7 @@ either:
 
 ## What it uses
 
-Both things share these:
+Both projects share these:
 
 | Library | Why |
 |---|---|
@@ -90,9 +90,9 @@ Both things share these:
 | `chumicro-runner` | tick-shaped scheduler |
 | `chumicro-timing` | wraparound-safe ticks |
 
-Plus per-thing:
+Plus per-project:
 
-| Thing | Library | Why |
+| Project | Library | Why |
 |---|---|---|
 | server | `chumicro-http-server` | listener + route registration |
 | sensor | `chumicro-requests` | non-blocking HTTP/1.1 client |
@@ -102,4 +102,4 @@ Plus per-thing:
 For protocol-level telemetry instead of HTTP, see
 [`telemetry_publisher/`](../telemetry_publisher/).  For the full
 network-stack reference (wifi → sockets → mqtt → kvstore →
-workspace), see `things/example_sensor/` in this template repo.
+workspace), see `projects/example_sensor/` in this template repo.

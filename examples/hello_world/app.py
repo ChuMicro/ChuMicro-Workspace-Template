@@ -1,11 +1,11 @@
-"""Hello-world thing — proves the deploy chain works end-to-end.
+"""Hello-world project — proves the deploy chain works end-to-end.
 
 No wifi, no sensors, no third-party imports — just a print loop.
 Useful as your *first* deploy on a freshly-onboarded board: when
 ``run`` reaches the ``hello`` print, you know
 
 * the host pushed code to the device;
-* `workspace_runtime.boot()` imported `things.<name>.app` cleanly;
+* `workspace_runtime.boot()` imported `projects.<name>.app` cleanly;
 * ``run()`` was called.
 
 Anything that breaks before that line is a deploy / boot-shim
@@ -20,10 +20,10 @@ from chumicro_timing import ticks_add, ticks_diff, ticks_ms
 
 def run() -> None:
     """Print a heartbeat once per second for ten seconds, then exit."""
-    print("hello from a ChuMicro thing")
+    print("hello from a ChuMicro project")
     next_tick = ticks_ms()
     for index in range(10):
-        # Wraparound-safe wait — never `time.sleep` in real things;
+        # Wraparound-safe wait — never `time.sleep` in real apps;
         # see the `chumicro-timing` library docs for why.
         next_tick = ticks_add(next_tick, 1000)
         while ticks_diff(ticks_ms(), next_tick) < 0:

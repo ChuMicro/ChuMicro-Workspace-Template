@@ -2,9 +2,9 @@
 #
 # Five top-level blocks (all optional):
 #
-#   defaults:        Workspace-wide defaults that every thing inherits.
-#                    Per-thing config under things/<name>/config.toml
-#                    deep-merges over this — values in the per-thing
+#   defaults:        Workspace-wide defaults that every project inherits.
+#                    Per-project config under projects/<name>/config.toml
+#                    deep-merges over this — values in the per-project
 #                    file win at any nesting depth.
 #
 #   library_sources: Local paths or pinned overrides for shared libs.
@@ -12,11 +12,11 @@
 #                    packages/.  Use this to point a library at a
 #                    local clone (development) or a non-default version.
 #
-#   deploy_targets:  Per-thing → per-device default mapping.  When set,
-#                    a bare `deploy <thing>` (no --device) picks the
-#                    thing's mapped target; `deploy --all-things`
+#   deploy_targets:  Per-project → per-device default mapping.  When set,
+#                    a bare `deploy <project>` (no --device) picks the
+#                    project's mapped target; `deploy --all-projects`
 #                    walks the whole mapping at once.  Empty by default
-#                    — single-thing deploys fall back to devices.yml's
+#                    — single-project deploys fall back to devices.yml's
 #                    `defaults:` block.
 #
 #   quality:         Workspace-level lint / coverage / agent knobs.
@@ -28,9 +28,9 @@
 #   environments:    Reserved for the env / use commands (planned).
 
 defaults:
-  # Project-scoped wifi defaults.  Per-thing config can override every
+  # Project-scoped wifi defaults.  Per-project config can override every
   # field; password should be kept in secrets.yml and referenced as
-  # `password = "!secret <name>"` from each thing's config.toml.
+  # `password = "!secret <name>"` from each project's config.toml.
   wifi:
     hostname_prefix: chu-
 
@@ -40,7 +40,7 @@ defaults:
 # deploy_targets:
 #   # Single device — bare string or one-element list, both fine.
 #   garage/door: pi-pico-w-circuitpython-board
-#   # Multiple devices — each value can be a list; `deploy --all-things`
+#   # Multiple devices — each value can be a list; `deploy --all-projects`
 #   # ships to every entry in declaration order.
 #   garage/server:
 #     - pi-pico-w-micropython-board

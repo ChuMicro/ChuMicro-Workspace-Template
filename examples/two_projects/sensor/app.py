@@ -1,12 +1,12 @@
-"""two_things/sensor — periodically POST a synthetic reading.
+"""two_projects/sensor — periodically POST a synthetic reading.
 
-Pair with [`two_things/server/`](../server/) on a second board.
-The server's IP + port go into this thing's ``[target]`` config;
+Pair with [`two_projects/server/`](../server/) on a second board.
+The server's IP + port go into this project's ``[target]`` config;
 deploy the server first, note the URL it prints, then update
 the sensor's ``config.toml`` before deploying.
 
 Scaffold a copy with
-``python run.py new <name> --from examples/two_things/sensor``,
+``python run.py new <name> --from examples/two_projects/sensor``,
 then ``python run.py deploy <name>``.
 """
 

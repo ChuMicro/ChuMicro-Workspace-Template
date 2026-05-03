@@ -1,9 +1,9 @@
-"""wifi_only thing — bring wifi up, log status on a heartbeat.
+"""wifi_only project — bring wifi up, log status on a heartbeat.
 
 Smallest example that exercises:
 
 * the deploy-time config merge (workspace.yml + secrets.yml +
-  this thing's `config.toml` flatten into a single
+  this project's `config.toml` flatten into a single
   `/runtime_config.msgpack` that `chumicro-config` reads);
 * `chumicro-wifi`'s state machine (cooperative connect, auto-
   reconnect on drop);

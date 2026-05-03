@@ -4,7 +4,7 @@ Pairs wifi with `chumicro-mqtt` to push a JSON payload to a topic
 every ``period_ms``.  Uses the socket-factory shape so a wifi drop
 self-heals: the next tick after the socket dies builds a new
 connection via the factory and re-issues CONNECT automatically
-(see `things/example_sensor/` in this repo for the full
+(see `projects/example_sensor/` in this repo for the full
 network-stack reference).
 
 Scaffold a copy with

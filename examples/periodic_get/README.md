@@ -9,7 +9,7 @@ example that exercises the upper-layer network stack
 
 Once `wifi_only/` confirms wifi credentials work, the next
 question is "can I actually move bytes through the network
-stack?"  This thing answers it: every `period_ms` it issues an
+stack?"  This project answers it: every `period_ms` it issues an
 HTTP GET, prints the status code + body size, and waits for the
 next tick.  Failures (DNS error, timeout, server gone) print a
 descriptive error and the loop continues — wifi reconnects keep
@@ -19,7 +19,7 @@ working in the gap between requests.
 
 ```
 python run.py new my_fetcher --from examples/periodic_get
-# edit things/my_fetcher/config.toml — set fetch.url to a real URL
+# edit projects/my_fetcher/config.toml — set fetch.url to a real URL
 python run.py deploy my_fetcher
 python run.py repl --tail 60
 ```

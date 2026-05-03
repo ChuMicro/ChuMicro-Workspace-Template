@@ -14,11 +14,11 @@ file too so you understand the human's mental model.
 ## What this workspace is
 
 A ChuMicro project workspace ships as a Git repo you clone (this
-template) and edit in place.  Conceptually it has three things:
+template) and edit in place.  Conceptually it has three pieces:
 
-- **`things/<name>/`** — your applications.  Each thing is a
+- **`projects/<name>/`** — your applications.  Each project is a
   directory with an `app.py` (defining `def run(): ...`) plus a
-  `config.toml` for its knobs.  One thing → one deployable program.
+  `config.toml` for its knobs.  One project → one deployable program.
 - **`devices.yml`** — your board registry.  One entry per
   physical board you deploy to.  Tool-managed by `add-device` /
   `rename` / `probe` so comments + key order survive every edit.
@@ -27,7 +27,7 @@ template) and edit in place.  Conceptually it has three things:
   `python run.py repl`, etc.  It bootstraps a `.venv` on first
   call and re-execs into it after that.
 
-You write code in `things/`.  The tooling owns deploys, REPL,
+You write code in `projects/`.  The tooling owns deploys, REPL,
 firmware flashing, config merging, and the boot shim that fires
 your `run()` on the device.
 
@@ -46,7 +46,7 @@ updates.  It won't overwrite anything you've edited.
 If you're co-developing the underlying ChuMicro libraries from a
 sibling clone, see the README's "ChuMicro-dev mode" section.
 
-## Day-to-day — making and shipping things
+## Day-to-day — making and shipping projects
 
 A typical session has four moves:
 
@@ -56,12 +56,12 @@ A typical session has four moves:
 #    in one command.
 python run.py add-device my-board --address /dev/cu.usbmodem1101 --runtime micropython
 
-# 2. Scaffold a new thing
-python run.py new my_sensor    # creates things/my_sensor/ from things/_template/
+# 2. Scaffold a new project
+python run.py new my_sensor    # creates projects/my_sensor/ from projects/_template/
 
-# 3. Edit things/my_sensor/{app.py, config.toml}, plus secrets.yml for credentials.
+# 3. Edit projects/my_sensor/{app.py, config.toml}, plus secrets.yml for credentials.
 
-# 4. Deploy + watch — one command via `repl <thing>` (deploys, then
+# 4. Deploy + watch — one command via `repl <project>` (deploys, then
 #    tails for 30s).  For longer windows pass --tail SECONDS.
 python run.py repl my_sensor
 ```
@@ -71,16 +71,16 @@ between-step sanity check — surfaces common mistakes before deploy
 (`secrets.yml` still carrying `replace-me`, `app.py` missing a
 `run()` definition, an unresolved `!secret` reference).
 
-The shipped `things/example_sensor/` is the canonical reference —
+The shipped `projects/example_sensor/` is the canonical reference —
 it wires `chumicro-wifi` + `chumicro-mqtt` + `chumicro-kvstore`
 into a tick-shaped `Runner`.  Copy + tweak rather than starting
 from scratch.
 
-### Naming things
+### Naming projects
 
-Thing directory names must be valid Python identifiers — letters,
+Project directory names must be valid Python identifiers — letters,
 digits, underscores; no hyphens, no dots, no leading digit.  The
-runtime imports `things.<your-name>.app`, so a hyphen breaks
+runtime imports `projects.<your-name>.app`, so a hyphen breaks
 deploy.  `python run.py new` checks this up-front and fails fast
 with a clear message.
 
@@ -94,13 +94,13 @@ python run.py new garage.sensors.door_open      # dotted form, same effect
 
 Each path segment is validated independently against the same
 identifier rules, and intermediate namespace directories
-(`things/garage/`, `things/garage/sensors/`) are auto-created with
-empty `__init__.py` markers.  `python run.py things` shows the tree
-(`--flat` switches to one-line-per-thing slash-form).
+(`projects/garage/`, `projects/garage/sensors/`) are auto-created with
+empty `__init__.py` markers.  `python run.py projects` shows the tree
+(`--flat` switches to one-line-per-project slash-form).
 
 ### Scaffolding from an example
 
-Instead of starting from the blank `things/_template/`, scaffold
+Instead of starting from the blank `projects/_template/`, scaffold
 from any directory under `examples/`:
 
 ```bash
@@ -108,8 +108,8 @@ python run.py new garage/heater --from examples/wifi_only
 ```
 
 That copies `examples/wifi_only/`'s tree into
-`things/garage/heater/`.  The example folder itself is read-only
-(tool-owned, refreshed on `update`); your edits live under `things/`.
+`projects/garage/heater/`.  The example folder itself is read-only
+(tool-owned, refreshed on `update`); your edits live under `projects/`.
 
 ### Workspace health checks
 
@@ -122,7 +122,7 @@ python run.py doctor     # stricter — adds AST scan for run() + !secret resolu
 
 `status` catches un-edited `secrets.yml` placeholders, missing
 `devices.yml`, malformed `workspace.yml`.  `doctor` adds Python
-version, per-thing `app.py` AST scan ("did you forget the `def run()`?"),
+version, per-project `app.py` AST scan ("did you forget the `def run()`?"),
 and a config-merge dry-run that rejects unresolved `!secret` references.
 
 `deploy` runs the same fast checks `status` does as a pre-flight gate —
@@ -134,17 +134,17 @@ to skip the gate (CI flows, scripted runs).
 
 ### How config flows from your edits to the device
 
-Every thing receives a runtime config at boot.  That config is the
+Every project receives a runtime config at boot.  That config is the
 merge of three host-side sources, with secret references resolved at
 deploy time:
 
 ```
-secrets.yml                workspace.yml              things/<name>/config.toml
+secrets.yml                workspace.yml              projects/<name>/config.toml
    (host)                     (host)                          (host)
       │                          │                              │
       └──────────────┬───────────┴──────────────────────────────┘
                      ▼
-                 deep merge                     (thing wins over workspace defaults)
+                 deep merge                     (project wins over workspace defaults)
                      │
                      ▼
                  resolve "!secret <name>"       (replaces with secrets.yml value)
@@ -159,8 +159,8 @@ secrets.yml                workspace.yml              things/<name>/config.toml
               chumicro_config.runtime           (READS the msgpack on the device)
 ```
 
-Use `python run.py dump-config <thing>` to print the merged dict
-your thing would receive without actually deploying — useful when
+Use `python run.py dump-config <project>` to print the merged dict
+your project would receive without actually deploying — useful when
 debugging which config section a key landed in or whether a `!secret`
 resolved to what you expected.
 
@@ -182,18 +182,18 @@ Both `lint` and `test` are also runnable on their own.
 
 ### Library-shaped code — `libs/` vs `libraries/`
 
-Both hold code your things can `import`.  Pick by *weight*:
+Both hold code your projects can `import`.  Pick by *weight*:
 
 | Want to ship… | Drop it under | Imports look like | Notes |
 |---|---|---|---|
-| A 50-line helper your things share | `libs/foo.py` | `from libs.foo import bar` | No tests, no version, no scaffolding. |
+| A 50-line helper your projects share | `libs/foo.py` | `from libs.foo import bar` | No tests, no version, no scaffolding. |
 | A full chumicro-style library you might publish someday | `libraries/<name>/` (via `python run.py new --library <name>`) | `import <name>` | Gets `src/`, `tests/`, `docs/`, `examples/`, `pyproject.toml`, `VERSION`. |
 | A third-party package | `packages/` (via `sync`) | `import <name>` | Gitignored mirror cache. |
 
 The import-graph search path resolves explicit `library_sources:`
 overrides → `libs/` → every `libraries/<name>/src/` (auto-discovered)
 → `packages/`.  So a library scaffolded with `new --library` is
-importable as `import <name>` from any thing without further wiring.
+importable as `import <name>` from any project without further wiring.
 
 `python run.py new --workbench <name>` is the host-only sibling — it
 scaffolds the same shape but with a workbench-flavoured pyproject (CLI
@@ -208,7 +208,7 @@ Every deploy chooses a mode:
 - **RAM mode** (`deploy_mode: ram`, the default) — the device
   executes from host-mounted source.  Fast iteration, no flash
   wear, but state doesn't persist across resets.  Best for
-  single-library experiments and testing one thing at a time.
+  single-library experiments and testing one project at a time.
 - **Flash mode** (`deploy_mode: flash`) — files actually land on
   the device's flash.  State persists, the device boots
   standalone, but each deploy writes to flash.  Required for
@@ -229,12 +229,12 @@ cable, install firmware, plug in the right board id, etc.).
 
 Common patterns:
 
-| Symptom | Likely cause | First thing to try |
+| Symptom | Likely cause | First project to try |
 |---|---|---|
 | `port not found` / `failed to access` | board unplugged or claimed by another process | `python run.py discover` to list what's actually visible |
 | `no firmware detected` | board is in bootloader / fresh-flash state | `python run.py install-firmware --method uf2` (or `esptool` on ESP32) |
 | `ImportError: no module named ...` on boot | missing library not yet on flash | check the deploy log — the error names the missing module |
-| messages stop after first publish | RAM mode against a thing that needs persistent state | switch to flash mode (per-device override in `devices.yml`) |
+| messages stop after first publish | RAM mode against a project that needs persistent state | switch to flash mode (per-device override in `devices.yml`) |
 | TLS connection rejected | clock unset; cert validity-period check fails | NTP-sync after wifi connect, or backdate the cert's `notBefore` for development |
 
 The skill files under `.github/skills/` (loaded by your AI agent
@@ -264,10 +264,10 @@ Three patterns that work well:
    procedure.  You can also reference one explicitly: "use the
    `deploy-and-debug` skill."
 
-The agent can edit files freely under `things/<your-name>/`,
+The agent can edit files freely under `projects/<your-name>/`,
 `libs/`, `workspace.yml`, `devices.yml`, and `secrets.yml`.  It
 should *not* edit `run.py`, `AGENTS.md`, `CONTRIBUTING.md`,
-`pyproject.toml`, `things/_template/`, `_templates/`, or anything
+`pyproject.toml`, `projects/_template/`, `_templates/`, or anything
 under `.github/` — those are tool-owned and `python run.py
 update` will rewrite them next time you pull.
 
@@ -280,8 +280,8 @@ python run.py update --ref v0.5   # pin to a specific template version
 
 `update` only touches tool-owned files (the `run.py`,
 `AGENTS.md`, `CONTRIBUTING.md`, `pyproject.toml`, the
-`things/_template/` skeleton, `_templates/` template sources, and
-the `.github/skills/` agent-skill index).  Your `things/`,
+`projects/_template/` skeleton, `_templates/` template sources, and
+the `.github/skills/` agent-skill index).  Your `projects/`,
 `devices.yml`, `secrets.yml`, `workspace.yml`, `libs/`, and
 `packages/` are never touched.
 
@@ -292,7 +292,7 @@ the `.github/skills/` agent-skill index).  Your `things/`,
 - **`.github/skills/<topic>/SKILL.md`** — agent-loadable
   procedures for the most common workflows.  Browse them as
   reference even without an agent.
-- **`things/example_sensor/`** — the worked example.  Read it
+- **`projects/example_sensor/`** — the worked example.  Read it
   when you're not sure how to wire a service into a `Runner`.
 - **The chumicro-workspace
   [guide](https://github.com/ChuMicro/ChuMicro/blob/main/workbench/workspace/docs/guide.md)** —
@@ -302,14 +302,14 @@ the `.github/skills/` agent-skill index).  Your `things/`,
   [docs](https://github.com/ChuMicro/ChuMicro/tree/main/libraries)** —
   per-library guides for `chumicro-wifi`, `chumicro-mqtt`, etc.
 - **Issues** — file at the chumicro mono-repo for tooling
-  issues, or in your own workspace repo for thing-specific bugs.
+  issues, or in your own workspace repo for project-specific bugs.
 
 ## Project rules — quick reference
 
 These match the rules in `AGENTS.md`; calling them out for
 humans too.
 
-- Thing names are Python identifiers — no hyphens, no dots, no
+- Project names are Python identifiers — no hyphens, no dots, no
   leading digits.
 - Credentials live in `secrets.yml` (gitignored), referenced
   from any `config.toml` via `!secret <name>`.
@@ -319,9 +319,9 @@ humans too.
   `settings.toml` — `chumicro-wifi` owns the radio and
   CircuitPython's auto-connect supervisor will fight it.
 - Run `python run.py test` (forwards to `pytest`) before
-  shipping.  Tests live under `things/<name>/tests/` if you want
-  per-thing coverage.
-- For network-attached things (anything using `chumicro-mqtt` or
+  shipping.  Tests live under `projects/<name>/tests/` if you want
+  per-project coverage.
+- For network-attached projects (anything using `chumicro-mqtt` or
   similar), the main loop is a tight `while not
   _SHUTDOWN_REQUESTED: runner.tick()` — do *not* add
   `time.sleep_ms()` inside the loop.  Tick latency matters for
@@ -339,7 +339,7 @@ Sanity-check ladder:
 4. Is the deploy actually reaching the device?  `python run.py
    repl` and look for the boot banner.
 5. Is the failure in your code or in the chumicro stack?  Read
-   the traceback's first line — `things/<name>/app.py` is yours;
+   the traceback's first line — `projects/<name>/app.py` is yours;
    anything under `chumicro_*` is the library stack and the fix
    probably belongs upstream (file an issue).  Failed deploys also
    carry a `--- hints ---` block under the traceback when the
