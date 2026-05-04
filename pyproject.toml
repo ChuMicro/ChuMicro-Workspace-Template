@@ -16,8 +16,12 @@ requires-python = ">=3.11"
 dependencies = [
     # Pin chumicro-workspace here so `python run.py setup` can install
     # it editable into the workspace's venv.  The host CLI carries
-    # `init` / `update` / `deploy` / `repl` / etc.
-    "chumicro-workspace",
+    # `init` / `update` / `deploy` / `repl` / etc.  Lower bound 0.7.0
+    # — that release introduced `materialize_workbench_starters` which
+    # `setup` calls to materialise the canonical `devices.yml` and
+    # `secrets.yml` content from the workbench package's payloads
+    # (single source of truth shared with the chumicro mono-repo).
+    "chumicro-workspace>=0.7.0",
 ]
 
 [project.optional-dependencies]

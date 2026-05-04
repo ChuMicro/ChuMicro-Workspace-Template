@@ -79,11 +79,14 @@ project flows once you've outgrown a single project — see
   see [`examples/README.md`](examples/README.md) for the index.
   This folder is tool-owned: `python run.py update` rewrites it from
   the canonical template upstream.
-- `devices.yml` — gitignored, materialized from `_workspace_template/devices.yml`.
-  Mutated in place by `add-device` / `rename` / `probe`.
+- `devices.yml` — gitignored, materialized by `setup` from the
+  workbench-owned canonical starter (single source of truth shared
+  with the chumicro mono-repo).  Mutated in place by `add-device` /
+  `rename` / `probe`.
 - `workspace.yml` — defaults every project inherits.
-- `secrets.yml` — gitignored, materialized from `_workspace_template/secrets.yml`.
-  Reference values via `!secret <name>`.
+- `secrets.yml` — gitignored, materialized by `setup` from the
+  workbench-owned canonical starter.  Reference values via
+  `!secret <name>`.
 - `shared/` — flat user-authored helper modules shared between
   projects.  Drop a `.py` file and `import` it as `from shared.foo
   import bar`.  See [`shared/README.md`](shared/README.md).
@@ -93,9 +96,14 @@ project flows once you've outgrown a single project — see
 - `libraries/` — *not present by default.*  `python run.py new
   --library <name>` materialises it the first time you scaffold a
   full chumicro-style library package.
-- `_workspace_template/` — tool-owned template sources.  `setup` materializes
-  any missing destination at the workspace root; `update` refreshes
-  these sources from upstream.
+- `_workspace_template/` — tool-owned template sources for files
+  this repo customises.  `setup` materializes any missing destination
+  at the workspace root; `update` refreshes these sources from
+  upstream.  Empty by default — the canonical `devices.yml` and
+  `secrets.yml` starters live in the `chumicro-workspace` package's
+  payloads (single source of truth shared with the chumicro mono-
+  repo).  Add files here only if you need to override the workbench
+  defaults for a forked workspace template.
 
 ## Worked example: `example_sensor`
 
@@ -110,9 +118,9 @@ python3 run.py setup
 # 2. Tell the workspace about your board
 python run.py add-device my-board --address /dev/cu.usbmodem1101 --runtime micropython
 
-# 3. Fill in your wifi password (edit secrets.yml directly — it was
-#    materialized from _workspace_template/secrets.yml during setup, so just
-#    open and edit; no copy needed)
+# 3. Fill in your wifi password (edit secrets.yml directly — `setup`
+#    materialised it from the chumicro-workspace package's canonical
+#    starter, so just open and edit; no copy needed)
 $EDITOR secrets.yml          # set wifi_password to your AP passphrase
 
 # 4. Point the sensor at your AP + a broker (one line each)
