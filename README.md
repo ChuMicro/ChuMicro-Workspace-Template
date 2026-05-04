@@ -127,7 +127,18 @@ $EDITOR projects/example_sensor/config.toml
 #    section.
 python run.py dump-config example_sensor
 
-# 6. Deploy + watch
+# 6. Install the chumicro libraries onto the board.  AST-walks the
+#    project for `chumicro_<name>` imports, then shells out to
+#    `circup install ...` (CircuitPython) or `mpremote ... mip
+#    install github:ChuMicro/ChuMicro-Bundle/...` (MicroPython) per
+#    library.  Skip this step in chumicro-dev mode — the libraries
+#    ship via `library_sources:` instead (see the collapsible note
+#    below).  Add `--experimental` to install from
+#    `ChuMicro-Bundle-Experimental`; add `--dry-run` to preview the
+#    exact commands without executing.
+python run.py install-libraries example_sensor
+
+# 7. Deploy + watch
 python run.py deploy example_sensor
 
 # Or, if you want to follow the REPL output afterward:
@@ -165,5 +176,39 @@ flow into the workspace immediately — no rebuild, no republish.
 Delete the file (or unset the path) to revert to the PyPI install
 path.  `chumicro-dev.toml` is gitignored by default since different
 contributors keep their checkouts in different places.
+
+In dev mode, `setup` *also* writes a managed `library_sources:` block
+into `workspace.yml` mapping every chumicro library it finds in the
+sibling checkout to its `src/` directory.  `deploy --import-graph`
+(and the `--boot-shim --import-graph` composition) reads that block
+to ship the on-device libraries directly from the local checkout —
+no `circup` / `mip` round-trip and no `install-libraries` step.
+Pulling new chumicro libraries into the sibling checkout is a
+re-run-`setup` away.
+
+In regular mode (no `chumicro-dev.toml`), the `install-libraries`
+step in the worked example above fetches each library from
+`ChuMicro-Bundle` (stable) or `ChuMicro-Bundle-Experimental` and
+installs it onto the board.  Manual fallback for air-gapped /
+custom-registry rigs:
+
+```bash
+# CircuitPython — bundle-add once, then install per project
+circup bundle-add ChuMicro/ChuMicro-Bundle
+circup install chumicro-config chumicro-kvstore chumicro-mqtt \
+               chumicro-msgpack chumicro-runner chumicro-sockets \
+               chumicro-timing chumicro-wifi
+
+# MicroPython — one mip install per library
+mpremote connect /dev/cu.usbmodem1101 mip install \
+    github:ChuMicro/ChuMicro-Bundle/chumicro_config
+mpremote connect /dev/cu.usbmodem1101 mip install \
+    github:ChuMicro/ChuMicro-Bundle/chumicro_kvstore
+# ... repeat per library
+```
+
+`python run.py install-libraries <project> --dry-run` prints the
+exact commands the workspace would have run — paste-into-elsewhere
+when this host can't reach the bundle URL directly.
 
 </details>
