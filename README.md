@@ -51,6 +51,7 @@ python3 run.py setup                    # creates .venv, installs chumicro-works
 python run.py add-device my-board --address /dev/cu.usbmodem1101 --runtime micropython
 python run.py new my_project            # scaffolds projects/my_project/
 # Edit projects/my_project/{config.toml, app.py} and secrets.yml as needed
+python run.py dump-config my_project    # (optional) preview the merged config the device will read
 python run.py deploy my_project
 ```
 
@@ -78,10 +79,10 @@ project flows once you've outgrown a single project — see
   see [`examples/README.md`](examples/README.md) for the index.
   This folder is tool-owned: `python run.py update` rewrites it from
   the canonical template upstream.
-- `devices.yml` — gitignored, materialized from `_templates/devices.yml`.
+- `devices.yml` — gitignored, materialized from `_workspace_template/devices.yml`.
   Mutated in place by `add-device` / `rename` / `probe`.
 - `workspace.yml` — defaults every project inherits.
-- `secrets.yml` — gitignored, materialized from `_templates/secrets.yml`.
+- `secrets.yml` — gitignored, materialized from `_workspace_template/secrets.yml`.
   Reference values via `!secret <name>`.
 - `shared/` — flat user-authored helper modules shared between
   projects.  Drop a `.py` file and `import` it as `from shared.foo
@@ -92,7 +93,7 @@ project flows once you've outgrown a single project — see
 - `libraries/` — *not present by default.*  `python run.py new
   --library <name>` materialises it the first time you scaffold a
   full chumicro-style library package.
-- `_templates/` — tool-owned template sources.  `setup` materializes
+- `_workspace_template/` — tool-owned template sources.  `setup` materializes
   any missing destination at the workspace root; `update` refreshes
   these sources from upstream.
 
@@ -110,7 +111,7 @@ python3 run.py setup
 python run.py add-device my-board --address /dev/cu.usbmodem1101 --runtime micropython
 
 # 3. Fill in your wifi password (edit secrets.yml directly — it was
-#    materialized from _templates/secrets.yml during setup, so just
+#    materialized from _workspace_template/secrets.yml during setup, so just
 #    open and edit; no copy needed)
 $EDITOR secrets.yml          # set wifi_password to your AP passphrase
 
@@ -120,7 +121,13 @@ $EDITOR projects/example_sensor/config.toml
 #   [mqtt]    broker = "broker.hivemq.com"   # public test broker; swap for your own
 #   [sensor]  topic  = "chumicro/example/temperature"
 
-# 5. Deploy + watch
+# 5. (Optional) Sanity-check the merged config before deploying.
+#    Prints the dict that ends up on the device — handy when a
+#    `!secret` reference looks wrong or a key landed in the wrong
+#    section.
+python run.py dump-config example_sensor
+
+# 6. Deploy + watch
 python run.py deploy example_sensor
 
 # Or, if you want to follow the REPL output afterward:

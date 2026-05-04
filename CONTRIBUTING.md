@@ -281,7 +281,7 @@ Three patterns that work well:
 The agent can edit files freely under `projects/<your-name>/`,
 `shared/`, `workspace.yml`, `devices.yml`, and `secrets.yml`.  It
 should *not* edit `run.py`, `AGENTS.md`, `CONTRIBUTING.md`,
-`pyproject.toml`, `projects/_template/`, `_templates/`, or anything
+`pyproject.toml`, `projects/_template/`, `_workspace_template/`, or anything
 under `.github/` — those are tool-owned and `python run.py
 update` will rewrite them next time you pull.
 
@@ -294,7 +294,7 @@ python run.py update --ref v0.5   # pin to a specific template version
 
 `update` only touches tool-owned files (the `run.py`,
 `AGENTS.md`, `CONTRIBUTING.md`, `pyproject.toml`, the
-`projects/_template/` skeleton, `_templates/` template sources, and
+`projects/_template/` skeleton, `_workspace_template/` template sources, and
 the `.github/skills/` agent-skill index).  Your `projects/`,
 `devices.yml`, `secrets.yml`, `workspace.yml`, `shared/`, and
 `packages/` are never touched.

@@ -1,60 +1,63 @@
-flash is the default deploy mode (Decision 0047 from chumicro mono-repo)
+_templates/ -> _workspace_template/, surface dump-config in the README quickstart
 
-Implements the workspace-template half of the cross-repo deploy-mode
-flip specified by Decision 0047 in the chumicro mono-repo (commit
-`de99870`).
+Two audit-of-the-audit follow-ups in one commit (template-repo half).
+Mono-repo half landed in `6feb22d`.
 
-Three concrete changes
-======================
+A. dump-config surfaced in quickstart + worked example
+======================================================
 
-1. **`_templates/devices.yml`** gains an explicit
-   `defaults.deploy_mode: flash` line.  The previous template was
-   silent (let chumicro-deploy's `DEFAULT_DEPLOY_MODE` decide), but
-   silence forces the user to know what the default is — explicit
-   reads cleaner.  The accompanying comment explains why flash is
-   the default and how to opt back to ram per-device or via
-   `--deploy-mode ram`.
+The `python run.py dump-config <project>` command always existed
+and is documented in `CONTRIBUTING.md` after the config-flow
+diagram, but the `README.md` quickstart never mentioned it — so a
+beginner whose `!secret` resolves wrong or whose key landed in the
+wrong section had no obvious "introspect the merged result" path.
 
-2. **`CONTRIBUTING.md`** — "Device modes — RAM vs. flash" section
-   reworked.  The old prose said "(`deploy_mode: ram`, the default)";
-   updated to "(`deploy_mode: flash`, the default)" with the
-   rationale (production-shaped, atomic, matches real deploys).  New
-   block-quote callout describes the `[tool.chumicro] requires_flash`
-   auto-switch behavior the chumicro mono-repo's Decision 0047
-   ships.
+* `README.md` Quickstart — adds a `dump-config` line between the
+  edit-step and the deploy-step ("optional preview the merged
+  config the device will read").
+* `README.md` worked-example walkthrough — adds a step 5 calling
+  `dump-config` before the actual deploy in step 6.
 
-3. **`AGENTS.md`** — "RAM mode is for single-library experiments"
-   bullet expanded to "Flash mode is the default; RAM mode is opt-in
-   for single-library experiments".  Now mentions the four heavier
-   libraries that declare `requires_flash = true` and explains the
-   auto-switch.  Same operational guidance for the agent ("surface
-   this when the user reports messages stop after first publish or
-   ENOENT on /runtime_config.msgpack") — flash being the default
-   means most users never hit the auto-switch, but when they do,
-   the agent should know what's happening.
+The new `MissingConfigKey` message in chumicro-config (mono-repo
+`6feb22d`) hints at the same command when a required key is missing
+on device, so the user catches the same problem from either side.
 
-4. **`.github/skills/register-board/SKILL.md`** — example YAML
-   snippet flipped from `deploy_mode: ram   # or flash per device
-   class` to `deploy_mode: flash   # default; override to ram per-
-   device for unit-style experiments`.  Surfaces the right default
-   to anyone reading the skill while registering a board.
+D. _templates/ -> _workspace_template/
+======================================
+
+`_templates/` (tool-owned fixture sources rewritten by `update`)
+sat next to `projects/_template/` (the user-copied scaffold) at the
+workspace root.  Singular vs plural, both leading-underscore-hidden,
+both visible in `ls`.  The audit named it as a real collision
+point — the tool-owned one gets the more-explicit name.
+
+* `git mv _templates _workspace_template` — directory rename
+  carries `devices.yml` + `secrets.yml` to the new location.
+* `README.md`, `AGENTS.md`, `CONTRIBUTING.md` — every prose
+  reference flipped from `_templates/` to `_workspace_template/`.
+* `_workspace_template/secrets.yml` (the materialized template's
+  own header comment) — flips the self-reference.
 
 After this commit
 =================
 
-A user on the previous template who runs `python run.py setup`
-in a fresh clone gets `defaults.deploy_mode: flash` materialised
-into their `devices.yml`.  Existing workspaces aren't auto-
-migrated — `_templates/` is tool-owned, but `devices.yml`'s
-contents are user-owned (gitignored, mutated by `add-device` /
-`probe`).  Users on existing workspaces who want the new default
-edit `devices.yml` themselves or re-run `setup` after deleting
-the file.
+A user on the previous template needs to manually:
+
+```bash
+git mv _templates _workspace_template
+```
+
+if they care about preserving any local edits to the template
+sources.  Otherwise a fresh clone or `python run.py update` (once
+the upstream-template update flow tracks this rename) is the
+migration story.  No automated migration helper since the repo
+is private and pre-publish — same precedent as
+Decision 0046's `libs/` -> `shared/` rename.
 
 Tested
 ======
 
-3 template tests pass (`pytest tests/ projects/_template/tests/`)
-against chumicro-workspace's existing version; the deploy-mode
-default flip is consumed transparently by the chumicro-deploy
-0.5.0 published in mono-repo `de99870`.
+3 template tests pass against chumicro-workspace 0.3.0 (mono-repo
+`6feb22d` ships the renamed `_workspace_template/` zone classifier
++ `materialize_templates` directory pointer + `template_apply` /
+`health.py` / `cli.py` references).

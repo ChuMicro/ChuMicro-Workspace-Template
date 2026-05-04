@@ -16,7 +16,7 @@ for the workflow primer.
 
 | Command | Purpose |
 |---|---|
-| `python3 run.py setup` | One-time: create `.venv`, install deps, materialize `_templates/`. |
+| `python3 run.py setup` | One-time: create `.venv`, install deps, materialize `_workspace_template/`. |
 | `python run.py bootstrap [--with-demo]` | End-to-end onboarding wizard: pick a port → probe → register → optionally deploy demo.  Skip prompts with `--port` / `--device-id`. |
 | `python run.py status` | Workspace health snapshot — `workspace.yml` validity, `devices.yml` count, `secrets.yml` placeholder detection, projects-tree summary.  Exit 1 only on errors. |
 | `python run.py doctor` | Strict sibling of `status` — adds Python ≥3.11, AST scan for `def run`, and a config-merge dry-run that catches unresolved `!secret` references. |
@@ -50,7 +50,7 @@ for the workflow primer.
 |---|---|---|
 | `projects/<your-name>/` | YOU | leaves alone |
 | `devices.yml` | tool (via `add-device` / `rename` / `probe`) | leaves alone |
-| `secrets.yml` | YOU (gitignored, materialized from `_templates/secrets.yml` by `setup`) | leaves alone |
+| `secrets.yml` | YOU (gitignored, materialized from `_workspace_template/secrets.yml` by `setup`) | leaves alone |
 | `workspace.yml` | YOU | leaves alone |
 | `shared/` | YOU (drop a `.py`, import as `from shared.foo import bar`) | leaves alone |
 | `packages/` | YOU (manual-drop area; gitignored) | leaves alone |
@@ -59,7 +59,7 @@ for the workflow primer.
 | `AGENTS.md` | NEVER edit | rewrites |
 | `CONTRIBUTING.md` | NEVER edit | rewrites |
 | `pyproject.toml` | NEVER edit | rewrites |
-| `_templates/` | NEVER edit | rewrites |
+| `_workspace_template/` | NEVER edit | rewrites |
 | `projects/_template/` | NEVER edit | rewrites |
 | `.github/skills/` | NEVER edit | rewrites |
 | `examples/` | NEVER edit | rewrites |
@@ -119,7 +119,7 @@ When you join a session in a workspace that's been freshly cloned:
 
 ## Common pitfalls
 
-- Editing `secrets.yml.example` — there isn't one.  `secrets.yml` is materialized from `_templates/secrets.yml` by `setup`; just edit it directly.
+- Editing `secrets.yml.example` — there isn't one.  `secrets.yml` is materialized from `_workspace_template/secrets.yml` by `setup`; just edit it directly.
 - Running raw `pytest` — the workspace's pytest config wants `python run.py test` so the venv + paths resolve right.
 - Re-running `setup` thinking it'll "fix" something — it's idempotent and won't overwrite anything.  If a project's broken, the fix is in your code, not in setup.
 - Trying to debug a TLS handshake without setting the device clock — TLS validity-period checks fail with "validity starts in the future" on a fresh board.  NTP after wifi-up, or backdate the cert's notBefore for development.
