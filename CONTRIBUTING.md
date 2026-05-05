@@ -167,8 +167,7 @@ resolved to what you expected.
 ### Quality gate
 
 `python run.py preflight` runs `lint` then `test` as a single sanity
-gate (chumicro mono-repo's preflight shape, scaled down for workspaces
-without CI).  Set `quality:` knobs in `workspace.yml` to tune:
+gate.  Set `quality:` knobs in `workspace.yml` to tune:
 
 ```yaml
 quality:
@@ -309,14 +308,14 @@ the `.github/skills/` agent-skill index).  Your `projects/`,
 - **`projects/example_sensor/`** — the worked example.  Read it
   when you're not sure how to wire a service into a `Runner`.
 - **The chumicro-workspace
-  [guide](https://github.com/ChuMicro/ChuMicro/blob/main/workbench/workspace/docs/guide.md)** —
-  the upstream reference for the underlying CLI commands and
-  Python API.
+  [hosted docs](https://chumicro.github.io/ChuMicro/workspace/stable/)** —
+  reference for the underlying CLI commands and Python API.
 - **The chumicro library
-  [docs](https://github.com/ChuMicro/ChuMicro/tree/main/libraries)** —
-  per-library guides for `chumicro-wifi`, `chumicro-mqtt`, etc.
-- **Issues** — file at the chumicro mono-repo for tooling
-  issues, or in your own workspace repo for project-specific bugs.
+  [hosted docs](https://chumicro.github.io/ChuMicro/)** — per-library
+  guides for `chumicro-wifi`, `chumicro-mqtt`, etc.
+- **Issues** — file tooling bugs at the
+  [chumicro-workspace PyPI source](https://pypi.org/project/chumicro-workspace/),
+  or project-specific bugs in your own workspace repo.
 
 ## Project rules — quick reference
 

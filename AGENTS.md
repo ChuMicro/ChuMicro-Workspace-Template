@@ -9,7 +9,7 @@ Tool-owned: `python run.py update` will rewrite it.  Skim
 A ChuMicro project workspace.  `projects/` are individual deployable
 apps, `devices.yml` registers boards, and `python run.py <cmd>`
 dispatches to the `chumicro-workspace` host CLI.  See the package's
-[guide](https://github.com/ChuMicro/ChuMicro/blob/main/workbench/workspace/docs/guide.md)
+[hosted docs](https://chumicro.github.io/ChuMicro/workspace/stable/)
 for the workflow primer.
 
 ## Day-to-day commands
@@ -96,7 +96,7 @@ Procedural knowledge for common workflows lives under `.github/skills/`.  Read t
 
 `python run.py test` with no args runs **everything** under `tests/` + `projects/`.  Functional tests deselect themselves on a sweep with no `functional_tests` path argument — only fire when targeted.
 
-`python run.py lint` runs `ruff check` with the same config the chumicro mono-repo uses (line-length 100, imports sorted, relative-import ban, pyflakes / bugbear / pyupgrade).  Tests + functional tests get the relative-import rule relaxed.  Set `quality.lint.enabled: false` in `workspace.yml` to skip lint without uninstalling ruff.  Set `quality.lint.select: ["E", "F", "I"]` to override the rule list per-workspace.
+`python run.py lint` runs `ruff check` with the workspace's `[tool.ruff]` config (line-length 100, imports sorted, relative-import ban, pyflakes / bugbear / pyupgrade).  Tests + functional tests get the relative-import rule relaxed.  Set `quality.lint.enabled: false` in `workspace.yml` to skip lint without uninstalling ruff.  Set `quality.lint.select: ["E", "F", "I"]` to override the rule list per-workspace.
 
 Coverage gate: `[tool.coverage.report] fail_under = 85` in `pyproject.toml` — the per-package floor.  Override per-workspace via `quality.coverage_threshold: <N>` in `workspace.yml` (forwarded to pytest as `--cov-fail-under`); user CLI args after `--` win on conflict.
 

@@ -18,11 +18,11 @@ things/*/_generated/
 /devices.yml
 
 # chumicro-dev mode — per-user; gitignored.  When this file exists,
-# `python3 run.py setup` walks the chumicro mono-repo path it points at
-# and pip-installs every libraries/<name>/ + workbench/<name>/ as
-# editable instead of resolving them from PyPI.  Different contributors
-# keep their mono-repo checkouts in different places, so this never
-# travels with the workspace.
+# `python3 run.py setup` walks the chumicro source-checkout path it
+# points at and pip-installs every libraries/<name>/ + workbench/<name>/
+# as editable instead of resolving them from PyPI.  Different
+# contributors keep their checkouts in different places, so this
+# never travels with the workspace.
 /chumicro-dev.toml
 
 # Workspace-template hides external libs here.  The packages/.gitignore

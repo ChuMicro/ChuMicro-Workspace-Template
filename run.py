@@ -22,9 +22,9 @@ When present, ``setup`` walks ``<chumicro_path>/libraries/*`` and
 ``<chumicro_path>/workbench/*`` and pip-installs every package found
 there as editable BEFORE the workspace's own install.  Lets you
 co-develop chumicro libraries / chumicro-workspace from a sibling
-clone of the mono-repo without publishing to PyPI.  Delete the
-file (or unset ``chumicro_path``) to revert to the PyPI path.
-``chumicro-dev.toml`` is gitignored by default.
+checkout without publishing to PyPI.  Delete the file (or unset
+``chumicro_path``) to revert to the PyPI path.  ``chumicro-dev.toml``
+is gitignored by default.
 
 Requires Python 3.11+ (system or pyenv) for the initial bootstrap.
 """
@@ -66,7 +66,7 @@ def _check_python_version() -> None:
 
 
 def _read_chumicro_dev_path() -> Path | None:
-    """Return the resolved chumicro-mono-repo path if dev mode is active.
+    """Return the resolved chumicro-checkout path if dev mode is active.
 
     Reads ``chumicro-dev.toml`` (TOML, ``chumicro_path = "..."``).
     Relative paths resolve against the workspace root.  Returns
@@ -84,8 +84,8 @@ def _read_chumicro_dev_path() -> Path | None:
     return candidate
 
 
-def _discover_chumicro_packages(mono_repo_path: Path) -> list[Path]:
-    """Return every package dir under *mono_repo_path*'s ``libraries/``
+def _discover_chumicro_packages(checkout_path: Path) -> list[Path]:
+    """Return every package dir under *checkout_path*'s ``libraries/``
     and ``workbench/`` trees that has a ``pyproject.toml``.
 
     Order is alphabetical within each tree, libraries before workbench
@@ -93,7 +93,7 @@ def _discover_chumicro_packages(mono_repo_path: Path) -> list[Path]:
     """
     packages: list[Path] = []
     for parent_name in ("libraries", "workbench"):
-        parent = mono_repo_path / parent_name
+        parent = checkout_path / parent_name
         if not parent.is_dir():
             continue
         for entry in sorted(parent.iterdir()):
@@ -134,7 +134,8 @@ def _create_venv_and_install() -> None:
             raise SystemExit(
                 f"error: no chumicro packages found under {chumicro_path} — "
                 "expected libraries/<name>/pyproject.toml or "
-                "workbench/<name>/pyproject.toml.  Is this a chumicro mono-repo?",
+                "workbench/<name>/pyproject.toml.  Does the chumicro_path "
+                "in chumicro-dev.toml point at a chumicro source checkout?",
             )
         print(
             f"chumicro-dev mode: installing {len(packages)} package(s) from "

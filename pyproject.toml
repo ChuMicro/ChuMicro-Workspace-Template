@@ -19,8 +19,7 @@ dependencies = [
     # `init` / `update` / `deploy` / `repl` / etc.  Lower bound 0.7.0
     # — that release introduced `materialize_workbench_starters` which
     # `setup` calls to materialise the canonical `devices.yml` and
-    # `secrets.yml` content from the workbench package's payloads
-    # (single source of truth shared with the chumicro mono-repo).
+    # `secrets.yml` content from the workbench package's payloads.
     "chumicro-workspace>=0.7.0",
 ]
 
@@ -80,10 +79,9 @@ target-version = "py311"
 extend-exclude = [".venv", "packages", "shared", "projects/*/_generated"]
 
 [tool.ruff.lint]
-# Mirrors the chumicro mono-repo's tone: pyflakes + import sorting +
-# bugbear + pyupgrade + relative-import ban.  Tests get the same
-# style; relative imports are fine in tests / examples / functional
-# tests.
+# pyflakes + import sorting + bugbear + pyupgrade + relative-import
+# ban.  Tests get the same style; relative imports are fine in tests
+# / examples / functional tests.
 select = ["E", "F", "I", "B", "UP", "TID252"]
 
 [tool.ruff.lint.flake8-tidy-imports]

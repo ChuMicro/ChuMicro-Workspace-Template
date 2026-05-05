@@ -23,10 +23,10 @@ Three things go wrong over time:
   crash-safe.  An interrupted write — host suspending, cable jiggling,
   board resetting mid-save — leaves files truncated or corrupt.
   Worst case the drive becomes unmountable.
-* **Lost work.**  When the drive does hiccup (on macOS, see the
-  FSKit / DiskArbitration wedge documented in the
-  [chumicro troubleshooting guide](https://github.com/ChuMicro/ChuMicro/blob/main/docs/troubleshooting/macos-circuitpy.md)),
-  files you thought were saved may be gone.
+* **Lost work.**  When the drive does hiccup (on macOS, the
+  FSKit / DiskArbitration wedge can leave the drive unmountable
+  until you eject + re-plug), files you thought were saved may
+  be gone.
 
 A workspace keeps your code on your laptop in version control, runs
 lint + tests against it like any normal Python project, and ships
@@ -62,7 +62,7 @@ prerequisite — system Python 3.11+ is enough.
 
 For the full workflow walkthrough — including multi-board / multi-
 project flows once you've outgrown a single project — see
-[chumicro-workspace's guide](https://github.com/ChuMicro/ChuMicro/blob/main/workbench/workspace/docs/guide.md).
+[chumicro-workspace's hosted docs](https://chumicro.github.io/ChuMicro/workspace/stable/).
 
 ## Layout
 
@@ -80,8 +80,8 @@ project flows once you've outgrown a single project — see
   This folder is tool-owned: `python run.py update` rewrites it from
   the canonical template upstream.
 - `devices.yml` — gitignored, materialized by `setup` from the
-  workbench-owned canonical starter (single source of truth shared
-  with the chumicro mono-repo).  Mutated in place by `add-device` /
+  `chumicro-workspace` package's canonical starter (single source of
+  truth across every workspace).  Mutated in place by `add-device` /
   `rename` / `probe`.
 - `workspace.yml` — defaults every project inherits.
 - `secrets.yml` — gitignored, materialized by `setup` from the
@@ -101,9 +101,8 @@ project flows once you've outgrown a single project — see
   at the workspace root; `update` refreshes these sources from
   upstream.  Empty by default — the canonical `devices.yml` and
   `secrets.yml` starters live in the `chumicro-workspace` package's
-  payloads (single source of truth shared with the chumicro mono-
-  repo).  Add files here only if you need to override the workbench
-  defaults for a forked workspace template.
+  payloads.  Add files here only if you need to override the
+  workbench defaults for a forked workspace template.
 
 ## Worked example: `example_sensor`
 
@@ -168,9 +167,9 @@ starting from scratch.
 <details>
 <summary>ChuMicro-dev mode — for co-developing chumicro libraries alongside the workspace</summary>
 
-Co-developing chumicro libraries / `chumicro-workspace` from a sibling
-clone of the [`ChuMicro` mono-repo](https://github.com/ChuMicro/ChuMicro)
-(or a fork)?  Drop a `chumicro-dev.toml` next to `run.py` with:
+Co-developing chumicro libraries / `chumicro-workspace` from a
+sibling chumicro source checkout (or a fork)?  Drop a
+`chumicro-dev.toml` next to `run.py` with:
 
 ```toml
 chumicro_path = "../chumicro"
