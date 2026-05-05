@@ -43,4 +43,5 @@ language plus `chumicro-timing`.
 
 Once `hello_world` ships, the natural follow-on is
 [`wifi_only/`](../wifi_only/) — same shape, but brings the wifi
-service up from the workspace's `secrets.yml`.
+service up from the workspace's gitignored `workspace.local.yml`
+overlay.

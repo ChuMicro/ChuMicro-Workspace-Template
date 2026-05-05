@@ -1,9 +1,8 @@
 """Workspace-level smoke tests.
 
 Covers properties of the workspace that aren't tied to a single
-project: every ``projects/<name>/app.py`` exposes a ``run`` callable,
-``workspace.yml`` parses, and the secrets template stays in sync
-with the gitignored ``secrets.yml`` schema.
+project: every ``projects/<name>/app.py`` exposes a ``run`` callable
+and ``workspace.yml`` parses.
 
 This file is YOUR territory — edit freely.  ``chumicro-workspace
 update`` will not touch it.

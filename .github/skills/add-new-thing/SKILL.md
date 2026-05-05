@@ -42,37 +42,42 @@ Open both and edit:
   follow the pattern in `things/example_sensor/app.py`: build
   services, register them with a `Runner`, drive `runner.tick()`
   in a `while not _SHUTDOWN_REQUESTED:` loop.
-- `config.toml` — fill in board-specific values.  Reference
-  credentials via `!secret <name>` rather than inlining them.
+- `config.toml` — fill in board-specific values that aren't
+  sensitive (SSID, broker host, sample period).  Keep credentials
+  out of git: set them in `workspace.local.yml` instead.
 
 ## 3. Wire credentials
 
 If the thing uses wifi, MQTT auth, or any other secret, add it to
-`secrets.yml` (gitignored, materialized from
-`_templates/secrets.yml` during `setup`):
+`workspace.local.yml` (gitignored credential / per-developer
+overlay; materialized from the chumicro-workspace package's
+canonical starter during `setup`).  Use the same section-namespaced
+shape as `workspace.yml`:
 
 ```yaml
-wifi_password: your-actual-passphrase
-mqtt_password: your-broker-password
+defaults:
+  wifi:
+    password: your-actual-passphrase
+  mqtt:
+    password: your-broker-password
 ```
 
-In `config.toml`, reference the secrets:
+`config.toml` carries the public values for the same sections:
 
 ```toml
 [wifi]
 ssid = "YourNetwork"
-password = "!secret wifi_password"
 
 [mqtt]
 broker = "broker.example.com"
 username = "device-user"
-password = "!secret mqtt_password"
 ```
 
-The deploy-time merge resolves `!secret <name>` against
-`secrets.yml` and writes the resolved values into the
-`/runtime_config.msgpack` that ships to the device.  `secrets.yml`
-itself never lands on the device.
+The deploy-time deep-merge layers `workspace.yml` →
+`workspace.local.yml` → `config.toml`, with each later layer
+winning at any key.  The resulting dict ships to the device as
+`/runtime_config.msgpack`.  `workspace.local.yml` itself never
+lands on the device.
 
 ## 4. First deploy
 

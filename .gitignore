@@ -7,9 +7,26 @@ __pycache__/
 
 # Generated runtime config msgpacks (regenerated on every deploy).
 things/*/_generated/
+projects/*/_generated/
 
-# Materialized from _templates/ at setup time; never commit credentials.
+# Legacy: secrets.yml + !secret marker.  Retired in chumicro Decision 0057
+# in favour of a structural workspace.local.yml overlay.  Kept gitignored
+# for one cycle so workspaces with a left-over copy from the pre-0057 era
+# don't accidentally commit it.
 /secrets.yml
+
+# Gitignored credential / per-developer overlay (chumicro Decision 0057).
+# Same section-namespaced shape as workspace.yml; deep-merged on top so
+# any key set here wins.  Materialised from the chumicro-workspace
+# package's canonical starter on first ``setup``.  Never commit.
+/workspace.local.yml
+
+# Per-project gitignored override (Decision 0057, optional).  Same shape
+# as the project's config.toml/.yml; deep-merged on top so per-project
+# secret overrides don't leak into git.
+projects/**/config.local.toml
+projects/**/config.local.yml
+projects/**/config.local.yaml
 
 # Materialized from _templates/devices.yml at setup time and mutated
 # in place by `add-device` / `rename` / `probe`.  Per-user / per-host

@@ -47,17 +47,17 @@ rm -rf .git && git init                 # start your own history
 # Option B: GitHub UI -> "Use this template" -> clone the resulting repo
 
 # Then, with the workspace cloned:
-python3 run.py setup                    # creates .venv, installs chumicro-workspace, materializes secrets.yml
+python3 run.py setup                    # creates .venv, installs chumicro-workspace, materializes workspace.local.yml
 python run.py add-device my-board --address /dev/cu.usbmodem1101 --runtime micropython
 python run.py new my_project            # scaffolds projects/my_project/
-# Edit projects/my_project/{config.toml, app.py} and secrets.yml as needed
+# Edit projects/my_project/{config.toml, app.py} and workspace.local.yml as needed
 python run.py dump-config my_project    # (optional) preview the merged config the device will read
 python run.py deploy my_project
 ```
 
 `python3 run.py setup` is self-bootstrapping: creates `.venv/`,
 installs `chumicro-workspace`, materializes templated files
-(`secrets.yml`), and re-execs into the venv.  No `pip install`
+(`workspace.local.yml`), and re-execs into the venv.  No `pip install`
 prerequisite — system Python 3.11+ is enough.
 
 For the full workflow walkthrough — including multi-board / multi-
@@ -83,10 +83,12 @@ project flows once you've outgrown a single project — see
   `chumicro-workspace` package's canonical starter (single source of
   truth across every workspace).  Mutated in place by `add-device` /
   `rename` / `probe`.
-- `workspace.yml` — defaults every project inherits.
-- `secrets.yml` — gitignored, materialized by `setup` from the
-  workbench-owned canonical starter.  Reference values via
-  `!secret <name>`.
+- `workspace.yml` — committed defaults every project inherits.  Schema
+  documentation; carries no credentials.
+- `workspace.local.yml` — gitignored credential / per-developer overlay.
+  Same section-namespaced shape as `workspace.yml`; deep-merged on top
+  so any key you set here wins over the committed defaults.  Materialized
+  by `setup` from the workbench-owned canonical starter.
 - `shared/` — flat user-authored helper modules shared between
   projects.  Drop a `.py` file and `import` it as `from shared.foo
   import bar`.  See [`shared/README.md`](shared/README.md).
@@ -100,9 +102,9 @@ project flows once you've outgrown a single project — see
   this repo customises.  `setup` materializes any missing destination
   at the workspace root; `update` refreshes these sources from
   upstream.  Empty by default — the canonical `devices.yml` and
-  `secrets.yml` starters live in the `chumicro-workspace` package's
-  payloads.  Add files here only if you need to override the
-  workbench defaults for a forked workspace template.
+  `workspace.local.yml` starters live in the `chumicro-workspace`
+  package's payloads.  Add files here only if you need to override
+  the workbench defaults for a forked workspace template.
 
 ## Worked example: `example_sensor`
 
@@ -117,10 +119,10 @@ python3 run.py setup
 # 2. Tell the workspace about your board
 python run.py add-device my-board --address /dev/cu.usbmodem1101 --runtime micropython
 
-# 3. Fill in your wifi password (edit secrets.yml directly — `setup`
-#    materialised it from the chumicro-workspace package's canonical
-#    starter, so just open and edit; no copy needed)
-$EDITOR secrets.yml          # set wifi_password to your AP passphrase
+# 3. Fill in your wifi password (edit workspace.local.yml directly —
+#    `setup` materialised it from the chumicro-workspace package's
+#    canonical starter, so just open and edit; no copy needed)
+$EDITOR workspace.local.yml  # set defaults.wifi.password to your AP passphrase
 
 # 4. Point the sensor at your AP + a broker (one line each)
 $EDITOR projects/example_sensor/config.toml
@@ -129,9 +131,8 @@ $EDITOR projects/example_sensor/config.toml
 #   [sensor]  topic  = "chumicro/example/temperature"
 
 # 5. (Optional) Sanity-check the merged config before deploying.
-#    Prints the dict that ends up on the device — handy when a
-#    `!secret` reference looks wrong or a key landed in the wrong
-#    section.
+#    Prints the dict that ends up on the device — handy when an
+#    overlay layer didn't deep-merge how you expected.
 python run.py dump-config example_sensor
 
 # 6. Install the chumicro libraries onto the board.  AST-walks the

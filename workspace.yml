@@ -30,8 +30,11 @@
 
 defaults:
   # Project-scoped wifi defaults.  Per-project config can override every
-  # field; password should be kept in secrets.yml and referenced as
-  # `password = "!secret <name>"` from each project's config.toml.
+  # field; credentials should be kept in the gitignored
+  # ``workspace.local.yml`` overlay (same shape as this file, deep-merged
+  # on top so any key set there wins).  See chumicro Decision 0057 for
+  # the full rationale; previous versions used a `!secret <name>` marker
+  # + flat-key `secrets.yml`, which has been retired.
   wifi:
     hostname_prefix: chu-
 

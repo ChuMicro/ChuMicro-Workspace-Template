@@ -11,9 +11,9 @@ sensor (board A)         server (board B)
                           /api/latest  (JSON view)
 ```
 
-Both projects use the same wifi credentials from `secrets.yml`, so
-once that's set, you can flip between them with one
-`python run.py deploy` per board.
+Both projects use the same wifi credentials from
+`workspace.local.yml`, so once that's set, you can flip between
+them with one `python run.py deploy` per board.
 
 ## Why this example exists
 
