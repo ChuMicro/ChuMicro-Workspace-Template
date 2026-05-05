@@ -34,6 +34,10 @@ projects/*/_generated/
 # inside that dir handles "ignore everything except itself" so the dir
 # itself stays tracked.
 
+# Agent scratch space — commit messages, log captures, temporary
+# notes.  Tool-owned by convention but never committed.
+.scratch/
+
 # IDE / editor noise.
 .idea/
 .vscode/
