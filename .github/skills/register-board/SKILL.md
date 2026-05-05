@@ -71,7 +71,7 @@ mismatch — re-run with the correct value.
 ## 4. Make it the default
 
 If this is the first board you've added, set it as the runtime
-default so `python run.py deploy <thing>` doesn't need
+default so `python run.py deploy <project>` doesn't need
 `--device-id`:
 
 ```bash

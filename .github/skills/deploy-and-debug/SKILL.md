@@ -1,6 +1,6 @@
 ---
 name: deploy-and-debug
-description: Deploy a thing, follow REPL output, and diagnose common failure modes.  Use when a deploy fails, when the user wants to see what their thing is printing on-device, or when a thing isn't behaving as expected after a successful deploy.
+description: Deploy a project, follow REPL output, and diagnose common failure modes.  Use when a deploy fails, when the user wants to see what their project is printing on-device, or when a project isn't behaving as expected after a successful deploy.
 ---
 
 # Deploy and debug
@@ -12,12 +12,12 @@ into precise messages — read them before guessing.
 ## The happy path
 
 ```bash
-python run.py deploy my_thing
+python run.py deploy my_project
 ```
 
 Successful output ends with the entrypoint's stdout (or the
-"executing entrypoint" line followed by your thing's prints).
-For things with `while True: runner.tick()` style loops, the
+"executing entrypoint" line followed by your project's prints).
+For projects with `while True: runner.tick()` style loops, the
 deploy stays open until you Ctrl-C or the device errors out.
 
 To follow REPL output afterwards (or in a different shell):
@@ -49,13 +49,13 @@ If the failure doesn't match any of these, the deploy output
 will include the raw transport error — read it carefully before
 guessing.
 
-## When the deploy succeeds but the thing misbehaves
+## When the deploy succeeds but the project misbehaves
 
 These are the most common patterns; each maps to a precise fix:
 
 ### "messages stop after the first publish" / "boot counter doesn't increment"
 
-The thing depends on persistent on-device state (a kvstore
+The project depends on persistent on-device state (a kvstore
 counter, a connection that needs the runtime config msgpack at a
 canonical absolute path, etc.) but the device is in **RAM mode**.
 
@@ -78,9 +78,9 @@ module path and check:
 - Is `X` part of a chumicro library?  The deploy's import-graph
   walker should have picked it up — if not, surface the gap as
   an upstream issue.
-- Is `X` a thing-local helper under `things/<name>/`?  Make sure
+- Is `X` a project-local helper under `projects/<name>/`?  Make sure
   it's imported with the right path (`from . import X` for
-  same-dir, or under `libs/` for shared code).
+  same-dir, or under `shared/` for cross-project code).
 - Is `X` an external pip package?  Add it to
   `pyproject.toml`'s deps and re-run `setup`; for device-side
   packages, drop the package source under `packages/` so the
@@ -104,7 +104,7 @@ Two common causes:
    the device RTC after wifi-up (NTP-style) before opening any
    TLS sockets.
 
-### "the thing crashes on boot with no clear error"
+### "the project crashes on boot with no clear error"
 
 Connect via REPL and force a soft reset:
 
@@ -114,7 +114,7 @@ python run.py repl
 ```
 
 The boot output will show the traceback.  If the traceback
-points at `things/<name>/app.py`, that's your code.  If it's
+points at `projects/<name>/app.py`, that's your code.  If it's
 under `chumicro_*`, file an upstream issue with the traceback.
 
 ### "I can't even tell if the deploy ran"
@@ -123,11 +123,11 @@ Add a print at the top of `run()`:
 
 ```python
 def run():
-    print("my_thing: boot")
+    print("my_project: boot")
     ...
 ```
 
-Re-deploy.  If you see `my_thing: boot` in the REPL output, the
+Re-deploy.  If you see `my_project: boot` in the REPL output, the
 deploy fired.  If not, the device isn't running your code —
 check the entrypoint (`code.py` on CP, `main.py` on MP).
 

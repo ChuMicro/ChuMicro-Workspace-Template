@@ -42,7 +42,7 @@ jobs:
       # NOT run here — CI runners don't have boards plugged in.
       # Run them locally before releasing:
       #
-      #     python run.py test things/<thing>/functional_tests
+      #     python run.py test projects/<name>/functional_tests
       #
       # The chumicro-pytest-device plugin auto-skips when
       # devices.yml has no targets, so you can run the same

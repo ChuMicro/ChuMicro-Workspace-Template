@@ -1,20 +1,20 @@
 ---
-name: add-new-thing
-description: Scaffold a new thing in this ChuMicro workspace, wire its config + secrets, and verify the first deploy.  Use when the user says "make a new thing", "add an X app", or asks to start a new program from scratch.
+name: add-new-project
+description: Scaffold a new project in this ChuMicro workspace, wire its config + credentials, and verify the first deploy.  Use when the user says "make a new project", "add an X app", or asks to start a new program from scratch.
 ---
 
-# Add a new thing
+# Add a new project
 
-A "thing" is one deployable program — a directory under `things/`
+A project is one deployable program — a directory under `projects/`
 with an `app.py` defining `def run(): ...` and a `config.toml` for
 its knobs.  This skill walks through scaffolding one and getting
 to the first successful deploy.
 
 ## 1. Pick a name
 
-Thing directory names must be valid Python identifiers — letters,
+Project directory names must be valid Python identifiers — letters,
 digits, underscores; **no hyphens**, no dots, no leading digit.
-The runtime imports `things.<name>.app`, so anything Python can't
+The runtime imports `projects.<name>.app`, so anything Python can't
 import breaks deploy.
 
 If the user typed `back-porch`, suggest `back_porch`.  If they
@@ -26,11 +26,11 @@ clear message — that's a fast way to validate.
 ## 2. Scaffold
 
 ```bash
-python run.py new my_thing
+python run.py new my_project
 ```
 
-Copies `things/_template/` into `things/my_thing/`.  The template
-typically ships:
+Copies `projects/_template/` into `projects/my_project/`.  The
+template typically ships:
 
 - `app.py` — minimal `def run(): print("hello")` placeholder.
 - `config.toml` — empty config sections matching the libraries
@@ -38,8 +38,8 @@ typically ships:
 
 Open both and edit:
 
-- `app.py` — write the actual logic.  Most networked things
-  follow the pattern in `things/example_sensor/app.py`: build
+- `app.py` — write the actual logic.  Most networked projects
+  follow the pattern in `projects/example_sensor/app.py`: build
   services, register them with a `Runner`, drive `runner.tick()`
   in a `while not _SHUTDOWN_REQUESTED:` loop.
 - `config.toml` — fill in board-specific values that aren't
@@ -48,8 +48,8 @@ Open both and edit:
 
 ## 3. Wire credentials
 
-If the thing uses wifi, MQTT auth, or any other secret, add it to
-`workspace.local.yml` (gitignored credential / per-developer
+If the project uses wifi, MQTT auth, or any other secret, add it
+to `workspace.local.yml` (gitignored credential / per-developer
 overlay; materialized from the chumicro-workspace package's
 canonical starter during `setup`).  Use the same section-namespaced
 shape as `workspace.yml`:
@@ -82,7 +82,7 @@ lands on the device.
 ## 4. First deploy
 
 ```bash
-python run.py deploy my_thing
+python run.py deploy my_project
 ```
 
 If a default device is set in `devices.yml` (`defaults.micropython`
@@ -94,7 +94,7 @@ Watch the output.  On success you'll see:
 ```
 deploy: staged N files
 deploy: executing entrypoint
-<your thing's stdout here>
+<your project's stdout here>
 ```
 
 If the deploy fails, **load the `deploy-and-debug` skill** —
@@ -102,7 +102,7 @@ don't guess at fixes.
 
 ## 5. Follow REPL output
 
-After deploy, the entrypoint runs forever (most things have
+After deploy, the entrypoint runs forever (most projects have
 `while True: runner.tick()` style loops).  To watch what it's
 printing:
 
@@ -118,13 +118,13 @@ checks; interactive REPL is for poking at variables.
 
 - **One name move only** — `python run.py new` doesn't rename or
   copy from non-template sources.  If the user wants to fork an
-  existing thing, copy the directory by hand and rename
+  existing project, copy the directory by hand and rename
   carefully.
-- **Don't edit `things/_template/`** — it's tool-owned and
+- **Don't edit `projects/_template/`** — it's tool-owned and
   `update` will rewrite it.  If the user wants a different
   template starter, that's an upstream change.
 - **Run `python run.py test`** if the user has tests under
-  `things/<name>/tests/` before reporting the work done.
+  `projects/<name>/tests/` before reporting the work done.
 - **Surface the deploy output** to the user — don't summarize
   the success message unless they ask.  The full deploy log
   contains diagnostics future agents (or human re-runs) might

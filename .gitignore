@@ -6,7 +6,6 @@ __pycache__/
 .pytest_cache/
 
 # Generated runtime config msgpacks (regenerated on every deploy).
-things/*/_generated/
 projects/*/_generated/
 
 # Legacy: secrets.yml + !secret marker.  Retired in chumicro Decision 0057
