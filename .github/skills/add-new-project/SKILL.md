@@ -42,42 +42,38 @@ Open both and edit:
   follow the pattern in `projects/example_sensor/app.py`: build
   services, register them with a `Runner`, drive `runner.tick()`
   in a `while not _SHUTDOWN_REQUESTED:` loop.
-- `config.toml` — fill in board-specific values that aren't
-  sensitive (SSID, broker host, sample period).  Keep credentials
-  out of git: set them in `workspace.local.yml` instead.
+- `config.toml` — fill in per-project knobs (sample period, mqtt
+  topic, sensor pins, etc.).  Per-project file is gitignored when
+  scaffolded by `new`, so per-project secrets can live here when
+  needed.
 
 ## 3. Wire credentials
 
-If the project uses wifi, MQTT auth, or any other secret, add it
-to `workspace.local.yml` (gitignored credential / per-developer
-overlay; materialized from the chumicro-workspace package's
-canonical starter during `setup`).  Use the same section-namespaced
-shape as `workspace.yml`:
+Workspace-wide credentials (wifi password, broker auth) live in
+the gitignored `workspace.yml` directly.  `setup` materialises that
+file from the chumicro-workspace package's canonical starter on
+first run; open it and fill in your values:
 
 ```yaml
+# workspace.yml — gitignored; defaults + credentials in one place
 defaults:
   wifi:
+    ssid: YourNetwork
     password: your-actual-passphrase
   mqtt:
-    password: your-broker-password
+    broker:
+      host: broker.example.com
+      port: 1883
+      auth:
+        username: device-user
+        password: your-broker-password
 ```
 
-`config.toml` carries the public values for the same sections:
-
-```toml
-[wifi]
-ssid = "YourNetwork"
-
-[mqtt]
-broker = "broker.example.com"
-username = "device-user"
-```
-
-The deploy-time deep-merge layers `workspace.yml` →
-`workspace.local.yml` → `config.toml`, with each later layer
-winning at any key.  The resulting dict ships to the device as
-`/runtime_config.msgpack`.  `workspace.local.yml` itself never
-lands on the device.
+The deploy-time deep-merge is two layers: `workspace.yml` →
+`projects/<name>/config.toml`.  Per-project values win at any key.
+The resulting dict ships to the device as `/runtime_config.msgpack`.
+Neither `workspace.yml` nor per-project `config.toml` lands on the
+device — only the merged msgpack does.
 
 ## 4. First deploy
 

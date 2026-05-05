@@ -2,7 +2,7 @@
 
 Smallest example that exercises:
 
-* the deploy-time config merge (workspace.yml + workspace.local.yml
+* the deploy-time config merge (workspace.yml + per-project config.toml
   overlay + this project's `config.toml` flatten into a single
   `/runtime_config.msgpack` that `chumicro-config` reads);
 * `chumicro-wifi`'s state machine (cooperative connect, auto-
@@ -12,12 +12,12 @@ Smallest example that exercises:
 
 No sockets, no upper-layer protocols — once wifi is up, the loop
 just prints status until you stop it.  Great as the second deploy
-after `hello_world/` to confirm credentials in `workspace.local.yml`
+after `hello_world/` to confirm credentials in `workspace.yml`
 flow through to the device.
 
 Scaffold a copy with
 ``python run.py new <name> --from examples/wifi_only``, edit the
-wifi credentials in your workspace's gitignored ``workspace.local.yml``
+wifi credentials in your workspace's gitignored ``workspace.yml``
 under ``defaults.wifi.password``, then ``python run.py deploy <name>``.
 """
 

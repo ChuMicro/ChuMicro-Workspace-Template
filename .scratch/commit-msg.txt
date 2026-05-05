@@ -1,63 +1,48 @@
-_templates/ -> _workspace_template/, surface dump-config in the README quickstart
+Two-file config (chumicro Decision 0057): one gitignored workspace.yml + per-project config.toml
 
-Two audit-of-the-audit follow-ups in one commit (template-repo half).
-Mono-repo half landed in `6feb22d`.
+Tracks the chumicro-workspace 0.9.0 release, which collapsed the
+prior 4-layer config overlay (committed workspace.yml + gitignored
+workspace.local.yml + committed config.toml + optional gitignored
+config.local.<suffix>) to two gitignored layers: workspace.yml
+holds workspace-wide defaults *plus* credentials in one place; the
+per-project config.toml is gitignored when scaffolded by `new`.
+Both deep-merge with the same primitive every other config layer
+uses; no `!secret` marker, no resolver, no overlay file.
 
-A. dump-config surfaced in quickstart + worked example
-======================================================
+Workspace-template changes:
 
-The `python run.py dump-config <project>` command always existed
-and is documented in `CONTRIBUTING.md` after the config-flow
-diagram, but the `README.md` quickstart never mentioned it — so a
-beginner whose `!secret` resolves wrong or whose key landed in the
-wrong section had no obvious "introspect the merged result" path.
+- pyproject.toml — chumicro-workspace floor 0.8.0 → 0.9.0.
+- workspace.yml — `git rm` from the template; setup materializes it
+  from the chumicro-workspace package's canonical starter on first
+  run, so each clone gets its own gitignored copy (carrying that
+  user's wifi password / broker auth).
+- .gitignore — drop the now-redundant `workspace.local.yml`,
+  `projects/**/config.local.<suffix>`, and legacy `secrets.yml`
+  patterns; add `workspace.yml`.
+- README, AGENTS, CONTRIBUTING — rewrite the credential-wiring
+  walkthrough for the 1-file shape; trim the merge-pipeline diagram
+  from 4 layers to 2; drop `workspace.local.yml` from file-ownership
+  tables and "don't commit" lists.
+- .github/skills/add-new-project/SKILL.md — same; the "wire
+  credentials" step now points at the gitignored `workspace.yml`
+  directly.
+- projects/_template/config.toml + projects/example_sensor/config.toml
+  + every examples/*/config.toml — header comments rewritten for the
+  2-layer shape.
+- projects/example_sensor/app.py — module docstring trimmed.
+- examples/wifi_only/{app.py,README.md} + examples/hello_world/README.md
+  + examples/two_projects/README.md — same vocabulary swap.
 
-* `README.md` Quickstart — adds a `dump-config` line between the
-  edit-step and the deploy-step ("optional preview the merged
-  config the device will read").
-* `README.md` worked-example walkthrough — adds a step 5 calling
-  `dump-config` before the actual deploy in step 6.
+Migration for existing workspaces (sole-user at the time of this
+change; no compat shim):
 
-The new `MissingConfigKey` message in chumicro-config (mono-repo
-`6feb22d`) hints at the same command when a required key is missing
-on device, so the user catches the same problem from either side.
+1. Copy any `defaults:` from `workspace.local.yml` into `workspace.yml`.
+2. Copy any `defaults:` from `config.local.<suffix>` into the matching
+   per-project `config.toml` (or up into `workspace.yml`).
+3. `git rm --cached workspace.yml` if your clone had it tracked from
+   a pre-0.9.0 era.
+4. Delete `workspace.local.yml` and any `config.local.<suffix>`.
+5. Run `python3 run.py setup` to refresh the venv against
+   chumicro-workspace 0.9.0.
 
-D. _templates/ -> _workspace_template/
-======================================
-
-`_templates/` (tool-owned fixture sources rewritten by `update`)
-sat next to `projects/_template/` (the user-copied scaffold) at the
-workspace root.  Singular vs plural, both leading-underscore-hidden,
-both visible in `ls`.  The audit named it as a real collision
-point — the tool-owned one gets the more-explicit name.
-
-* `git mv _templates _workspace_template` — directory rename
-  carries `devices.yml` + `secrets.yml` to the new location.
-* `README.md`, `AGENTS.md`, `CONTRIBUTING.md` — every prose
-  reference flipped from `_templates/` to `_workspace_template/`.
-* `_workspace_template/secrets.yml` (the materialized template's
-  own header comment) — flips the self-reference.
-
-After this commit
-=================
-
-A user on the previous template needs to manually:
-
-```bash
-git mv _templates _workspace_template
-```
-
-if they care about preserving any local edits to the template
-sources.  Otherwise a fresh clone or `python run.py update` (once
-the upstream-template update flow tracks this rename) is the
-migration story.  No automated migration helper since the repo
-is private and pre-publish — same precedent as
-Decision 0046's `libs/` -> `shared/` rename.
-
-Tested
-======
-
-3 template tests pass against chumicro-workspace 0.3.0 (mono-repo
-`6feb22d` ships the renamed `_workspace_template/` zone classifier
-+ `materialize_templates` directory pointer + `template_apply` /
-`health.py` / `cli.py` references).
+Tests pass: workspace-level smoke (`tests/test_workspace.py`).

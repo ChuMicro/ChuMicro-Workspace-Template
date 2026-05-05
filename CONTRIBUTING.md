@@ -37,7 +37,7 @@ your `run()` on the device.
 git clone --depth 1 https://github.com/ChuMicro/ChuMicro-Workspace-Template my-workspace
 cd my-workspace
 rm -rf .git && git init       # start your own history
-python3 run.py setup          # creates .venv, materializes workspace.local.yml, installs chumicro-workspace
+python3 run.py setup          # creates .venv, materializes gitignored workspace.yml + devices.yml, installs chumicro-workspace
 ```
 
 `setup` is idempotent — re-run any time after pulling template
@@ -59,7 +59,7 @@ python run.py add-device my-board --address /dev/cu.usbmodem1101 --runtime micro
 # 2. Scaffold a new project
 python run.py new my_sensor    # creates projects/my_sensor/ from projects/_template/
 
-# 3. Edit projects/my_sensor/{app.py, config.toml}, plus workspace.local.yml for credentials.
+# 3. Edit workspace.yml (wifi credentials) and projects/my_sensor/{app.py, config.toml}.
 
 # 4. Deploy + watch — one command via `repl <project>` (deploys, then
 #    tails for 30s).  For longer windows pass --tail SECONDS.
@@ -68,8 +68,8 @@ python run.py repl my_sensor
 
 `python run.py status` (or the stricter `doctor`) is a useful
 between-step sanity check — surfaces common mistakes before deploy
-(`workspace.local.yml` malformed, `app.py` missing a `run()`
-definition, etc.).
+(`workspace.yml` malformed, `app.py` missing a `run()` definition,
+etc.).
 
 The shipped `projects/example_sensor/` is the canonical reference —
 it wires `chumicro-wifi` + `chumicro-mqtt` + `chumicro-kvstore`
@@ -120,9 +120,9 @@ python run.py status     # one-line-per-check snapshot
 python run.py doctor     # stricter — adds Python version + AST scan for run()
 ```
 
-`status` catches missing `devices.yml`, malformed `workspace.yml`
-or `workspace.local.yml`.  `doctor` adds the Python version check
-plus a per-project `app.py` AST scan ("did you forget the `def run()`?").
+`status` catches missing `devices.yml` or malformed `workspace.yml`.
+`doctor` adds the Python version check plus a per-project `app.py`
+AST scan ("did you forget the `def run()`?").
 
 `deploy` runs the same fast checks `status` does as a pre-flight gate —
 ERROR-level findings (malformed YAML files) abort before sending bytes
@@ -134,16 +134,15 @@ validated the workspace state externally and want to skip the gate
 ### How config flows from your edits to the device
 
 Every project receives a runtime config at boot.  That config is the
-deep-merge of four host-side sources, all sharing the same
+deep-merge of two gitignored host-side sources, both sharing the same
 section-namespaced shape:
 
 ```
-workspace.yml ──► workspace.local.yml ──► projects/<name>/config.toml ──► projects/<name>/config.local.<suffix>
-  (committed)        (gitignored)               (committed)                       (gitignored, optional)
-
-  defaults that      your wifi password,        per-project knobs                 per-project credential
-  every project      broker auth, anything      (sample period, mqtt topic,       override (rare; same shape)
-  inherits           private to your machine    sensor pins)                      wins over the others
+workspace.yml ──────────────────► projects/<name>/config.toml
+  (gitignored — workspace-wide       (gitignored when scaffolded by
+   defaults + your credentials        `new`; per-project knobs —
+   in one place)                      sample period, mqtt topic,
+                                      sensor pins)
 
                             ▼
                  deep merge                     (higher-precedence layer wins at any key;
@@ -277,7 +276,7 @@ Three patterns that work well:
    `deploy-and-debug` skill."
 
 The agent can edit files freely under `projects/<your-name>/`,
-`shared/`, `workspace.yml`, `workspace.local.yml`, and `devices.yml`.
+`shared/`, `workspace.yml`, and `devices.yml`.
 It should *not* edit `run.py`, `AGENTS.md`, `CONTRIBUTING.md`,
 `pyproject.toml`, `projects/_template/`, `_workspace_template/`, or anything
 under `.github/` — those are tool-owned and `python run.py
@@ -294,8 +293,8 @@ python run.py update --ref v0.5   # pin to a specific template version
 `AGENTS.md`, `CONTRIBUTING.md`, `pyproject.toml`, the
 `projects/_template/` skeleton, `_workspace_template/` template sources, and
 the `.github/skills/` agent-skill index).  Your `projects/`,
-`devices.yml`, `workspace.local.yml`, `workspace.yml`, `shared/`,
-and `packages/` are never touched.
+`devices.yml`, `workspace.yml`, `shared/`, and `packages/` are never
+touched.
 
 ## Where to look up help
 
@@ -323,8 +322,9 @@ humans too.
 
 - Project names are Python identifiers — no hyphens, no dots, no
   leading digits.
-- Credentials live in `workspace.local.yml` (gitignored, same
-  section-namespaced shape as `workspace.yml`, deep-merged on top).
+- Credentials live in `workspace.yml` directly (gitignored — your
+  wifi password / broker auth never reaches git).  Per-project
+  `config.toml` deep-merges on top.
 - `devices.yml` is gitignored.  Re-run `add-device` on a fresh
   clone or copy your local `devices.yml` over by hand.
 - On CircuitPython, do NOT add `CIRCUITPY_WIFI_SSID` to

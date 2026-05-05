@@ -1,10 +1,11 @@
 # Per-project config — deep-merged over workspace.yml's `defaults:` block
 # at deploy time.  Values here win at any nesting depth.
 #
-# Keep credentials out of git: set ``defaults.wifi.password`` (etc.) in
-# the gitignored ``workspace.local.yml`` overlay rather than inlining
-# them here.  The deploy-time merge picks the overlay up automatically
-# as one more layer (Decision 0057).
+# Workspace-wide credentials (wifi password, broker auth) live in
+# the gitignored ``workspace.yml`` under ``defaults.<section>.<key>``.
+# Per-project knobs that vary across boards (sensor pins, sample
+# periods, mqtt topics) belong here.  This file is gitignored when
+# scaffolded by ``python run.py new``.
 
 # [wifi]
 # ssid = "MyNetwork"

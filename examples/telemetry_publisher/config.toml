@@ -1,7 +1,7 @@
 # Per-project config — deep-merged over workspace.yml's `defaults:`
 # block at deploy time.  Keep credentials out of git: set
-# ``defaults.wifi.password`` in the gitignored ``workspace.local.yml``
-# overlay rather than inlining them here (Decision 0057).
+# ``defaults.wifi.password`` in the gitignored ``workspace.yml``
+# rather than inlining secrets here (Decision 0057).
 
 [wifi]
 # ssid = "MyNetwork"  # set here or in workspace.yml's [defaults.wifi]

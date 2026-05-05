@@ -47,18 +47,19 @@ rm -rf .git && git init                 # start your own history
 # Option B: GitHub UI -> "Use this template" -> clone the resulting repo
 
 # Then, with the workspace cloned:
-python3 run.py setup                    # creates .venv, installs chumicro-workspace, materializes workspace.local.yml
+python3 run.py setup                    # creates .venv, installs chumicro-workspace, materializes workspace.yml + devices.yml
 python run.py add-device my-board --address /dev/cu.usbmodem1101 --runtime micropython
 python run.py new my_project            # scaffolds projects/my_project/
-# Edit projects/my_project/{config.toml, app.py} and workspace.local.yml as needed
+# Edit workspace.yml (wifi credentials) and projects/my_project/{config.toml, app.py}
 python run.py dump-config my_project    # (optional) preview the merged config the device will read
 python run.py deploy my_project
 ```
 
 `python3 run.py setup` is self-bootstrapping: creates `.venv/`,
-installs `chumicro-workspace`, materializes templated files
-(`workspace.local.yml`), and re-execs into the venv.  No `pip install`
-prerequisite — system Python 3.11+ is enough.
+installs `chumicro-workspace`, materializes the gitignored
+`workspace.yml` + `devices.yml` from the workbench's canonical
+starters, and re-execs into the venv.  No `pip install` prerequisite
+— system Python 3.11+ is enough.
 
 For the full workflow walkthrough — including multi-board / multi-
 project flows once you've outgrown a single project — see
@@ -83,12 +84,10 @@ project flows once you've outgrown a single project — see
   `chumicro-workspace` package's canonical starter (single source of
   truth across every workspace).  Mutated in place by `add-device` /
   `rename` / `probe`.
-- `workspace.yml` — committed defaults every project inherits.  Schema
-  documentation; carries no credentials.
-- `workspace.local.yml` — gitignored credential / per-developer overlay.
-  Same section-namespaced shape as `workspace.yml`; deep-merged on top
-  so any key you set here wins over the committed defaults.  Materialized
-  by `setup` from the workbench-owned canonical starter.
+- `workspace.yml` — gitignored, materialised by `setup` from the
+  `chumicro-workspace` package's canonical starter.  Holds workspace-
+  wide defaults *and* your credentials in one place; never commits
+  to git.  Per-project `config.toml` deep-merges on top.
 - `shared/` — flat user-authored helper modules shared between
   projects.  Drop a `.py` file and `import` it as `from shared.foo
   import bar`.  See [`shared/README.md`](shared/README.md).
@@ -102,9 +101,9 @@ project flows once you've outgrown a single project — see
   this repo customises.  `setup` materializes any missing destination
   at the workspace root; `update` refreshes these sources from
   upstream.  Empty by default — the canonical `devices.yml` and
-  `workspace.local.yml` starters live in the `chumicro-workspace`
-  package's payloads.  Add files here only if you need to override
-  the workbench defaults for a forked workspace template.
+  `workspace.yml` starters live in the `chumicro-workspace` package's
+  payloads.  Add files here only if you need to override the workbench
+  defaults for a forked workspace template.
 
 ## Worked example: `example_sensor`
 
@@ -119,10 +118,10 @@ python3 run.py setup
 # 2. Tell the workspace about your board
 python run.py add-device my-board --address /dev/cu.usbmodem1101 --runtime micropython
 
-# 3. Fill in your wifi password (edit workspace.local.yml directly —
+# 3. Fill in your wifi credentials (edit workspace.yml directly —
 #    `setup` materialised it from the chumicro-workspace package's
-#    canonical starter, so just open and edit; no copy needed)
-$EDITOR workspace.local.yml  # set defaults.wifi.password to your AP passphrase
+#    canonical starter; the file is gitignored, so just open and edit)
+$EDITOR workspace.yml  # set defaults.wifi.{ssid,password} to your AP
 
 # 4. Point the sensor at your AP + a broker (one line each)
 $EDITOR projects/example_sensor/config.toml

@@ -1,0 +1,38 @@
+README: surface install-libraries + document regular-mode bundle install (gap 4 — template half)
+
+The example_sensor walkthrough went straight from `dump-config` to
+`deploy` — but every chumicro library the project imports
+(`chumicro_wifi`, `chumicro_mqtt`, `chumicro_kvstore`, ...) needs to
+be on the board's flash for `deploy` to work, and the README never
+said that.  In dev mode (sibling checkout via `chumicro-dev.toml`)
+the `library_sources:` auto-sync covers it (gap 3a in the mono-repo,
+commit ChuMicro/ChuMicro@5327242), but regular-mode users were
+silently expected to know they had to `circup install` / `mpremote
+mip install` every chumicro library by hand.  Gap #4 of the
+workspace-template dev-and-regular-mode-gaps audit.
+
+Mono-repo half landed in ChuMicro/ChuMicro@7720e46 — adds
+`chumicro-workspace install-libraries <project>` that AST-walks
+the project for chumicro imports and shells out to `circup` (CP) /
+`mpremote mip install` (MP) per device runtime.  This commit is
+the template-repo follow-up:
+
+* example_sensor walkthrough — new step 6 between `dump-config`
+  and `deploy`: `python run.py install-libraries example_sensor`.
+  Inline comment explains the AST-walk + per-runtime dispatch and
+  flags `--experimental` + `--dry-run` for the air-gapped /
+  experimental-channel cases.
+* chumicro-dev mode collapsible — added a paragraph noting that
+  dev-mode users skip `install-libraries` because the
+  `library_sources:` block auto-written by `setup` already wires
+  the on-device libraries to the sibling checkout's `src/` dirs.
+* New "Manual fallback" snippet in the same collapsible — shows
+  the raw `circup bundle-add` + `circup install ...` and per-library
+  `mpremote connect <addr> mip install github:...` commands users
+  can paste directly when the workspace tooling isn't usable on
+  this host (no internet, custom registry, air-gapped CI).  Mirrors
+  what `install-libraries --dry-run` would print, so users can
+  cross-reference if they want.
+
+Companion to ChuMicro/ChuMicro@7720e46.  No code change here —
+docs only.

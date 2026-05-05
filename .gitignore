@@ -8,29 +8,18 @@ __pycache__/
 # Generated runtime config msgpacks (regenerated on every deploy).
 projects/*/_generated/
 
-# Legacy: secrets.yml + !secret marker.  Retired in chumicro Decision 0057
-# in favour of a structural workspace.local.yml overlay.  Kept gitignored
-# for one cycle so workspaces with a left-over copy from the pre-0057 era
-# don't accidentally commit it.
-/secrets.yml
+# Workspace-wide defaults + credentials in one gitignored file
+# (chumicro Decision 0057).  Materialised by `python run.py setup`
+# from the chumicro-workspace package's canonical starter — your
+# clone holds your wifi password / broker auth and never travels
+# with the workspace.
+/workspace.yml
 
-# Gitignored credential / per-developer overlay (chumicro Decision 0057).
-# Same section-namespaced shape as workspace.yml; deep-merged on top so
-# any key set here wins.  Materialised from the chumicro-workspace
-# package's canonical starter on first ``setup``.  Never commit.
-/workspace.local.yml
-
-# Per-project gitignored override (Decision 0057, optional).  Same shape
-# as the project's config.toml/.yml; deep-merged on top so per-project
-# secret overrides don't leak into git.
-projects/**/config.local.toml
-projects/**/config.local.yml
-projects/**/config.local.yaml
-
-# Materialized from _templates/devices.yml at setup time and mutated
-# in place by `add-device` / `rename` / `probe`.  Per-user / per-host
-# (port paths and UIDs vary), so it never travels with the workspace
-# — each contributor builds their own with `add-device`.
+# Materialized from the workbench's canonical devices.yml starter
+# at setup time and mutated in place by `add-device` / `rename` /
+# `probe`.  Per-user / per-host (port paths and UIDs vary), so it
+# never travels with the workspace — each contributor builds their
+# own with `add-device`.
 /devices.yml
 
 # chumicro-dev mode — per-user; gitignored.  When this file exists,

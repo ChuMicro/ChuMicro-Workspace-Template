@@ -12,8 +12,8 @@ End-to-end fixture that exercises the full ChuMicro stack:
 The project's `run()` is invoked by the on-device boot module
 (`workspace_runtime.boot()`).  Edit `config.toml` next to this file
 to change broker / topic / period; wifi credentials live in the
-workspace's gitignored `workspace.local.yml` overlay and reach the
-device via the deploy-time deep-merge (Decision 0057).
+workspace's gitignored `workspace.yml` and reach the device via the
+deploy-time deep-merge (chumicro Decision 0057).
 """
 
 from chumicro_config import load_runtime_config

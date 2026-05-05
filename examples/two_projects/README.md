@@ -12,7 +12,7 @@ sensor (board A)         server (board B)
 ```
 
 Both projects use the same wifi credentials from
-`workspace.local.yml`, so once that's set, you can flip between
+`workspace.yml`, so once that's set, you can flip between
 them with one `python run.py deploy` per board.
 
 ## Why this example exists

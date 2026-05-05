@@ -2,13 +2,12 @@
 
 Smallest network-stack example: bring wifi up, log state on a
 heartbeat.  Once it's printing `wifi: connected at <ip>`, you've
-confirmed every layer between `workspace.local.yml` and the radio
-works.
+confirmed every layer between `workspace.yml` and the radio works.
 
 ## Why this example exists
 
 Wifi is the layer most likely to surface "config didn't reach the
-device" problems — a typo in `workspace.local.yml`, a missing
+device" problems — a typo in `workspace.yml`, a missing
 `password` field, a `replace-me` placeholder forgotten on the
 user's first deploy.  Running this *before* the higher-level
 network examples (HTTP, MQTT) means a failure is unambiguously
@@ -16,7 +15,7 @@ about wifi rather than the protocol layer above it.
 
 ## Try it
 
-1. Edit your workspace's gitignored `workspace.local.yml` — set
+1. Edit your workspace's gitignored `workspace.yml` — set
    `defaults.wifi.password` to your AP's password.
 2. Either set `ssid` in `wifi_only/config.toml` (lives in the
    project's copy under `projects/<name>/`) or in your workspace's
