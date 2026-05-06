@@ -1,0 +1,14 @@
+# Per-project config — deep-merged over the workspace's gitignored
+# ``secrets.toml`` at deploy time.  Keep credentials out of git: set
+# ``[wifi] password`` in the gitignored ``secrets.toml`` rather than
+# inlining secrets here.
+
+[wifi]
+# ssid = "MyNetwork"   # set here or in the workspace's secrets.toml
+
+[fetch]
+# What to GET, and how often (milliseconds).  Pick a small JSON or
+# a static landing page — the example prints status code + body
+# size on each tick, so no JSON parsing is required.
+url = "http://example.com/"
+period_ms = 30000

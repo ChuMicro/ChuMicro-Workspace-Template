@@ -47,19 +47,19 @@ rm -rf .git && git init                 # start your own history
 # Option B: GitHub UI -> "Use this template" -> clone the resulting repo
 
 # Then, with the workspace cloned:
-python3 run.py setup                    # creates .venv, installs chumicro-workspace, materializes workspace.yml + devices.yml
+python3 run.py setup                    # creates .venv, installs chumicro-workspace, materializes workspace.yml + secrets.toml + devices.yml
 python run.py add-device my-board --address /dev/cu.usbmodem1101 --runtime micropython
 python run.py new my_project            # scaffolds projects/my_project/
-# Edit workspace.yml (wifi credentials) and projects/my_project/{config.toml, app.py}
+# Edit secrets.toml (wifi credentials) and projects/my_project/{project_config.toml, app.py}
 python run.py dump-config my_project    # (optional) preview the merged config the device will read
 python run.py deploy my_project
 ```
 
 `python3 run.py setup` is self-bootstrapping: creates `.venv/`,
 installs `chumicro-workspace`, materializes the gitignored
-`workspace.yml` + `devices.yml` from the workbench's canonical
-starters, and re-execs into the venv.  No `pip install` prerequisite
-— system Python 3.11+ is enough.
+`workspace.yml` + `secrets.toml` + `devices.yml` from the workbench's
+canonical starters, and re-execs into the venv.  No `pip install`
+prerequisite — system Python 3.11+ is enough.
 
 For the full workflow walkthrough — including multi-board / multi-
 project flows once you've outgrown a single project — see
@@ -85,9 +85,14 @@ project flows once you've outgrown a single project — see
   truth across every workspace).  Mutated in place by `add-device` /
   `rename` / `probe`.
 - `workspace.yml` — gitignored, materialised by `setup` from the
-  `chumicro-workspace` package's canonical starter.  Holds workspace-
-  wide defaults *and* your credentials in one place; never commits
-  to git.  Per-project `config.toml` deep-merges on top.
+  `chumicro-workspace` package's canonical starter.  Holds host-only
+  workspace machinery (`library_sources`, `deploy_targets`, `quality`).
+  Never reaches a device.
+- `secrets.toml` — gitignored, materialised by `setup` from the same
+  package's starter.  Holds workspace-wide credentials (wifi password,
+  broker auth) and device defaults that flow into
+  `runtime_config.msgpack` at deploy time.  Per-project
+  `project_config.toml` deep-merges on top.
 - `shared/` — flat user-authored helper modules shared between
   projects.  Drop a `.py` file and `import` it as `from shared.foo
   import bar`.  See [`shared/README.md`](shared/README.md).
@@ -100,10 +105,11 @@ project flows once you've outgrown a single project — see
 - `_workspace_template/` — tool-owned template sources for files
   this repo customises.  `setup` materializes any missing destination
   at the workspace root; `update` refreshes these sources from
-  upstream.  Empty by default — the canonical `devices.yml` and
-  `workspace.yml` starters live in the `chumicro-workspace` package's
-  payloads.  Add files here only if you need to override the workbench
-  defaults for a forked workspace template.
+  upstream.  Empty by default — the canonical `devices.yml`,
+  `workspace.yml`, and `secrets.toml` starters live in the
+  `chumicro-workspace` package's payloads.  Add files here only if
+  you need to override the workbench defaults for a forked workspace
+  template.
 
 ## Worked example: `example_sensor`
 
@@ -118,13 +124,13 @@ python3 run.py setup
 # 2. Tell the workspace about your board
 python run.py add-device my-board --address /dev/cu.usbmodem1101 --runtime micropython
 
-# 3. Fill in your wifi credentials (edit workspace.yml directly —
+# 3. Fill in your wifi credentials (edit secrets.toml directly —
 #    `setup` materialised it from the chumicro-workspace package's
 #    canonical starter; the file is gitignored, so just open and edit)
-$EDITOR workspace.yml  # set defaults.wifi.{ssid,password} to your AP
+$EDITOR secrets.toml   # set [wifi] ssid + password to your AP
 
 # 4. Point the sensor at your AP + a broker (one line each)
-$EDITOR projects/example_sensor/config.toml
+$EDITOR projects/example_sensor/project_config.toml
 #   [wifi]    ssid = "YourNetwork"
 #   [mqtt]    broker = "broker.hivemq.com"   # public test broker; swap for your own
 #   [sensor]  topic  = "chumicro/example/temperature"

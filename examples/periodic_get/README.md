@@ -19,7 +19,7 @@ working in the gap between requests.
 
 ```
 python run.py new my_fetcher --from examples/periodic_get
-# edit projects/my_fetcher/config.toml — set fetch.url to a real URL
+# edit projects/my_fetcher/project_config.toml — set fetch.url to a real URL
 python run.py deploy my_fetcher
 python run.py repl --tail 60
 ```

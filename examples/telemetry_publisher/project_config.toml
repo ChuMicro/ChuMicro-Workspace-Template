@@ -1,10 +1,10 @@
-# Per-project config — deep-merged over workspace.yml's `defaults:`
-# block at deploy time.  Keep credentials out of git: set
-# ``defaults.wifi.password`` in the gitignored ``workspace.yml``
-# rather than inlining secrets here (Decision 0057).
+# Per-project config — deep-merged over the workspace's gitignored
+# ``secrets.toml`` at deploy time.  Keep credentials out of git: set
+# ``[wifi] password`` in the gitignored ``secrets.toml`` rather than
+# inlining secrets here.
 
 [wifi]
-# ssid = "MyNetwork"  # set here or in workspace.yml's [defaults.wifi]
+# ssid = "MyNetwork"  # set here or in the workspace's secrets.toml
 
 [mqtt]
 # Broker connection — `broker.hivemq.com` is a public test broker

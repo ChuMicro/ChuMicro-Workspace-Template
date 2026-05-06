@@ -24,7 +24,7 @@ counter).
 
 ```
 python run.py new my_publisher --from examples/telemetry_publisher
-# edit projects/my_publisher/config.toml — set broker / topic / cadence
+# edit projects/my_publisher/project_config.toml — set broker / topic / cadence
 python run.py deploy my_publisher
 python run.py repl --tail 30
 ```

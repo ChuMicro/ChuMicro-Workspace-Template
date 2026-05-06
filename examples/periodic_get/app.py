@@ -61,10 +61,8 @@ class _PeriodicFetcher:
 
 def run():
     config = load_runtime_config()
-    wifi_section = config["wifi"]
-    fetch_section = config["fetch"]
 
-    wifi = WifiService(WifiConfig.from_dict(wifi_section))
+    wifi = WifiService(WifiConfig.from_config(config))
     runner = Runner()
     runner.add(wifi)
 
@@ -79,8 +77,8 @@ def run():
     runner.add(client)
     runner.add(_PeriodicFetcher(
         http_client=client,
-        url=fetch_section["url"],
-        period_ms=fetch_section.get("period_ms", 30_000),
+        url=config.require("fetch.url"),
+        period_ms=config.get("fetch.period_ms", 30_000),
     ))
 
     try:

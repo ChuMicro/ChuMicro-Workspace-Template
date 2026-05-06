@@ -1,10 +1,10 @@
-# Per-project config for example_sensor — deep-merged over workspace.yml's
-# `defaults:` block at deploy time.  Values here win at any nesting depth.
+# Per-project config for example_sensor — deep-merged over the
+# workspace's gitignored ``secrets.toml`` at deploy time.  Values
+# here win at any nesting depth.
 #
 # Workspace-wide credentials (wifi password, broker auth) live in the
-# gitignored ``workspace.yml`` under ``defaults.<section>.<key>``.
-# Per-project knobs (broker host, mqtt topic, publish period) belong
-# here.
+# gitignored ``secrets.toml`` at the workspace root.  Per-project
+# knobs (broker host, mqtt topic, publish period) belong here.
 
 [wifi]
 # ssid is set per-network — fill in your AP name here.

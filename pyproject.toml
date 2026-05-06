@@ -16,12 +16,13 @@ requires-python = ">=3.11"
 dependencies = [
     # Pin chumicro-workspace here so `python run.py setup` can install
     # it editable into the workspace's venv.  The host CLI carries
-    # `init` / `update` / `deploy` / `repl` / etc.  Lower bound 0.9.0
-    # — that release collapsed the prior 4-layer config overlay to two
-    # gitignored files: workspace.yml (defaults + credentials in one
-    # place) + per-project config.toml.  `setup` materialises the
-    # workspace.yml starter from the workbench package's payloads.
-    "chumicro-workspace>=0.9.0",
+    # `init` / `update` / `deploy` / `repl` / etc.  Lower bound 0.11.0
+    # — that release split the gitignored config into ``workspace.yml``
+    # (host-only machinery) + ``secrets.toml`` (workspace-wide
+    # credentials + device defaults flowing into runtime_config.msgpack).
+    # ``setup`` materialises both starters from the workbench package's
+    # payloads.
+    "chumicro-workspace>=0.11.0",
 ]
 
 [project.optional-dependencies]

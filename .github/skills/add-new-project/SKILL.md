@@ -6,9 +6,9 @@ description: Scaffold a new project in this ChuMicro workspace, wire its config 
 # Add a new project
 
 A project is one deployable program — a directory under `projects/`
-with an `app.py` defining `def run(): ...` and a `config.toml` for
-its knobs.  This skill walks through scaffolding one and getting
-to the first successful deploy.
+with an `app.py` defining `def run(): ...` and a
+`project_config.toml` for its knobs.  This skill walks through
+scaffolding one and getting to the first successful deploy.
 
 ## 1. Pick a name
 
@@ -33,8 +33,8 @@ Copies `projects/_template/` into `projects/my_project/`.  The
 template typically ships:
 
 - `app.py` — minimal `def run(): print("hello")` placeholder.
-- `config.toml` — empty config sections matching the libraries
-  the template imports.
+- `project_config.toml` — empty config sections matching the
+  libraries the template imports.
 
 Open both and edit:
 
@@ -42,38 +42,40 @@ Open both and edit:
   follow the pattern in `projects/example_sensor/app.py`: build
   services, register them with a `Runner`, drive `runner.tick()`
   in a `while not _SHUTDOWN_REQUESTED:` loop.
-- `config.toml` — fill in per-project knobs (sample period, mqtt
-  topic, sensor pins, etc.).  Per-project file is gitignored when
-  scaffolded by `new`, so per-project secrets can live here when
-  needed.
+- `project_config.toml` — fill in per-project knobs (sample
+  period, mqtt topic, sensor pins, etc.).  Per-project file is
+  gitignored when scaffolded by `new`, so per-project secrets can
+  live here when needed.
 
 ## 3. Wire credentials
 
 Workspace-wide credentials (wifi password, broker auth) live in
-the gitignored `workspace.yml` directly.  `setup` materialises that
-file from the chumicro-workspace package's canonical starter on
-first run; open it and fill in your values:
+the gitignored `secrets.toml` at the workspace root.  `setup`
+materialises that file from the chumicro-workspace package's
+canonical starter on first run; open it and fill in your values:
 
-```yaml
-# workspace.yml — gitignored; defaults + credentials in one place
-defaults:
-  wifi:
-    ssid: YourNetwork
-    password: your-actual-passphrase
-  mqtt:
-    broker:
-      host: broker.example.com
-      port: 1883
-      auth:
-        username: device-user
-        password: your-broker-password
+```toml
+# secrets.toml — gitignored; workspace-wide credentials + device defaults
+[wifi]
+ssid = "YourNetwork"
+password = "your-actual-passphrase"
+
+[mqtt.broker]
+host = "broker.example.com"
+port = 1883
+
+[mqtt.broker.auth]
+username = "device-user"
+password = "your-broker-password"
 ```
 
-The deploy-time deep-merge is two layers: `workspace.yml` →
-`projects/<name>/config.toml`.  Per-project values win at any key.
-The resulting dict ships to the device as `/runtime_config.msgpack`.
-Neither `workspace.yml` nor per-project `config.toml` lands on the
-device — only the merged msgpack does.
+The deploy-time deep-merge is two layers: `secrets.toml` →
+`projects/<name>/project_config.toml`.  Per-project values win at
+any key.  The merged dict is then flattened to dotted keys
+(`wifi.ssid`, `mqtt.broker.host`) and shipped to the device as
+`/runtime_config.msgpack`.  Neither `secrets.toml` nor per-project
+`project_config.toml` lands on the device — only the merged + flat
+msgpack does.
 
 ## 4. First deploy
 

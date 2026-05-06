@@ -55,16 +55,16 @@ class _HeartbeatPublisher:
             self._next_at = ticks_add(now_ms, self._period_ms)
 
 
-def _make_socket_factory(mqtt_section):
+def _make_socket_factory(config):
     """Closure that builds a fresh TCP / TLS socket on each connect.
 
     `MQTTClient` calls this every time it (re-)issues CONNECT, which
     is what makes self-heal-on-drop work — the dead socket stays
     dead, the new one walks through DNS + connect from scratch.
     """
-    host = mqtt_section["broker"]
-    port = mqtt_section["port"]
-    use_tls = mqtt_section.get("tls", False)
+    host = config.require("mqtt.broker")
+    port = config.require("mqtt.port")
+    use_tls = config.get("mqtt.tls", False)
 
     def build_socket():
         if use_tls:
@@ -76,10 +76,9 @@ def _make_socket_factory(mqtt_section):
 
 def run():
     config = load_runtime_config()
-    wifi_section = config["wifi"]
-    mqtt_section = config["mqtt"]
+    topic = config.require("mqtt.topic")
 
-    wifi = WifiService(WifiConfig.from_dict(wifi_section))
+    wifi = WifiService(WifiConfig.from_config(config))
     runner = Runner()
     runner.add(wifi)
 
@@ -91,19 +90,19 @@ def run():
     print(f"telemetry_publisher: wifi at {wifi.ip}")
 
     mqtt_client = MQTTClient(
-        socket_factory=_make_socket_factory(mqtt_section),
-        client_id=mqtt_section["client_id"],
-        keep_alive_seconds=mqtt_section.get("keep_alive_seconds", 60),
+        socket_factory=_make_socket_factory(config),
+        client_id=config.require("mqtt.client_id"),
+        keep_alive_seconds=config.get("mqtt.keep_alive_seconds", 60),
     )
     mqtt_client.connect()
     runner.add(mqtt_client)
     runner.add(_HeartbeatPublisher(
         mqtt_client=mqtt_client,
-        topic=mqtt_section["topic"],
-        period_ms=mqtt_section.get("publish_period_ms", 5000),
+        topic=topic,
+        period_ms=config.get("mqtt.publish_period_ms", 5000),
     ))
 
-    print(f"telemetry_publisher: publishing to {mqtt_section['topic']}")
+    print(f"telemetry_publisher: publishing to {topic}")
     try:
         while True:
             runner.tick()

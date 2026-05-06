@@ -16,9 +16,9 @@ for the workflow primer.
 
 | Command | Purpose |
 |---|---|
-| `python3 run.py setup` | One-time: create `.venv`, install deps, materialize the workbench-owned gitignored `workspace.yml` + `devices.yml` starters and any files under `_workspace_template/`. |
+| `python3 run.py setup` | One-time: create `.venv`, install deps, materialize the workbench-owned gitignored `workspace.yml` + `secrets.toml` + `devices.yml` starters and any files under `_workspace_template/`. |
 | `python run.py bootstrap [--with-demo]` | End-to-end onboarding wizard: pick a port → probe → register → optionally deploy demo.  Skip prompts with `--port` / `--device-id`. |
-| `python run.py status` | Workspace health snapshot — `workspace.yml` validity, `devices.yml` count, projects-tree summary.  Exit 1 only on errors. |
+| `python run.py status` | Workspace health snapshot — `workspace.yml` / `secrets.toml` validity, `devices.yml` count, projects-tree summary.  Exit 1 only on errors. |
 | `python run.py doctor` | Strict sibling of `status` — adds Python ≥3.11 check and an AST scan for `def run`. |
 | `python run.py new <name>` | Scaffold a new project under `projects/<name>/`.  Name may be nested (`upstairs/bedroom_sensor` or dotted `upstairs.bedroom_sensor`); each segment must be a valid Python identifier. |
 | `python run.py new <name> --from <path>` | Scaffold from an existing tree instead of `projects/_template/`, e.g. `--from examples/wifi_only`. |
@@ -50,7 +50,8 @@ for the workflow primer.
 |---|---|---|
 | `projects/<your-name>/` | YOU | leaves alone |
 | `devices.yml` | tool (via `add-device` / `rename` / `probe`); gitignored, materialized by `setup` from the chumicro-workspace package's canonical starter | leaves alone |
-| `workspace.yml` | YOU; gitignored, materialized by `setup` from the chumicro-workspace package's canonical starter — holds defaults + your credentials in one place | leaves alone |
+| `workspace.yml` | YOU (rare — usually only `library_sources:` in dev mode); gitignored, materialized by `setup` from the chumicro-workspace package's canonical starter — workspace machinery only | leaves alone |
+| `secrets.toml` | YOU; gitignored, materialized by `setup` from the chumicro-workspace package's canonical starter — holds wifi password / broker auth + device defaults that flow to the board | leaves alone |
 | `shared/` | YOU (drop a `.py`, import as `from shared.foo import bar`) | leaves alone |
 | `packages/` | YOU (manual-drop area; gitignored) | leaves alone |
 | `libraries/` | YOU (lazy-created by `new --library`; absent by default) | leaves alone |
@@ -79,7 +80,7 @@ Procedural knowledge for common workflows lives under `.github/skills/`.  Read t
 
 - **Projects must export `def run(): ...` from `app.py`** (or define `code.py` / `main.py` directly).  When the project ships `app.py` with `run()`, deploy synthesizes a three-line `code.py` (CP) or `main.py` (MP) at the device root that imports `app.run` and calls it.  When the project ships `code.py` / `main.py` itself, deploy ships those as-is.
 - **Project names are Python identifiers.**  `python run.py new` rejects hyphens / dots / leading-digits / Python-keywords / leading-underscores up-front.  If the user typed a hyphenated name, suggest the underscore version.
-- **Credentials live in `workspace.yml` directly** under `defaults.<section>.<key>`.  The file is gitignored, so wifi password / broker auth never reaches git.  Per-project `config.toml` deep-merges on top.
+- **Credentials live in `secrets.toml` directly** under nested TOML tables (`[wifi] ssid = ...`).  The file is gitignored, so wifi password / broker auth never reaches git.  Per-project `project_config.toml` deep-merges on top.  On-device readers see flat keys (`config["wifi.ssid"]`) — compose-time flattening produces them.
 - **CP boards: do NOT add `CIRCUITPY_WIFI_SSID` to `settings.toml`.**  `chumicro-wifi` owns the radio; CircuitPython's auto-connect supervisor will compete with it.
 - **Tight tick loop is the contract for networked projects.**  Don't suggest adding `time.sleep_ms()` inside the `while True: runner.tick()` body — it loses MQTT keepalive timing and stalls inbound bytes.  If the user is concerned about CPU usage, the right answer is a different runner shape (deep-sleep + scheduled wake), not a sleep call.
 - **Flash mode is the default; RAM mode is opt-in for single-library experiments.**  `chumicro-deploy` ships with `deploy_mode: flash` as the default for project deploys, examples, and most functional tests — this matches how production deploys behave on the device.  RAM mode (`deploy_mode: ram`) is only useful for quick single-library iteration where state-doesn't-persist-across-resets is actually fine.  Heavier libraries (`chumicro-mqtt` / `chumicro-requests` / `chumicro-http-server` / `chumicro-websockets`) declare `[tool.chumicro] requires_flash = true` in their pyproject; if a project imports any of them and the device is in `ram` mode, the deployer auto-switches to flash and prints why.  Surface this when the user reports "messages stop after first publish" or `OSError: [Errno 2] ENOENT` on `/runtime_config.msgpack`.
@@ -103,9 +104,9 @@ Coverage gate: `[tool.coverage.report] fail_under = 85` in `pyproject.toml` — 
 
 When you join a session in a workspace that's been freshly cloned:
 
-1. Read `workspace.yml` to see the merged-config defaults.
+1. Read `secrets.toml` to see the workspace-wide credentials + device defaults.
 2. Read `devices.yml` to see what boards are registered.  If empty, `add-device` is the first move.
-3. Read `projects/<name>/config.toml` for the project the user is working on.
+3. Read `projects/<name>/project_config.toml` for the project the user is working on.
 4. If the user is hitting an error, read the full deploy / REPL output before suggesting fixes — the recovery layer's messages are precise.
 
 ## Project rules — non-negotiable
@@ -113,12 +114,12 @@ When you join a session in a workspace that's been freshly cloned:
 - **Don't fabricate.**  Read code / docs / output instead of guessing.  If you can't verify, say so.
 - **Don't edit tool-owned files.**  See the table above.
 - **Don't bypass `run.py`.**  All commands go through it (so the workspace's `.venv` and config resolution stay consistent).
-- **Don't commit `.scratch/`, `.venv/`, `workspace.yml`, or `devices.yml`.**  All gitignored.
+- **Don't commit `.scratch/`, `.venv/`, `workspace.yml`, `secrets.toml`, or `devices.yml`.**  All gitignored.
 - **No emojis in files unless the user asks.**
 
 ## Common pitfalls
 
-- Editing `workspace.yml.example` — there isn't one.  `workspace.yml` is materialized by `setup` from the chumicro-workspace package's canonical starter; just edit the gitignored file directly.
+- Editing `workspace.yml.example` / `secrets.toml.example` — there aren't any.  Both files are materialized by `setup` from the chumicro-workspace package's canonical starters; just edit the gitignored files directly.
 - Running raw `pytest` — the workspace's pytest config wants `python run.py test` so the venv + paths resolve right.
 - Re-running `setup` thinking it'll "fix" something — it's idempotent and won't overwrite anything.  If a project's broken, the fix is in your code, not in setup.
 - Trying to debug a TLS handshake without setting the device clock — TLS validity-period checks fail with "validity starts in the future" on a fresh board.  NTP after wifi-up, or backdate the cert's notBefore for development.

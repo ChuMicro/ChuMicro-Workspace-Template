@@ -1,8 +1,9 @@
 """Workspace-level smoke tests.
 
 Covers properties of the workspace that aren't tied to a single
-project: every ``projects/<name>/app.py`` exposes a ``run`` callable
-and ``workspace.yml`` parses.
+project: every ``projects/<name>/app.py`` exposes a ``run`` callable;
+``workspace.yml`` (machinery) and ``secrets.toml`` (device config)
+parse cleanly.
 
 This file is YOUR territory — edit freely.  ``chumicro-workspace
 update`` will not touch it.
@@ -90,3 +91,19 @@ def test_workspace_yml_parses() -> None:
 
     data = yaml.safe_load(workspace_yml.read_text()) or {}
     assert isinstance(data, dict), "workspace.yml must be a mapping at the root"
+
+
+def test_secrets_toml_parses() -> None:
+    """``secrets.toml`` must parse as TOML.
+
+    Same shape as ``test_workspace_yml_parses`` — surface a malformed
+    secrets file at host-side test time rather than as a cryptic
+    deploy-time error.
+    """
+    secrets_toml = WORKSPACE_ROOT / "secrets.toml"
+    if not secrets_toml.is_file():
+        pytest.skip("secrets.toml not present yet")
+    import tomllib
+
+    data = tomllib.loads(secrets_toml.read_text())
+    assert isinstance(data, dict), "secrets.toml must be a table at the root"

@@ -2,28 +2,28 @@
 
 Smallest network-stack example: bring wifi up, log state on a
 heartbeat.  Once it's printing `wifi: connected at <ip>`, you've
-confirmed every layer between `workspace.yml` and the radio works.
+confirmed every layer between `secrets.toml` and the radio works.
 
 ## Why this example exists
 
 Wifi is the layer most likely to surface "config didn't reach the
-device" problems — a typo in `workspace.yml`, a missing
-`password` field, a `replace-me` placeholder forgotten on the
+device" problems — a typo in `secrets.toml`, a missing `password`
+field, a `replace-with-your-...` placeholder forgotten on the
 user's first deploy.  Running this *before* the higher-level
 network examples (HTTP, MQTT) means a failure is unambiguously
 about wifi rather than the protocol layer above it.
 
 ## Try it
 
-1. Edit your workspace's gitignored `workspace.yml` — set
-   `defaults.wifi.password` to your AP's password.
-2. Either set `ssid` in `wifi_only/config.toml` (lives in the
-   project's copy under `projects/<name>/`) or in your workspace's
-   `workspace.yml` `[defaults.wifi]` block.
+1. Edit your workspace's gitignored `secrets.toml` — set
+   `[wifi] password` to your AP's password.
+2. Either set `ssid` in `wifi_only/project_config.toml` (lives in
+   the project's copy under `projects/<name>/`) or in your
+   workspace's `secrets.toml` `[wifi]` block.
 
 ```
 python run.py new my_first_network --from examples/wifi_only
-# edit projects/my_first_network/config.toml or workspace.yml
+# edit projects/my_first_network/project_config.toml or secrets.toml
 python run.py deploy my_first_network
 python run.py repl --tail 30
 ```

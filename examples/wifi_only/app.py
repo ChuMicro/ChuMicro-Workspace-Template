@@ -2,23 +2,23 @@
 
 Smallest example that exercises:
 
-* the deploy-time config merge (workspace.yml + per-project config.toml
-  overlay + this project's `config.toml` flatten into a single
-  `/runtime_config.msgpack` that `chumicro-config` reads);
-* `chumicro-wifi`'s state machine (cooperative connect, auto-
+* the deploy-time config merge (secrets.toml + this project's
+  ``project_config.toml`` flatten into a single
+  ``/runtime_config.msgpack`` that ``chumicro-config`` reads);
+* ``chumicro-wifi``'s state machine (cooperative connect, auto-
   reconnect on drop);
-* the runner-shaped tick loop pattern (`Runner` calls each
-  registered task's `check` / `handle` once per `tick`).
+* the runner-shaped tick loop pattern (``Runner`` calls each
+  registered task's ``check`` / ``handle`` once per ``tick``).
 
 No sockets, no upper-layer protocols — once wifi is up, the loop
 just prints status until you stop it.  Great as the second deploy
-after `hello_world/` to confirm credentials in `workspace.yml`
+after ``hello_world/`` to confirm credentials in ``secrets.toml``
 flow through to the device.
 
 Scaffold a copy with
 ``python run.py new <name> --from examples/wifi_only``, edit the
-wifi credentials in your workspace's gitignored ``workspace.yml``
-under ``defaults.wifi.password``, then ``python run.py deploy <name>``.
+wifi credentials in your workspace's gitignored ``secrets.toml``
+under ``[wifi]``, then ``python run.py deploy <name>``.
 """
 
 from chumicro_config import load_runtime_config
@@ -53,11 +53,10 @@ class _StatusBeacon:
 
 def run() -> None:
     config = load_runtime_config()
-    wifi_section = config["wifi"]
-    period_ms = config.get("status", {}).get("period_ms", 5000)
+    period_ms = config.get("status.period_ms", 5000)
 
     runner = Runner()
-    wifi = WifiService(WifiConfig.from_dict(wifi_section))
+    wifi = WifiService(WifiConfig.from_config(config))
     runner.add(wifi)
     runner.add(_StatusBeacon(wifi_service=wifi, period_ms=period_ms))
 

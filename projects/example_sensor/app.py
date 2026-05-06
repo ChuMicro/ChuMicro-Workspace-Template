@@ -9,11 +9,9 @@ End-to-end fixture that exercises the full ChuMicro stack:
 * `chumicro-runner`   — tick-based scheduling glue (no async, no threads)
 * `chumicro-config`   — reads the deploy-time-merged runtime config
 
-The project's `run()` is invoked by the on-device boot module
-(`workspace_runtime.boot()`).  Edit `config.toml` next to this file
-to change broker / topic / period; wifi credentials live in the
-workspace's gitignored `workspace.yml` and reach the device via the
-deploy-time deep-merge (chumicro Decision 0057).
+Edit ``project_config.toml`` next to this file to change broker /
+topic / period; wifi credentials live in the workspace's gitignored
+``secrets.toml`` and reach the device via the deploy-time deep-merge.
 """
 
 from chumicro_config import load_runtime_config
@@ -110,16 +108,16 @@ def _bump_boot_counter(kv_store):
     return next_count
 
 
-def _make_socket_factory(mqtt_section):
+def _make_socket_factory(config):
     """Return a closure that builds a fresh connected socket.
 
     Passed to ``MQTTClient`` so the client can self-heal after a
     wifi-drop: the next tick after the socket dies builds a new one
     via this factory and re-issues CONNECT automatically.
     """
-    host = mqtt_section["broker"]
-    port = mqtt_section["port"]
-    use_tls = mqtt_section.get("tls", False)
+    host = config.require("mqtt.broker")
+    port = config.require("mqtt.port")
+    use_tls = config.get("mqtt.tls", False)
 
     def build_socket():
         if use_tls:
@@ -131,9 +129,7 @@ def _make_socket_factory(mqtt_section):
 
 def run():
     config = load_runtime_config()
-    wifi_section = config["wifi"]
-    mqtt_section = config["mqtt"]
-    sensor_section = config["sensor"]
+    topic = config.require("sensor.topic")
 
     kv_store = KVStore()
     boot_count = _bump_boot_counter(kv_store)
@@ -141,7 +137,7 @@ def run():
 
     runner = Runner()
 
-    wifi = WifiService(WifiConfig.from_dict(wifi_section))
+    wifi = WifiService(WifiConfig.from_config(config))
     runner.add(wifi)
 
     print("sensor: connecting to wifi...")
@@ -151,11 +147,11 @@ def run():
             raise SystemExit(f"wifi failed: {wifi.last_error}")
     print(f"sensor: wifi connected at {wifi.ip}")
 
-    socket_factory = _make_socket_factory(mqtt_section)
+    socket_factory = _make_socket_factory(config)
     mqtt_client = MQTTClient(
         socket_factory=socket_factory,
-        client_id=mqtt_section["client_id"],
-        keep_alive_seconds=mqtt_section.get("keep_alive_seconds", 60),
+        client_id=config.require("mqtt.client_id"),
+        keep_alive_seconds=config.get("mqtt.keep_alive_seconds", 60),
     )
     mqtt_client.connect()
     runner.add(mqtt_client)
@@ -163,13 +159,13 @@ def run():
     publisher = HeartbeatPublisher(
         mqtt_client=mqtt_client,
         probe=_TemperatureProbe(),
-        topic=sensor_section["topic"],
-        period_ms=sensor_section["publish_period_ms"],
+        topic=topic,
+        period_ms=config.require("sensor.publish_period_ms"),
         boot_count=boot_count,
     )
     runner.add(publisher)
 
-    print(f"sensor: publishing to {sensor_section['topic']}")
+    print(f"sensor: publishing to {topic}")
     try:
         while not _SHUTDOWN_REQUESTED:
             runner.tick()
