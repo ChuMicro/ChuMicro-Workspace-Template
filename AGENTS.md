@@ -77,7 +77,7 @@ Procedural knowledge for common workflows lives under `.github/skills/`.  Read t
 
 ## Rules of thumb
 
-- **Projects must export `def run(): ...` from `app.py`** (or define `code.py` / `main.py` directly).  The `workspace_runtime` boot module imports `projects.<name>.app` and calls `run()`.
+- **Projects must export `def run(): ...` from `app.py`** (or define `code.py` / `main.py` directly).  When the project ships `app.py` with `run()`, deploy synthesizes a three-line `code.py` (CP) or `main.py` (MP) at the device root that imports `app.run` and calls it.  When the project ships `code.py` / `main.py` itself, deploy ships those as-is.
 - **Project names are Python identifiers.**  `python run.py new` rejects hyphens / dots / leading-digits / Python-keywords / leading-underscores up-front.  If the user typed a hyphenated name, suggest the underscore version.
 - **Credentials live in `workspace.yml` directly** under `defaults.<section>.<key>`.  The file is gitignored, so wifi password / broker auth never reaches git.  Per-project `config.toml` deep-merges on top.
 - **CP boards: do NOT add `CIRCUITPY_WIFI_SSID` to `settings.toml`.**  `chumicro-wifi` owns the radio; CircuitPython's auto-connect supervisor will compete with it.

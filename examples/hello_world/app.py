@@ -5,7 +5,7 @@ Useful as your *first* deploy on a freshly-onboarded board: when
 ``run`` reaches the ``hello`` print, you know
 
 * the host pushed code to the device;
-* `workspace_runtime.boot()` imported `projects.<name>.app` cleanly;
+* the synthesized boot shim imported ``app.run`` cleanly;
 * ``run()`` was called.
 
 Anything that breaks before that line is a deploy / boot-shim
