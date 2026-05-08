@@ -102,14 +102,6 @@ project flows once you've outgrown a single project — see
 - `libraries/` — *not present by default.*  `python run.py new
   --library <name>` materialises it the first time you scaffold a
   full chumicro-style library package.
-- `_workspace_template/` — tool-owned template sources for files
-  this repo customises.  `setup` materializes any missing destination
-  at the workspace root; `update` refreshes these sources from
-  upstream.  Empty by default — the canonical `devices.yml`,
-  `workspace.yml`, and `secrets.toml` starters live in the
-  `chumicro-workspace` package's payloads.  Add files here only if
-  you need to override the workbench defaults for a forked workspace
-  template.
 
 ## Worked example: `example_sensor`
 

@@ -16,7 +16,7 @@ for the workflow primer.
 
 | Command | Purpose |
 |---|---|
-| `python3 run.py setup` | One-time: create `.venv`, install deps, materialize the workbench-owned gitignored `workspace.yml` + `secrets.toml` + `devices.yml` starters and any files under `_workspace_template/`. |
+| `python3 run.py setup` | One-time: create `.venv`, install deps, materialize the workbench-owned gitignored `workspace.yml` + `secrets.toml` + `devices.yml` starters from the canonical `chumicro-workspace` payloads. |
 | `python run.py bootstrap [--with-demo]` | End-to-end onboarding wizard: pick a port → probe → register → optionally deploy demo.  Skip prompts with `--port` / `--device-id`. |
 | `python run.py status` | Workspace health snapshot — `workspace.yml` / `secrets.toml` validity, `devices.yml` count, projects-tree summary.  Exit 1 only on errors. |
 | `python run.py doctor` | Strict sibling of `status` — adds Python ≥3.11 check and an AST scan for `def run`. |
@@ -59,7 +59,6 @@ for the workflow primer.
 | `AGENTS.md` | NEVER edit | rewrites |
 | `CONTRIBUTING.md` | NEVER edit | rewrites |
 | `pyproject.toml` | NEVER edit | rewrites |
-| `_workspace_template/` | NEVER edit | rewrites |
 | `projects/_template/` | NEVER edit | rewrites |
 | `.github/skills/` | NEVER edit | rewrites |
 | `examples/` | NEVER edit | rewrites |
