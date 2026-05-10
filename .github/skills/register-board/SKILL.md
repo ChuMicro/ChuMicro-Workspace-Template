@@ -114,12 +114,12 @@ Shows every entry one-per-line.
 
 ## Rules
 
-- **Don't hardcode `circuitpy_drive_path`** unless absolutely
-  needed.  `chumicro-deploy` probes
-  `microcontroller.cpu.uid` and matches it against
-  `boot_out.txt` UID lines on each mounted CIRCUITPY drive, so
-  the right drive is auto-selected even when macOS assigns
-  `CIRCUITPY 1` / `CIRCUITPY 2` in different orders.
+- **CIRCUITPY drive paths are resolved at deploy time** — there is
+  no `devices.yml` field for them.  `chumicro-deploy` probes
+  `microcontroller.cpu.uid` and matches it against `boot_out.txt`
+  UID lines on each mounted CIRCUITPY drive, so the right drive is
+  auto-selected even when macOS assigns `CIRCUITPY 1` /
+  `CIRCUITPY 2` in different orders.
 - **Don't edit `devices.yml` while `add-device` is running.**
   The round-trip writer holds an exclusive lock briefly; manual
   edits during that window risk corrupting the file.
