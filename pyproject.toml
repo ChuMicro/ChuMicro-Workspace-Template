@@ -36,6 +36,14 @@ dev = [
     # the workspace's conftest.py needed.  Activates only for paths
     # under ``functional_tests/``.
     "chumicro-pytest-device",
+    # Workspace-internal lint rules (CHU0NN codes).  Most rules
+    # self-no-op in a typical workspace because they target paths
+    # only the chumicro upstream has; the one that fires here is
+    # CHU008 (catches stray ADR pointers and mono-repo planning-tree  # noqa: CHU008  rule-description metadata
+    # references that leaked into your prose or config).  See the
+    # commented ``[tool.chumicro-checks]`` block at the bottom of
+    # this file for how to opt out of any rule.
+    "chumicro-checks",
     "pytest>=8.0",
     "pytest-cov>=5.0",
     "ruff>=0.6",
@@ -93,3 +101,26 @@ ban-relative-imports = "all"
 "tests/**" = ["TID252"]
 "projects/*/tests/**" = ["TID252"]
 "projects/*/functional_tests/**" = ["TID252"]
+
+
+# ---------------------------------------------------------------------------
+# CHU lint rules (chumicro-checks)
+# ---------------------------------------------------------------------------
+#
+# `chumicro-checks` ships workspace-internal lint rules numbered
+# CHU0NN.  Run on demand with `chumicro-checks` (after `python
+# run.py setup` installs the dev extras).  Each rule self-scopes —
+# walks paths it targets and silently no-ops in repos where those
+# paths don't exist — so most rules don't fire in a typical
+# workspace.  CHU008 is the one tuned for workspaces: it flags
+# upstream-derivative framing like leftover ADR-number pointers,  # noqa: CHU008  rule-description metadata
+# planning-tree paths under ``plans/``, and command-runner
+# references that don't belong in a workspace ("scripts/run.py"  # noqa: CHU008  rule-description metadata
+# vs the workspace's own ``run.py``).
+#
+# Run `chumicro-checks --list` for every code + what it catches.
+#
+# To opt out of a rule, uncomment and add codes here:
+#
+# [tool.chumicro-checks]
+# ignore = ["CHU012"]

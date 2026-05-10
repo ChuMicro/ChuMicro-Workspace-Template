@@ -182,6 +182,14 @@ quality:
 
 Both `lint` and `test` are also runnable on their own.
 
+`chumicro-checks` runs a small set of workspace-internal lint
+rules (CHU0NN codes) on top of ruff — most importantly CHU008,
+which catches stray ADR-number pointers, planning-tree paths
+under `plans/`, and command-runner references that don't belong
+in a workspace.  Run it on demand with `chumicro-checks` after
+`python run.py setup`.  See `pyproject.toml`'s commented
+`[tool.chumicro-checks]` block for opt-out config.
+
 ### Library-shaped code — `shared/` vs `libraries/`
 
 Both hold code your projects can `import`.  Pick by *weight*:
