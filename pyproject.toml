@@ -108,19 +108,28 @@ ban-relative-imports = "all"
 # ---------------------------------------------------------------------------
 #
 # `chumicro-checks` ships workspace-internal lint rules numbered
-# CHU0NN.  Run on demand with `chumicro-checks` (after `python
-# run.py setup` installs the dev extras).  Each rule self-scopes —
-# walks paths it targets and silently no-ops in repos where those
-# paths don't exist — so most rules don't fire in a typical
-# workspace.  CHU008 is the one tuned for workspaces: it flags
-# upstream-derivative framing like leftover ADR-number pointers,  # noqa: CHU008  rule-description metadata
-# planning-tree paths under ``plans/``, and command-runner
-# references that don't belong in a workspace ("scripts/run.py"  # noqa: CHU008  rule-description metadata
-# vs the workspace's own ``run.py``).
+# CHU0NN.  `python run.py lint` invokes it after ruff finishes (and
+# `chumicro-checks` runs standalone too, after `python run.py setup`
+# installs the dev extras).
+#
+# Each rule self-scopes — walks the paths it targets and silently
+# no-ops where those paths don't exist — so this workspace's typical
+# fire is CHU008 (catches upstream-derivative framing like leftover
+# ADR-number pointers and command-runner references that don't  # noqa: CHU008  rule-description metadata
+# belong in a workspace).  Rules that target ``libraries/<name>/``
+# scaffolding fire automatically the first time a library is
+# scaffolded; rules that target ``plans/`` fire automatically when
+# a planning tree is added.
+#
+# CHU007 is the one rule that genuinely doesn't apply here — it
+# enforces the chumicro upstream's library-vs-workbench split,
+# which a workspace cloned from this template doesn't have.  Listed
+# in `ignore` below so the intent is explicit; without the entry,
+# CHU007 still self-no-ops because there's no `workbench/` tree to
+# walk.
 #
 # Run `chumicro-checks --list` for every code + what it catches.
-#
-# To opt out of a rule, uncomment and add codes here:
-#
-# [tool.chumicro-checks]
-# ignore = ["CHU012"]
+# Add more codes to `ignore` to opt out of any rule.
+
+[tool.chumicro-checks]
+ignore = ["CHU007"]
