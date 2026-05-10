@@ -1,0 +1,14 @@
+# Per-project config — deep-merged over the workspace's gitignored
+# ``secrets.toml`` at deploy time.  Keep credentials out of git: set
+# ``[wifi] password`` in the gitignored ``secrets.toml`` rather than
+# inlining secrets here.
+
+[wifi]
+# ssid = "MyNetwork"   # set here or in the workspace's secrets.toml
+
+[http_server]
+# Bind address + port for the HTTP listener.  ``0.0.0.0`` accepts
+# connections on every interface; pick a port that's free on your
+# network (8080 is a safe default on most home LANs).
+bind_host = "0.0.0.0"
+bind_port = 8080

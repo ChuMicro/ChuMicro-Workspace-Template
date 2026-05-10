@@ -22,7 +22,7 @@ copy under `projects/`, then `python run.py deploy garage/heater`.
 | [`wifi_only/`](wifi_only/) | Wifi up + status print on a heartbeat — minimum that exercises `chumicro-wifi` + the merged-config flow. |
 | [`periodic_get/`](periodic_get/) | Wifi + non-blocking HTTP GET on a heartbeat — exercises the `chumicro-sockets` + `chumicro-requests` upper-layer stack. |
 | [`telemetry_publisher/`](telemetry_publisher/) | Wifi + MQTT publish on a heartbeat — `chumicro-mqtt` over `chumicro-sockets`, with self-heal-on-drop via the socket-factory shape. |
-| [`two_projects/`](two_projects/) | Multi-project LAN demo — a sensor board POSTs JSON readings to a server board running `chumicro-http-server`. |
+| [`two_board_handshake/`](two_board_handshake/) | Two physical boards on the same wifi — server-side board runs `chumicro-http-server`, client-side board POSTs JSON readings to it on a heartbeat. |
 
 ## How they fit together
 
@@ -35,8 +35,9 @@ A natural progression for someone new to a board:
    bytes.  HTTP client, no server.
 4. **`telemetry_publisher/`** — same shape, MQTT instead of HTTP.
    Confirms publish-only telemetry flows.
-5. **`two_projects/`** — two boards, one network, one workspace.
-   The smallest "device A talks to device B" pattern.
+5. **`two_board_handshake/`** — two physical boards on one network,
+   talking to each other over HTTP.  The smallest "device A talks
+   to device B" pattern; needs two registered boards in `devices.yml`.
 
 For the full network reference (wifi → sockets → mqtt →
 kvstore → workspace, with persistent state across resets),
