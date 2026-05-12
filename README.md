@@ -163,6 +163,49 @@ canonical reference for how to wire `WifiService` + `MQTTClient` +
 starting from scratch.
 
 <details>
+<summary>Bring your own transport — slimming a deploy that doesn't need <code>chumicro-sockets</code></summary>
+
+If your project supplies its own socket (an upstream library wrapper,
+stdlib `socket.socket`, a hand-rolled fake) instead of letting the
+library default to `chumicro-sockets`, you can declare that intent at
+the top of your project's `app.py` and the deployer filters the
+default factory submodule + its `chumicro-sockets` closure out of the
+on-device file set:
+
+```python
+# projects/<name>/app.py
+__chumicro_skip_factories__ = (
+    "sockets_factory",                       # family form — every <lib>.sockets_factory
+    "chumicro_websockets.tls_factory",       # exact form — one module
+)
+```
+
+Two forms: a bare stem (`"sockets_factory"`) matches every
+`chumicro_*.sockets_factory` your project transitively imports; a
+dotted path (`"chumicro_mqtt.sockets_factory"`) matches one module.
+
+Typos and dead skips both surface loudly.  An unmatched entry fails
+the deploy with the discovered families named in the message — silent
+skips that ship the unwanted library are worse than refusing to
+deploy.  An entry whose parent library is never imported emits an
+informational dead-skip warning so you can prune the constant.
+
+If you list a factory in the skip set but then call the affected
+library's `from_config(...)` on the device, the lazy import inside
+`from_config` raises `RuntimeError` naming the bypass kwarg (e.g.
+`socket_factory=` for MQTT, `connection_factory=` for requests and
+websockets, `listener_factory=` for http_server, `socket=` for ntp) —
+so a misuse surfaces at construction time instead of silently
+misbehaving.
+
+The mechanism only applies to deploys driven through this workspace's
+`python run.py deploy ...`.  `circup` and `mip` resolve transitive
+deps independently — if you install chumicro libraries through them
+directly, the on-device file set is whatever they decide.
+
+</details>
+
+<details>
 <summary>ChuMicro-dev mode — for co-developing chumicro libraries alongside the workspace</summary>
 
 Co-developing chumicro libraries / `chumicro-workspace` from a
