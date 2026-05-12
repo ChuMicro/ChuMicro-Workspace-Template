@@ -190,13 +190,14 @@ skips that ship the unwanted library are worse than refusing to
 deploy.  An entry whose parent library is never imported emits an
 informational dead-skip warning so you can prune the constant.
 
-If you list a factory in the skip set but then call the affected
-library's `from_config(...)` on the device, the lazy import inside
-`from_config` raises `RuntimeError` naming the bypass kwarg (e.g.
+Calling a library's `from_config(...)` when its factory submodule is
+missing — either skipped at deploy time or not installed on the
+board — raises `RuntimeError` naming the bypass kwarg (e.g.
 `socket_factory=` for MQTT, `connection_factory=` for requests and
-websockets, `listener_factory=` for http_server, `socket=` for ntp) —
-so a misuse surfaces at construction time instead of silently
-misbehaving.
+websockets, `listener_factory=` for http_server, `socket=` for ntp).
+A misuse surfaces at construction time instead of silently
+misbehaving, and a partial install (`circup` / `mip` that omitted
+the factory file) hits the same loud failure mode.
 
 The mechanism only applies to deploys driven through this workspace's
 `python run.py deploy ...`.  `circup` and `mip` resolve transitive
