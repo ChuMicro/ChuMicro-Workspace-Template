@@ -175,8 +175,8 @@ on-device file set:
 ```python
 # projects/<name>/app.py
 __chumicro_skip_factories__ = (
-    "sockets_factory",                       # family form — every <lib>.sockets_factory
-    "chumicro_websockets.tls_factory",       # exact form — one module
+    "sockets_factory",                          # family form — every <lib>.sockets_factory
+    "chumicro_websockets.sockets_factory",      # exact form — one module
 )
 ```
 
