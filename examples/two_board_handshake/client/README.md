@@ -24,8 +24,8 @@ project's `project_config.toml` with that IP under
 ```
 python run.py new two_board/client --from examples/two_board_handshake/client
 # edit projects/two_board/client/project_config.toml — set two_board.server_host
-python run.py deploy two_board/client --device-id lolin-s2-cp
-python run.py repl --tail 30 --device-id lolin-s2-cp
+python run.py deploy two_board/client --device lolin-s2-cp
+python run.py repl --tail 30 --device lolin-s2-cp
 ```
 
 Expected client output:

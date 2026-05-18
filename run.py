@@ -4,15 +4,20 @@ Tool-owned: ``chumicro-workspace update`` will rewrite this file.
 Don't edit; if you need a custom command, extend ``chumicro-workspace``
 upstream and re-run ``update`` to pull it in.
 
-Bootstrap flow on a freshly cloned workspace:
+Bootstrap flow:
 
-* No ``.venv/`` yet  -> ``python3 run.py setup`` creates the venv,
-  enters chumicro-dev mode if ``chumicro-dev.toml`` is present (see
-  below), installs ``chumicro-workspace`` (and the workspace's
-  pyproject deps), then re-execs into the venv to run the requested
-  command.
-* ``.venv/`` exists  -> every ``python3 run.py <cmd>`` re-execs into
-  the venv and dispatches through ``chumicro_workspace.cli``.
+* ``python3 run.py setup`` is the bootstrap *and* the repair entry
+  point.  It creates ``.venv/`` if absent, then ALWAYS (re)installs
+  ``chumicro-workspace`` + the workspace's pyproject deps and verifies
+  the CLI imports before handing off.  Running it against an existing
+  venv is safe and idempotent: a venv whose dependencies have drifted
+  behind a moved-ahead chumicro-dev checkout (e.g. a new transitive
+  dep) self-heals here instead of crashing later at deploy time.
+  Mirrors chumicro's ``scripts/prepare_workspace.py``.
+* Every other ``python3 run.py <cmd>`` re-execs into the venv and
+  dispatches through ``chumicro_workspace.cli``.  If the venv is stale
+  it fails fast with a pointer to ``python3 run.py setup`` rather than
+  a raw ``ImportError`` traceback.
 
 ChuMicro-dev mode: drop a ``chumicro-dev.toml`` next to this file with::
 
@@ -102,13 +107,24 @@ def _discover_chumicro_packages(checkout_path: Path) -> list[Path]:
     return packages
 
 
-def _create_venv_and_install() -> None:
+def _create_venv() -> None:
     print(f"creating .venv at {VENV_DIR}", flush=True)
     subprocess.run(
         [sys.executable, "-m", "venv", str(VENV_DIR)],
         check=True,
     )
-    venv_python = _venv_python()
+
+
+def _install_workspace(venv_python: Path) -> None:
+    """Install (or repair) the workspace into *venv_python*.
+
+    Idempotent and safe to re-run — this is what makes ``setup`` a
+    self-healing bootstrap rather than a one-shot.  In chumicro-dev mode
+    the sibling packages are (re)installed editable, then the
+    workspace's own pyproject deps resolve normally, which is precisely
+    what pulls in any transitive dependency the chumicro checkout has
+    grown since the venv was last built.
+    """
     print("upgrading pip", flush=True)
     subprocess.run(
         [
@@ -171,6 +187,35 @@ def _create_venv_and_install() -> None:
     )
 
 
+def _verify_workspace(venv_python: Path) -> None:
+    """Refuse to report success until the CLI actually imports.
+
+    A fresh or repaired venv can still be missing a transitive dep
+    (classic in chumicro-dev mode, where editable installs are
+    ``--no-deps``).  Importing the CLI in the target interpreter catches
+    that here, at setup time, instead of as a confusing failure at
+    deploy time.  Mirrors prepare_workspace.py's post-install verify
+    gate: bootstrap only earns "ready" once the import has passed.
+    """
+    print("verifying workspace (chumicro_workspace.cli imports)", flush=True)
+    result = subprocess.run(
+        [str(venv_python), "-c", "import chumicro_workspace.cli"],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        sys.stderr.write(result.stderr)
+        raise SystemExit(
+            "error: workspace install did not produce a working CLI "
+            "(import of chumicro_workspace.cli failed above).  In "
+            "chumicro-dev mode this usually means the sibling chumicro "
+            "checkout grew a dependency the editable --no-deps install "
+            "skipped; rerun `python3 run.py setup` after it settles, or "
+            "delete .venv/ and rerun setup for a clean rebuild.",
+        )
+    print("verified: CLI imports cleanly", flush=True)
+
+
 def _reexec_in_venv() -> None:
     venv_python = _venv_python()
     if not venv_python.exists():
@@ -188,17 +233,46 @@ def _reexec_in_venv() -> None:
 def main() -> int:
     _check_python_version()
     args = sys.argv[1:]
-    if not VENV_DIR.exists():
-        if args[:1] != ["setup"]:
+    is_setup = args[:1] == ["setup"]
+
+    if is_setup and not _running_in_venv():
+        # Bootstrap + self-repair.  Runs once in the outer (system)
+        # interpreter; the post-verify re-exec re-enters main() inside
+        # the venv where _running_in_venv() short-circuits past this
+        # block straight to dispatch (so we never double-install).
+        # Reinstalling unconditionally — not just when .venv/ is absent —
+        # is what heals a venv whose deps drifted behind a moved-ahead
+        # chumicro-dev checkout.
+        if not VENV_DIR.exists():
+            _create_venv()
+        venv_python = _venv_python()
+        if not venv_python.exists():
             raise SystemExit(
-                "error: workspace not set up yet. "
-                "Run `python3 run.py setup` first.",
+                f"error: venv at {VENV_DIR} is broken (no python at "
+                f"{venv_python}); delete .venv/ and rerun "
+                f"`python3 run.py setup`.",
             )
-        _create_venv_and_install()
+        _install_workspace(venv_python)
+        _verify_workspace(venv_python)
         _reexec_in_venv()
+
+    if not VENV_DIR.exists():
+        raise SystemExit(
+            "error: workspace not set up yet. "
+            "Run `python3 run.py setup` first.",
+        )
     if not _running_in_venv():
         _reexec_in_venv()
-    from chumicro_workspace.cli import main as workspace_main
+    try:
+        from chumicro_workspace.cli import main as workspace_main
+    except ModuleNotFoundError as exc:
+        raise SystemExit(
+            f"error: the workspace venv is missing '{exc.name}' — its "
+            f"dependencies have drifted (common in chumicro-dev mode "
+            f"after the sibling chumicro checkout moves ahead).\n"
+            f"Repair it (idempotent, keeps your venv):\n"
+            f"    python3 run.py setup",
+        ) from exc
 
     return workspace_main(args)
 

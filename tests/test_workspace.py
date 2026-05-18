@@ -87,9 +87,12 @@ def test_workspace_yml_parses() -> None:
     workspace_yml = WORKSPACE_ROOT / "workspace.yml"
     if not workspace_yml.is_file():
         pytest.skip("workspace.yml not present yet")
-    import yaml
+    # ruamel.yaml is the workspace's shipped YAML dependency (the
+    # tooling round-trips workspace.yml with it); PyYAML is not
+    # installed, so parse with the library we actually have.
+    from ruamel.yaml import YAML
 
-    data = yaml.safe_load(workspace_yml.read_text()) or {}
+    data = YAML(typ="safe").load(workspace_yml.read_text()) or {}
     assert isinstance(data, dict), "workspace.yml must be a mapping at the root"
 
 

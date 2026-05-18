@@ -32,8 +32,8 @@ python run.py new two_board/server --from examples/two_board_handshake/server
 python run.py new two_board/client --from examples/two_board_handshake/client
 
 # 2. Deploy the server first; note the IP it prints.
-python run.py deploy two_board/server --device-id pi-pico-w-cp
-python run.py repl --tail 10 --device-id pi-pico-w-cp
+python run.py deploy two_board/server --device pi-pico-w-cp
+python run.py repl --tail 10 --device pi-pico-w-cp
 # server: wifi at 192.168.0.42
 # server: listening on http://192.168.0.42:8080/
 
@@ -42,8 +42,8 @@ python run.py repl --tail 10 --device-id pi-pico-w-cp
 #    -> two_board.server_host = "192.168.0.42"
 
 # 4. Deploy the client to the second board.
-python run.py deploy two_board/client --device-id lolin-s2-cp
-python run.py repl --tail 30 --device-id lolin-s2-cp
+python run.py deploy two_board/client --device lolin-s2-cp
+python run.py repl --tail 30 --device lolin-s2-cp
 # client: -> POST http://192.168.0.42:8080/api/sensor #0
 #   -> status=201
 ```

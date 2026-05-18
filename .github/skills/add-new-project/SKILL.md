@@ -85,7 +85,7 @@ python run.py deploy my_project
 
 If a default device is set in `devices.yml` (`defaults.micropython`
 or `defaults.circuitpython`), the deploy fires against that
-board.  Otherwise add `--device-id <id>`.
+board.  Otherwise add `--device <id>`.
 
 Watch the output.  On success you'll see:
 

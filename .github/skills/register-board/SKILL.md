@@ -44,7 +44,7 @@ Convention: `<board-shape>-<runtime>-<location-or-purpose>`.  Examples:
 - `feather-s3-mp-test`
 
 The id is the user's choice — anything string-shaped works.  But
-`python run.py deploy` uses it as the `--device-id`, so memorable
+`python run.py deploy` uses it as the `--device`, so memorable
 names pay off.
 
 ## 3. Add the entry
@@ -72,7 +72,7 @@ mismatch — re-run with the correct value.
 
 If this is the first board you've added, set it as the runtime
 default so `python run.py deploy <project>` doesn't need
-`--device-id`:
+`--device`:
 
 ```bash
 python run.py set-default --runtime micropython pi-pico-w-mp-back-porch
@@ -91,7 +91,7 @@ defaults:
 
 ```bash
 python run.py probe                       # uses default
-python run.py probe --device-id <id>      # specific board
+python run.py probe --device <id>      # specific board
 ```
 
 Should print the device's runtime + version + machine + UID.  A

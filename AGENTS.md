@@ -17,7 +17,7 @@ for the workflow primer.
 | Command | Purpose |
 |---|---|
 | `python3 run.py setup` | One-time: create `.venv`, install deps, materialize the workbench-owned gitignored `workspace.yml` + `secrets.toml` + `devices.yml` starters from the canonical `chumicro-workspace` payloads. |
-| `python run.py bootstrap [--with-demo]` | End-to-end onboarding wizard: pick a port → probe → register → optionally deploy demo.  Skip prompts with `--port` / `--device-id`. |
+| `python run.py bootstrap [--with-demo]` | End-to-end onboarding wizard: pick a port → probe → register → optionally deploy demo.  Skip prompts with `--port` / `--device`. |
 | `python run.py status` | Workspace health snapshot — `workspace.yml` / `secrets.toml` validity, `devices.yml` count, projects-tree summary.  Exit 1 only on errors. |
 | `python run.py doctor` | Strict sibling of `status` — adds Python ≥3.11 check and an AST scan for `def run`. |
 | `python run.py new <name>` | Scaffold a new project under `projects/<name>/`.  Name may be nested (`upstairs/bedroom_sensor` or dotted `upstairs.bedroom_sensor`); each segment must be a valid Python identifier. |
@@ -29,7 +29,7 @@ for the workflow primer.
 | `python run.py probe` | Read `sys.implementation` from the default device. |
 | `python run.py devices` | Print every entry in `devices.yml`. |
 | `python run.py deploy <project>` | Ship a project to the default board.  Name accepts bare / slash / dotted; bare names disambiguate against the live tree. |
-| `python run.py deploy <project> --device-id <id>` | Override the default device. |
+| `python run.py deploy <project> --device <id>` | Override the default device. |
 | `python run.py deploy <project> --dry-run` | Print the file map without writing — useful for "did the overlay merge flatten?" debugging. |
 | `python run.py deploy <project> --all-devices` | Loop over every device in `devices.yml`.  Failures don't abort the loop; exit code reflects whether any failed. |
 | `python run.py deploy --all-projects` | Walk `workspace.yml`'s `deploy_targets:` mapping and deploy each project to its declared device(s).  Mutually exclusive with positional names / `--device` / `--runtime` / `--all-devices`. |

@@ -21,8 +21,8 @@ for the client) before deploying.
 
 ```
 python run.py new two_board/server --from examples/two_board_handshake/server
-python run.py deploy two_board/server --device-id pi-pico-w-cp
-python run.py repl --tail 30 --device-id pi-pico-w-cp
+python run.py deploy two_board/server --device pi-pico-w-cp
+python run.py repl --tail 30 --device pi-pico-w-cp
 ```
 
 Note the IP the server prints, then deploy the client with that IP
