@@ -11,7 +11,8 @@ Scaffold a copy with
 """
 
 from chumicro_config import load_runtime_config
-from chumicro_requests import HttpClient, chumicro_sockets_factory
+from chumicro_requests import HttpClient
+from chumicro_requests.sockets_factory import chumicro_sockets_connector_factory
 from chumicro_runner import Runner
 from chumicro_timing import ticks_add, ticks_diff, ticks_ms
 from chumicro_wifi import WifiConfig, WifiService, WifiState
@@ -73,7 +74,7 @@ def run():
             raise SystemExit(f"wifi failed: {wifi.last_error}")
     print(f"periodic_get: connected at {wifi.ip}")
 
-    client = HttpClient(connection_factory=chumicro_sockets_factory())
+    client = HttpClient(connector_factory=chumicro_sockets_connector_factory())
     runner.add(client)
     runner.add(_PeriodicFetcher(
         http_client=client,

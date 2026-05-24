@@ -12,8 +12,8 @@ board on the same wifi.
   milliseconds.
 * Uses a synthetic sine-wave for the value — replace with a real
   sensor read when you have one wired up.
-* Self-heals on wifi drops via `chumicro_sockets_factory`'s rebuild-on-
-  connect contract.
+* Self-heals on wifi drops via `chumicro_sockets_connector_factory`'s
+  rebuild-on-connect contract.
 
 ## Try it
 

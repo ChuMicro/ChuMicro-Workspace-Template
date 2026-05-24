@@ -12,8 +12,9 @@ Architecture:
   ``HttpClient.handle`` advance the in-flight POST one tick at a
   time, so wifi reconnects + LED blinks keep working through the
   request.
-* Self-heal on drop: ``chumicro_sockets_factory`` builds a fresh TCP
-  socket on each connect, so a wifi drop doesn't wedge the client.
+* Self-heal on drop: ``chumicro_sockets_connector_factory`` builds a
+  fresh TCP socket on each connect, so a wifi drop doesn't wedge the
+  client.
 
 Before deploying, set ``two_board.server_host`` in
 ``project_config.toml`` to the IP the server printed at startup.
@@ -26,7 +27,8 @@ then ``python run.py deploy two_board/client``.
 import math
 
 from chumicro_config import load_runtime_config
-from chumicro_requests import HttpClient, chumicro_sockets_factory
+from chumicro_requests import HttpClient
+from chumicro_requests.sockets_factory import chumicro_sockets_connector_factory
 from chumicro_runner import Runner
 from chumicro_timing import ticks_add, ticks_diff, ticks_ms
 from chumicro_wifi import WifiConfig, WifiService, WifiState
@@ -107,7 +109,7 @@ def run() -> None:
     print(f"client: wifi at {wifi.ip}")
     print(f"client: posting to {url} every {period_ms} ms")
 
-    http_client = HttpClient(connection_factory=chumicro_sockets_factory())
+    http_client = HttpClient(connector_factory=chumicro_sockets_connector_factory())
     runner.add(http_client)
     runner.add(_PeriodicPoster(
         http_client=http_client,
