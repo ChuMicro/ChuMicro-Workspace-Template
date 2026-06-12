@@ -132,16 +132,23 @@ $EDITOR projects/example_sensor/project_config.toml
 #    overlay layer didn't deep-merge how you expected.
 python run.py dump-config example_sensor
 
-# 6. Install the chumicro libraries onto the board.  AST-walks the
-#    project for `chumicro_<name>` imports, then shells out to
-#    `circup install ...` (CircuitPython) or `mpremote ... mip
-#    install github:ChuMicro/ChuMicro-Bundle/...` (MicroPython) per
-#    library.  Skip this step in chumicro-dev mode — the libraries
-#    ship via `library_sources:` instead (see the collapsible note
-#    below).  Add `--experimental` to install from
-#    `ChuMicro-Bundle-Experimental`; add `--dry-run` to preview the
-#    exact commands without executing.
-python run.py install-libraries example_sensor
+# 6. Pull the chumicro libraries the project imports into the
+#    workspace.  `library add` fetches a library and everything it
+#    depends on from the ChuMicro-Libraries channel into the
+#    workspace's `libraries/` folder; deploy then ships the ones the
+#    project actually imports to the board.  Dependencies come along
+#    automatically, so these four cover everything example_sensor
+#    uses (config, sockets, and timing arrive as dependencies).
+#    Skip this step in chumicro-dev mode — the libraries ship via
+#    `library_sources:` instead (see the collapsible note below).
+#    Pass `--channel experimental` for pre-release libraries.  No
+#    workspace tooling on the host?  See "Installing libraries
+#    without the workspace tooling" below for the circup / mip
+#    fallback.
+python run.py library add chumicro_mqtt
+python run.py library add chumicro_wifi
+python run.py library add chumicro_runner
+python run.py library add chumicro_kvstore
 
 # 7. Deploy + watch
 python run.py deploy example_sensor
@@ -231,33 +238,42 @@ into `workspace.yml` mapping every chumicro library it finds in the
 sibling checkout to its `src/` directory.  `deploy --import-graph`
 (and the `--boot-shim --import-graph` composition) reads that block
 to ship the on-device libraries directly from the local checkout —
-no `circup` / `mip` round-trip and no `install-libraries` step.
+no `circup` / `mip` round-trip and no `library add` step.
 Pulling new chumicro libraries into the sibling checkout is a
 re-run-`setup` away.
 
-In regular mode (no `chumicro-dev.toml`), the `install-libraries`
-step in the worked example above fetches each library from
-`ChuMicro-Bundle` (stable) or `ChuMicro-Bundle-Experimental` and
-installs it onto the board.  Manual fallback for air-gapped /
-custom-registry rigs:
+In regular mode (no `chumicro-dev.toml`), curate libraries into the
+workspace with `python run.py library add <name>`, then `deploy
+--import-graph` ships the ones your project imports to the board's
+`/lib/`.
+
+#### Installing libraries without the workspace tooling
+
+When the host can't reach the library channel — air-gapped, behind a
+custom registry, no internet — install onto the board directly with
+the runtime's own package manager.  Both pull from `ChuMicro-Bundle`,
+list the libraries your project imports, and resolve transitive
+chumicro deps for you:
 
 ```bash
-# CircuitPython — bundle-add once, then install per project
+# CircuitPython — register the bundle once per machine, then install by name
 circup bundle-add ChuMicro/ChuMicro-Bundle
-circup install chumicro-config chumicro-kvstore chumicro-mqtt \
-               chumicro-msgpack chumicro-runner chumicro-sockets \
-               chumicro-timing chumicro-wifi
+circup install chumicro-wifi chumicro-mqtt chumicro-runner \
+               chumicro-config chumicro-kvstore chumicro-sockets \
+               chumicro-timing
 
-# MicroPython — one mip install per library
+# MicroPython — one mip install per library; the board needs wifi to fetch
 mpremote connect /dev/cu.usbmodem1101 mip install \
-    github:ChuMicro/ChuMicro-Bundle/chumicro_config
+    github:ChuMicro/ChuMicro-Bundle/chumicro_wifi
 mpremote connect /dev/cu.usbmodem1101 mip install \
-    github:ChuMicro/ChuMicro-Bundle/chumicro_kvstore
+    github:ChuMicro/ChuMicro-Bundle/chumicro_mqtt
 # ... repeat per library
 ```
 
-`python run.py install-libraries <project> --dry-run` prints the
-exact commands the workspace would have run — paste-into-elsewhere
-when this host can't reach the bundle URL directly.
+`circup` uses hyphens (`chumicro-wifi`); `mip` uses the underscore
+import name (`chumicro_wifi`).  Swap `ChuMicro-Bundle` for
+`ChuMicro-Bundle-Experimental` to track the pre-release channel.
+Files land at `/lib/chumicro_<name>/` either way, so a project
+deployed afterward finds its imports.
 
 </details>
