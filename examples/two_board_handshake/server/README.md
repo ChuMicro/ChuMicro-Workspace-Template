@@ -21,8 +21,7 @@ for the client) before deploying.
 
 ```
 python run.py new two_board/server --from examples/two_board_handshake/server
-python run.py deploy two_board/server --device pi-pico-w-cp
-python run.py repl --tail 30 --device pi-pico-w-cp
+python run.py deploy two_board/server --device pi-pico-w-cp --tail 30
 ```
 
 Note the IP the server prints, then deploy the client with that IP
@@ -52,10 +51,10 @@ curl http://192.168.0.42:8080/api/latest
 |---|---|
 | `chumicro-config` | reads the merged `/runtime_config.msgpack` |
 | `chumicro-wifi` | sole-supervisor wifi service |
-| `chumicro-sockets` | host TCP listener |
-| `chumicro-http-server` | runner-shaped HTTP/1.1 server |
-| `chumicro-runner` | tick-shaped task scheduler |
-| `chumicro-timing` | wraparound-safe `ticks_ms` |
+| `chumicro-sockets` | host TCP listener (via `from_config`) |
+| `chumicro-http-server` | runner-shaped HTTP/1.1 server (`HttpServer.from_config`) |
+| `chumicro-runner` | tick-shaped scheduler; `run_until()` parks the CPU between requests |
+| `chumicro-timing` | wraparound-safe `ticks_ms` for the receive timestamp |
 
 ## What's next
 

@@ -36,6 +36,17 @@ with no flash writes at all).  Your editor, your VCS, your tests,
 your habits — no special "are you sure?" dance because the device
 filesystem isn't in your edit loop.
 
+**Deploys are clean-slate by default.**  Each deploy reconciles the
+board's filesystem to the project's payload: anything that isn't the
+new payload or a device-required keep-set file (`boot.py`,
+`boot_out.txt`, `_chu_kv.msgpack`) is removed, and a board-resident
+`settings.toml` is evicted (it competes with config-driven wifi).
+Pass `--no-wipe` to leave hand-managed board files (uploaded assets,
+`circup`-installed `/lib`) in place.  This is why hand-installing
+libraries with `circup` and then running a *default* deploy can wipe
+them — let `library add` + `deploy` own `/lib`, or opt out with
+`--no-wipe`.
+
 ## Quickstart
 
 ```bash
@@ -123,38 +134,31 @@ $EDITOR secrets.toml   # set [wifi] ssid + password to your AP
 
 # 4. Point the sensor at your AP + a broker (one line each)
 $EDITOR projects/example_sensor/project_config.toml
-#   [wifi]    ssid = "YourNetwork"
-#   [mqtt]    broker = "broker.hivemq.com"   # public test broker; swap for your own
-#   [sensor]  topic  = "chumicro/example/temperature"
+#   [wifi]         ssid = "YourNetwork"
+#   [mqtt.broker]  host = "broker.hivemq.com"   # public test broker; swap for your own
+#   [sensor]       topic = "chumicro/example/temperature"
 
 # 5. (Optional) Sanity-check the merged config before deploying.
 #    Prints the dict that ends up on the device — handy when an
 #    overlay layer didn't deep-merge how you expected.
 python run.py dump-config example_sensor
 
-# 6. Pull the chumicro libraries the project imports into the
-#    workspace.  `library add` fetches a library and everything it
-#    depends on from the ChuMicro-Libraries channel into the
-#    workspace's `libraries/` folder; deploy then ships the ones the
-#    project actually imports to the board.  Dependencies come along
-#    automatically, so these four cover everything example_sensor
-#    uses (config, sockets, and timing arrive as dependencies).
-#    Skip this step in chumicro-dev mode — the libraries ship via
-#    `library_sources:` instead (see the collapsible note below).
-#    Pass `--channel experimental` for pre-release libraries.  No
-#    workspace tooling on the host?  See "Installing libraries
-#    without the workspace tooling" below for the circup / mip
-#    fallback.
+# 6. Pull the chumicro libraries this project uses into the
+#    workspace.  `library add <name>` fetches the named library plus
+#    its transitive chumicro deps from the release channel; the
+#    deploy in step 7 ships the ones the project imports to the
+#    board's `/lib/`.  Skip this step in chumicro-dev mode — the
+#    libraries ship straight from the sibling checkout via
+#    `library_sources:` (see the collapsible note below).  Add
+#    `--channel experimental` to track the pre-release channel.
 python run.py library add chumicro_mqtt
 python run.py library add chumicro_wifi
-python run.py library add chumicro_runner
 python run.py library add chumicro_kvstore
 
-# 7. Deploy + watch
-python run.py deploy example_sensor
-
-# Or, if you want to follow the REPL output afterward:
-python run.py repl
+# 7. Deploy + watch.  `--tail` follows the board's serial output
+#    after a successful deploy, then exits (it replaces the old
+#    `repl <project>` deploy-then-watch shortcut).
+python run.py deploy example_sensor --tail
 ```
 
 Subscribe to the topic from any MQTT client (`mosquitto_sub -h
@@ -199,9 +203,10 @@ informational dead-skip warning so you can prune the constant.
 
 Calling a library's `from_config(...)` when its factory submodule is
 missing — either skipped at deploy time or not installed on the
-board — raises `RuntimeError` naming the bypass kwarg (e.g.
-`socket_factory=` for MQTT, `connection_factory=` for requests and
-websockets, `listener_factory=` for http_server, `socket=` for ntp).
+board — raises `RuntimeError` naming the bypass kwarg.  Every
+networked library takes the same one: `transport_factory=` (mqtt,
+requests, websockets, http_server, ntp); mqtt and ntp additionally
+accept a pre-built `socket=`.
 A misuse surfaces at construction time instead of silently
 misbehaving, and a partial install (`circup` / `mip` that omitted
 the factory file) hits the same loud failure mode.
@@ -242,27 +247,22 @@ no `circup` / `mip` round-trip and no `library add` step.
 Pulling new chumicro libraries into the sibling checkout is a
 re-run-`setup` away.
 
-In regular mode (no `chumicro-dev.toml`), curate libraries into the
-workspace with `python run.py library add <name>`, then `deploy
---import-graph` ships the ones your project imports to the board's
-`/lib/`.
-
-#### Installing libraries without the workspace tooling
-
-When the host can't reach the library channel — air-gapped, behind a
-custom registry, no internet — install onto the board directly with
-the runtime's own package manager.  Both pull from `ChuMicro-Bundle`,
-list the libraries your project imports, and resolve transitive
-chumicro deps for you:
+In regular mode (no `chumicro-dev.toml`), the `library add` step in
+the worked example above pulls each named library plus its
+transitive chumicro deps from `ChuMicro-Bundle` (the stable channel)
+or the experimental channel into the workspace; `deploy` then ships
+the ones the project imports to the board.  Manual fallback for
+air-gapped / custom-registry rigs — install onto the board directly
+with the runtime's own package manager (both resolve transitive
+chumicro deps automatically):
 
 ```bash
-# CircuitPython — register the bundle once per machine, then install by name
+# CircuitPython — bundle-add once, then install by name
 circup bundle-add ChuMicro/ChuMicro-Bundle
 circup install chumicro-wifi chumicro-mqtt chumicro-runner \
-               chumicro-config chumicro-kvstore chumicro-sockets \
-               chumicro-timing
+               chumicro-kvstore chumicro-config
 
-# MicroPython — one mip install per library; the board needs wifi to fetch
+# MicroPython — one mip install per library
 mpremote connect /dev/cu.usbmodem1101 mip install \
     github:ChuMicro/ChuMicro-Bundle/chumicro_wifi
 mpremote connect /dev/cu.usbmodem1101 mip install \
@@ -271,9 +271,7 @@ mpremote connect /dev/cu.usbmodem1101 mip install \
 ```
 
 `circup` uses hyphens (`chumicro-wifi`); `mip` uses the underscore
-import name (`chumicro_wifi`).  Swap `ChuMicro-Bundle` for
-`ChuMicro-Bundle-Experimental` to track the pre-release channel.
-Files land at `/lib/chumicro_<name>/` either way, so a project
-deployed afterward finds its imports.
+import name (`chumicro_wifi`).  Files land at `/lib/chumicro_<name>/`
+either way — the same place a `deploy` writes them.
 
 </details>

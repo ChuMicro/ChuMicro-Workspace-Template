@@ -12,8 +12,8 @@ board on the same wifi.
   milliseconds.
 * Uses a synthetic sine-wave for the value — replace with a real
   sensor read when you have one wired up.
-* Self-heals on wifi drops via `chumicro_sockets_connector_factory`'s
-  rebuild-on-connect contract.
+* Self-heals on wifi drops: `HttpClient.from_config` opens a fresh
+  connector per request, so a dropped socket doesn't wedge the client.
 
 ## Try it
 
@@ -24,8 +24,7 @@ project's `project_config.toml` with that IP under
 ```
 python run.py new two_board/client --from examples/two_board_handshake/client
 # edit projects/two_board/client/project_config.toml — set two_board.server_host
-python run.py deploy two_board/client --device lolin-s2-cp
-python run.py repl --tail 30 --device lolin-s2-cp
+python run.py deploy two_board/client --device lolin-s2-cp --tail 30
 ```
 
 Expected client output:
@@ -54,10 +53,10 @@ The loop keeps going.
 |---|---|
 | `chumicro-config` | reads the merged `/runtime_config.msgpack` |
 | `chumicro-wifi` | sole-supervisor wifi service |
-| `chumicro-sockets` | host TCP for the HTTP client |
-| `chumicro-requests` | non-blocking HTTP/1.1 client |
-| `chumicro-runner` | tick-shaped task scheduler |
-| `chumicro-timing` | wraparound-safe `ticks_ms` / `ticks_diff` |
+| `chumicro-sockets` | host TCP for the HTTP client (via `from_config`) |
+| `chumicro-requests` | non-blocking HTTP/1.1 client (`HttpClient.from_config`) |
+| `chumicro-runner` | tick-shaped scheduler; `run_until()` parks the CPU between posts |
+| `chumicro-timing` | `Deadline` for wrap-safe next-post scheduling |
 
 ## What's next
 

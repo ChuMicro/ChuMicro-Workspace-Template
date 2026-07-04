@@ -68,17 +68,15 @@ If `--runtime` is wrong (you said `micropython` but the board's
 actually CircuitPython), the probe will surface a clear
 mismatch — re-run with the correct value.
 
-## 4. Make it the default
+## 4. It becomes the default automatically
 
-If this is the first board you've added, set it as the runtime
-default so `python run.py deploy <project>` doesn't need
-`--device`:
+`add-device` sets the first board you register for a runtime as that
+runtime's default, so `python run.py deploy <project>` targets it
+without `--device`.  Adding a second board of the same runtime
+leaves the existing default alone.
 
-```bash
-python run.py set-default --runtime micropython pi-pico-w-mp-back-porch
-```
-
-Or edit `devices.yml` directly:
+To change the default later, edit the `defaults:` block in
+`devices.yml` directly (there is no `set-default` command):
 
 ```yaml
 defaults:

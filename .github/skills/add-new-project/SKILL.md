@@ -40,8 +40,11 @@ Open both and edit:
 
 - `app.py` — write the actual logic.  Most networked projects
   follow the pattern in `projects/example_sensor/app.py`: build
-  services, register them with a `Runner`, drive `runner.tick()`
-  in a `while not _SHUTDOWN_REQUESTED:` loop.
+  services with `from_config`, register them with a `Runner`, wire
+  a `wifi.on_state_change` callback to kick off connect, schedule
+  periodic work with `runner.add_periodic(...)`, and drive the main
+  loop with `runner.run_until(...)` (which parks the CPU in
+  `runner.wait()` between events).
 - `project_config.toml` — fill in per-project knobs (sample
   period, mqtt topic, sensor pins, etc.).  Per-project file is
   gitignored when scaffolded by `new`, so per-project secrets can
@@ -98,19 +101,25 @@ deploy: executing entrypoint
 If the deploy fails, **load the `deploy-and-debug` skill** —
 don't guess at fixes.
 
-## 5. Follow REPL output
+## 5. Follow the output
 
-After deploy, the entrypoint runs forever (most projects have
-`while True: runner.tick()` style loops).  To watch what it's
-printing:
+After deploy, the entrypoint runs forever (most projects drive a
+`runner.run_until(...)` loop that never completes on its own).  To
+deploy *and* follow the board's output in one step:
+
+```bash
+python run.py deploy my_project --tail       # deploy, then tail 30s
+python run.py deploy my_project --tail 60    # override the window
+```
+
+`--tail` is convenient for "did the heartbeat fire?" sanity checks.
+To poke at variables on a board that's already running, open an
+interactive REPL (`repl` never stages code — use `deploy` for that):
 
 ```bash
 python run.py repl              # interactive — Ctrl-X to exit
-python run.py repl --tail 30    # stream for 30 seconds, then exit
+python run.py repl --tail 30    # standalone tail, no deploy
 ```
-
-`--tail` is convenient for "did the heartbeat fire?" sanity
-checks; interactive REPL is for poking at variables.
 
 ## Rules
 

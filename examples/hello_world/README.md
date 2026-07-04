@@ -16,8 +16,7 @@ that breaks is your code, not the deploy.
 
 ```
 python run.py new my_first_project --from examples/hello_world
-python run.py deploy my_first_project
-python run.py repl --tail 15
+python run.py deploy my_first_project --tail 15
 ```
 
 Expected output:

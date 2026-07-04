@@ -11,7 +11,8 @@ Architecture:
 * Single-process, runner-shaped: ``HttpServer.check`` /
   ``HttpServer.handle`` advance accept / dispatch / response one
   tick at a time, so an LED can keep blinking through inbound
-  request handling.
+  request handling.  ``HttpServer.from_config`` builds the listener
+  from ``http_server.bind_host`` / ``bind_port`` in config.
 * In-memory state — no persistence (a reset clears the latest
   reading; the client just keeps POSTing).
 * Listens on ``0.0.0.0:8080`` by default — adjust
@@ -28,7 +29,6 @@ output for the IP it prints — you'll plug that IP into the client's
 from chumicro_config import load_runtime_config
 from chumicro_http_server import HttpServer, build_response
 from chumicro_runner import Runner
-from chumicro_sockets import tcp_listening_socket
 from chumicro_timing import ticks_ms
 from chumicro_wifi import WifiConfig, WifiService, WifiState
 
@@ -46,15 +46,6 @@ class _SensorState:
         self.sensor_id = None
         self.value = None
         self.received_at_ms = None
-
-
-def _make_listener_factory(host: str, port: int):
-    """Closure that builds the listening socket on each accept loop."""
-
-    def build_listener():
-        return tcp_listening_socket(host, port)
-
-    return build_listener
 
 
 def _register_routes(server: HttpServer, state: _SensorState) -> None:
@@ -96,8 +87,6 @@ def _register_routes(server: HttpServer, state: _SensorState) -> None:
 
 def run() -> None:
     config = load_runtime_config()
-
-    bind_host = config.get("http_server.bind_host", "0.0.0.0")
     bind_port = config.get("http_server.bind_port", 8080)
 
     wifi = WifiService(WifiConfig.from_config(config))
@@ -105,22 +94,16 @@ def run() -> None:
     runner.add(wifi)
 
     print("server: connecting to wifi ...")
-    while not wifi.connected:
-        runner.tick()
-        if wifi.state == WifiState.FAILED:
-            raise SystemExit(f"wifi failed: {wifi.last_error}")
+    runner.run_until(lambda: wifi.connected or wifi.state == WifiState.FAILED)
+    if wifi.state == WifiState.FAILED:
+        raise SystemExit(f"wifi failed: {wifi.last_error}")
     print(f"server: wifi at {wifi.ip}")
     print(f"server: listening on http://{wifi.ip}:{bind_port}/")
     print(f"server: configure the client's two_board.server_host = {wifi.ip!r}")
 
     state = _SensorState()
-    server = HttpServer(listener_factory=_make_listener_factory(bind_host, bind_port))
+    server = HttpServer.from_config(config, radio=wifi.adapter.radio)
     _register_routes(server, state)
     runner.add(server)
 
-    try:
-        while True:
-            runner.tick()
-    except KeyboardInterrupt:
-        pass
-    print("server: shutdown")
+    runner.run_until()  # never completes — parks the CPU between requests

@@ -17,14 +17,21 @@ python run.py deploy my_project
 
 Successful output ends with the entrypoint's stdout (or the
 "executing entrypoint" line followed by your project's prints).
-For projects with `while True: runner.tick()` style loops, the
+For projects that drive a `runner.run_until(...)` loop, the
 deploy stays open until you Ctrl-C or the device errors out.
 
-To follow REPL output afterwards (or in a different shell):
+To deploy *and* follow the board's output in one step, add `--tail`:
+
+```bash
+python run.py deploy my_project --tail       # deploy, then tail 30s
+python run.py deploy my_project --tail 60    # override the window
+```
+
+To poke at an already-running board (`repl` never stages code):
 
 ```bash
 python run.py repl              # interactive — Ctrl-X to exit
-python run.py repl --tail 30    # stream for 30 seconds
+python run.py repl --tail 30    # standalone tail, no deploy
 ```
 
 ## When deploy fails — what the message means

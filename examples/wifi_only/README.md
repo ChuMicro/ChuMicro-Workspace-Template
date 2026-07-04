@@ -24,8 +24,7 @@ about wifi rather than the protocol layer above it.
 ```
 python run.py new my_first_network --from examples/wifi_only
 # edit projects/my_first_network/project_config.toml or secrets.toml
-python run.py deploy my_first_network
-python run.py repl --tail 30
+python run.py deploy my_first_network --tail 30
 ```
 
 Expected output:
@@ -51,8 +50,7 @@ and the host SSID first.  The lower-level cause shows up in
 | Library | Why |
 |---|---|
 | `chumicro-config` | reads the merged `/runtime_config.msgpack` deploy lays at the device root |
-| `chumicro-runner` | tick-shaped task scheduler — calls `WifiService.check` / `handle` cooperatively |
-| `chumicro-timing` | wraparound-safe `ticks_ms` / `ticks_diff` for the heartbeat beacon |
+| `chumicro-runner` | tick-shaped scheduler — `add_periodic` runs the status beacon; `run_until()` parks the CPU between beats |
 | `chumicro-wifi` | sole-supervisor wifi service with state machine + auto-reconnect |
 
 ## What's next

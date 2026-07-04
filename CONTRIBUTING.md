@@ -62,9 +62,9 @@ python run.py new my_sensor    # creates projects/my_sensor/ from projects/_temp
 
 # 3. Edit secrets.toml (wifi credentials) and projects/my_sensor/{app.py, project_config.toml}.
 
-# 4. Deploy + watch — one command via `repl <project>` (deploys, then
-#    tails for 30s).  For longer windows pass --tail SECONDS.
-python run.py repl my_sensor
+# 4. Deploy + watch — `--tail` deploys, then follows the board's
+#    serial output for 30s (pass --tail SECONDS for a longer window).
+python run.py deploy my_sensor --tail
 ```
 
 `python run.py status` (or the stricter `doctor`) is a useful
@@ -347,10 +347,13 @@ humans too.
   shipping.  Tests live under `projects/<name>/tests/` if you want
   per-project coverage.
 - For network-attached projects (anything using `chumicro-mqtt` or
-  similar), the main loop is a tight `while not
-  _SHUTDOWN_REQUESTED: runner.tick()` — do *not* add
-  `time.sleep_ms()` inside the loop.  Tick latency matters for
-  packet timing.
+  similar), drive the main loop with `runner.run_until(...)` (or
+  `runner.run_until()` for run-forever apps).  It ticks, then parks
+  the CPU in `runner.wait(now)` until the next event or deadline —
+  the right way to idle.  Do *not* hand-roll a bare
+  `while True: runner.tick()` busy-spin (it never parks) or add
+  `time.sleep_ms()` inside the loop (tick latency matters for
+  packet timing).
 
 ## When something feels wrong
 

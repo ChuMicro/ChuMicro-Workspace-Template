@@ -13,11 +13,14 @@ ssid = "MyNetwork"
 # connect_timeout_ms = 15000          # optional: cap per single connect attempt
 
 [mqtt]
-broker = "broker.hivemq.com"          # public test broker; swap for your own
-port = 1883
 client_id = "chumicro-example_sensor"
-# tls = false                         # set true to use port 8883 + TLS
 # keep_alive_seconds = 60             # broker idle timeout (PINGREQ runs at half)
+# For TLS, pass ssl_context= to MQTTClient.from_config in app.py and
+# point the broker at port 8883.
+
+[mqtt.broker]
+host = "broker.hivemq.com"            # public test broker; swap for your own
+port = 1883
 
 [sensor]
 topic = "chumicro/example/temperature"

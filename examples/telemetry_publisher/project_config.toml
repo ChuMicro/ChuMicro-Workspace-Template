@@ -7,13 +7,6 @@
 # ssid = "MyNetwork"  # set here or in the workspace's secrets.toml
 
 [mqtt]
-# Broker connection — `broker.hivemq.com` is a public test broker
-# useful for first-deploy validation; swap for your own once round-
-# trip is confirmed.
-broker = "broker.hivemq.com"
-port = 1883
-tls = false
-
 # Identity + topic.  The client_id must be unique per device on
 # the broker; adding a board suffix to the workspace prefix is a
 # safe convention.
@@ -24,3 +17,11 @@ topic = "chumicro/example/telemetry"
 # millisecond ticks.
 publish_period_ms = 5000
 keep_alive_seconds = 60
+
+[mqtt.broker]
+# Broker connection — `broker.hivemq.com` is a public test broker
+# useful for first-deploy validation; swap for your own once round-
+# trip is confirmed.  For TLS, pass ssl_context= to
+# MQTTClient.from_config in app.py and use port 8883.
+host = "broker.hivemq.com"
+port = 1883
