@@ -100,7 +100,11 @@ def run() -> None:
     url = f"http://{server_host}:{server_port}/api/sensor"
 
     wifi = WifiService(WifiConfig.from_config(config))
-    runner = Runner()
+
+    def report_fault(entry, error):
+        print("SERVICE_FAULT", entry.service, repr(error))
+
+    runner = Runner(on_handler_error=report_fault)
     runner.add(wifi)
 
     print("client: connecting to wifi ...")

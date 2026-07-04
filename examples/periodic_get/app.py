@@ -65,7 +65,11 @@ def run():
     config = load_runtime_config()
 
     wifi = WifiService(WifiConfig.from_config(config))
-    runner = Runner()
+
+    def report_fault(entry, error):
+        print("SERVICE_FAULT", entry.service, repr(error))
+
+    runner = Runner(on_handler_error=report_fault)
     runner.add(wifi)
 
     print("periodic_get: connecting ...")

@@ -39,7 +39,10 @@ def run() -> None:
         else:
             print(f"wifi: {wifi.state}")
 
-    runner = Runner()
+    def report_fault(entry, error):
+        print("SERVICE_FAULT", entry.service, repr(error))
+
+    runner = Runner(on_handler_error=report_fault)
     runner.add(wifi)
     runner.add_periodic(report_status, period_ms=period_ms)
 

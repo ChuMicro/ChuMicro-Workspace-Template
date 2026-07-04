@@ -51,7 +51,10 @@ def run():
             {"boot": boot_count, "celsius": read_celsius(), "n": seq})
         mqtt.publish(topic, payload, qos=1)  # queues until CONNECTED, flushes on CONNACK
 
-    runner = Runner()
+    def report_fault(entry, error):
+        print("SERVICE_FAULT", entry.service, repr(error))
+
+    runner = Runner(on_handler_error=report_fault)
     runner.add(wifi)
     runner.add(mqtt)
     runner.add_periodic(publish_reading,

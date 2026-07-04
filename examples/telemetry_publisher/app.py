@@ -47,7 +47,10 @@ def run():
         print(f"telemetry_publisher: -> {topic} #{seq}")
         seq += 1
 
-    runner = Runner()
+    def report_fault(entry, error):
+        print("SERVICE_FAULT", entry.service, repr(error))
+
+    runner = Runner(on_handler_error=report_fault)
     runner.add(wifi)
     runner.add(mqtt)
     runner.add_periodic(publish_reading, period_ms=period_ms)

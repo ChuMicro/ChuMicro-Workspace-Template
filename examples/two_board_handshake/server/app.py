@@ -90,7 +90,11 @@ def run() -> None:
     bind_port = config.get("http_server.bind_port", 8080)
 
     wifi = WifiService(WifiConfig.from_config(config))
-    runner = Runner()
+
+    def report_fault(entry, error):
+        print("SERVICE_FAULT", entry.service, repr(error))
+
+    runner = Runner(on_handler_error=report_fault)
     runner.add(wifi)
 
     print("server: connecting to wifi ...")
