@@ -36,9 +36,9 @@ def run():
     wifi = WifiService(WifiConfig.from_config(config))
     mqtt = MQTTClient.from_config(config, radio=wifi.adapter.radio)
 
-    # The app owns the wifi<->mqtt coordination (Decision 0108): hold()
-    # while the link is down so the client doesn't dial a dead radio,
-    # connect() the moment it's back — an immediate dial, no backoff wait.
+    # The app owns the wifi<->mqtt coordination: hold() while the link
+    # is down so the client doesn't dial a dead radio, connect() the
+    # moment it's back — an immediate dial, no backoff wait.
     def on_wifi_state(_old, new):
         if new == WifiState.CONNECTED:
             mqtt.connect()

@@ -89,6 +89,27 @@ def _read_chumicro_dev_path() -> Path | None:
     return candidate
 
 
+def _workspace_declares_dev_extra() -> bool:
+    """Return True when the workspace pyproject declares a ``dev`` extra.
+
+    Read from ``[project.optional-dependencies]`` in
+    ``pyproject.toml``.  The template ships a ``dev`` extra (pytest,
+    ruff, chumicro-checks, pytest-cov), so ``setup`` installs ``.[dev]``
+    and ``run.py lint`` / ``run.py test`` have their tools.  A missing
+    or malformed pyproject falls back to False so setup degrades to the
+    bare editable install rather than crashing.
+    """
+    pyproject = WORKSPACE_ROOT / "pyproject.toml"
+    if not pyproject.is_file():
+        return False
+    try:
+        data = tomllib.loads(pyproject.read_text())
+    except (OSError, tomllib.TOMLDecodeError):
+        return False
+    optional = data.get("project", {}).get("optional-dependencies", {})
+    return isinstance(optional, dict) and "dev" in optional
+
+
 def _discover_chumicro_packages(checkout_path: Path) -> list[Path]:
     """Return every package dir under *checkout_path*'s ``libraries/``
     and ``workbench/`` trees that has a ``pyproject.toml``.
@@ -173,7 +194,16 @@ def _install_workspace(venv_python: Path) -> None:
                 ],
                 check=True,
             )
-    print("installing workspace (editable) + dependencies", flush=True)
+    # Install the workspace's `dev` extra (pytest / ruff /
+    # chumicro-checks) when the pyproject declares one, so `run.py lint`
+    # and `run.py test` have their tools; fall back to the bare editable
+    # install for a deploy-only workspace that skipped the dev tooling.
+    if _workspace_declares_dev_extra():
+        install_target = f"{WORKSPACE_ROOT}[dev]"
+        print("installing workspace (editable) + dependencies + [dev] extra", flush=True)
+    else:
+        install_target = str(WORKSPACE_ROOT)
+        print("installing workspace (editable) + dependencies", flush=True)
     subprocess.run(
         [
             str(venv_python),
@@ -181,7 +211,7 @@ def _install_workspace(venv_python: Path) -> None:
             "pip",
             "install",
             "-e",
-            str(WORKSPACE_ROOT),
+            install_target,
         ],
         check=True,
     )

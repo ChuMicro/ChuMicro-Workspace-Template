@@ -5,7 +5,17 @@ __pycache__/
 *.mpy
 .pytest_cache/
 
-# Generated runtime config msgpacks (regenerated on every deploy).
+# Only the shipped template examples travel with the repo.  Everything
+# else under projects/ is the user's to version in their own clone — and
+# in this template checkout it's bench scratch (probes, bakes, orphan
+# experiments).  Ignore projects/ wholesale so a stray `git add -A`
+# can't publish bench work, and re-include exactly the tracked examples.
+projects/*
+!projects/_template/
+!projects/example_sensor/
+
+# Generated runtime config msgpacks (regenerated on every deploy) —
+# ignored even inside the re-included examples above.
 projects/*/_generated/
 libraries/*/examples/_generated/
 
@@ -50,3 +60,8 @@ libraries/*/examples/_generated/
 .idea/
 .vscode/
 .DS_Store
+
+# TLS material — bench CA certs / keys / DER blobs never travel with
+# the template.
+*.pem
+*.der
