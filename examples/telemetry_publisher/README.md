@@ -10,7 +10,7 @@ MQTT is the canonical protocol for "device → service" telemetry
 flows.  This example exercises the full publisher path:
 TCP (or TLS) socket → MQTT CONNECT → periodic PUBLISH → ACK.
 `MQTTClient.from_config` owns the transport, so a wifi drop
-self-heals — the client rebuilds its connection and re-issues
+self-heals.  The client rebuilds its connection and re-issues
 CONNECT with backoff, and any sample published while it's
 reconnecting buffers in the pre-connect queue and flushes on the
 next CONNACK (no CONNECTED guard needed in the publisher).
@@ -25,9 +25,9 @@ counter).
 ## Try it
 
 ```
-python run.py new my_publisher --from examples/telemetry_publisher
-# edit projects/my_publisher/project_config.toml — set broker / topic / cadence
-python run.py deploy my_publisher --tail 30
+python3 run.py new my_publisher --from examples/telemetry_publisher
+# edit projects/my_publisher/project_config.toml: set broker / topic / cadence
+python3 run.py deploy my_publisher --tail 30
 ```
 
 In another terminal, subscribe to the topic:
@@ -61,7 +61,7 @@ Point `[mqtt.broker] port` at `8883` and pass an `ssl_context=` to
 TLS-on-MicroPython requires a build with `MBEDTLS_PEM_PARSE_C`
 enabled (the rp2 default doesn't include it; the chumicro-sockets
 adapter handles PEM→DER conversion automatically when a CA bundle
-is supplied — check `projects/example_sensor/` for the recipe).
+is supplied: check `projects/example_sensor/` for the recipe).
 
 ## What it uses
 
@@ -75,6 +75,6 @@ is supplied — check `projects/example_sensor/` for the recipe).
 
 ## What's next
 
-For multi-project demos, see
-[`two_projects/`](../two_projects/) — a sensor project posts to a
-server project via plain HTTP on the same LAN.
+For a two-board demo, see
+[`two_board_handshake/`](../two_board_handshake/): a client board
+POSTs readings to a server board via plain HTTP on the same LAN.

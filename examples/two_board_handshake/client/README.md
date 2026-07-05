@@ -10,7 +10,7 @@ board on the same wifi.
 * POSTs a JSON payload (`sensor_id` + `value` + `uptime_s` + `sequence`)
   to the server's `/api/sensor` endpoint every `period_ms`
   milliseconds.
-* Uses a synthetic sine-wave for the value — replace with a real
+* Uses a synthetic sine-wave for the value.  Replace with a real
   sensor read when you have one wired up.
 * Self-heals on wifi drops: `HttpClient.from_config` opens a fresh
   connector per request, so a dropped socket doesn't wedge the client.
@@ -22,9 +22,9 @@ project's `project_config.toml` with that IP under
 `[two_board] server_host`:
 
 ```
-python run.py new two_board/client --from examples/two_board_handshake/client
-# edit projects/two_board/client/project_config.toml — set two_board.server_host
-python run.py deploy two_board/client --device lolin-s2-cp --tail 30
+python3 run.py new two_board/client --from examples/two_board_handshake/client
+# edit projects/two_board/client/project_config.toml: set two_board.server_host
+python3 run.py deploy two_board/client --device lolin-s2-cp --tail 30
 ```
 
 Expected client output:
@@ -67,5 +67,5 @@ LAN instead of a public URL.  Once round-trip is confirmed:
   ADC pin, etc.).
 * Bump the cadence up to interactive rates (e.g. 100 ms) if your
   network can handle it.
-* Add a second client board posting under a different `sensor_id` —
-  the server's `/api/latest` shows whichever posted most recently.
+* Add a second client board posting under a different `sensor_id`.
+  The server's `/api/latest` shows whichever posted most recently.

@@ -5,17 +5,9 @@ __pycache__/
 *.mpy
 .pytest_cache/
 
-# Only the shipped template examples travel with the repo.  Everything
-# else under projects/ is the user's to version in their own clone — and
-# in this template checkout it's bench scratch (probes, bakes, orphan
-# experiments).  Ignore projects/ wholesale so a stray `git add -A`
-# can't publish bench work, and re-include exactly the tracked examples.
-projects/*
-!projects/_template/
-!projects/example_sensor/
-
-# Generated runtime config msgpacks (regenerated on every deploy) —
-# ignored even inside the re-included examples above.
+# Your projects under projects/ are yours to version in your clone;
+# only generated runtime-config msgpacks (rebuilt on every deploy)
+# stay out of git.
 projects/*/_generated/
 libraries/*/examples/_generated/
 

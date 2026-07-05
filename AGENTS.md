@@ -1,13 +1,13 @@
 # AGENTS.md — workspace conventions
 
 This file is for AI coding agents working inside this workspace.
-Tool-owned: `python run.py update` will rewrite it.  Skim
+Tool-owned: `python3 run.py update` will rewrite it.  Skim
 [CONTRIBUTING.md](CONTRIBUTING.md) for the human-side framing.
 
 ## What this is
 
 A ChuMicro project workspace.  `projects/` are individual deployable
-apps, `devices.yml` registers boards, and `python run.py <cmd>`
+apps, `devices.yml` registers boards, and `python3 run.py <cmd>`
 dispatches to the `chumicro-workspace` host CLI.  See the package's
 [hosted docs](https://chumicro.github.io/ChuMicro/workspace/stable/)
 for the workflow primer.
@@ -17,33 +17,37 @@ for the workflow primer.
 | Command | Purpose |
 |---|---|
 | `python3 run.py setup` | One-time: create `.venv`, install deps, materialize the workbench-owned gitignored `workspace.yml` + `secrets.toml` + `devices.yml` starters from the canonical `chumicro-workspace` payloads. |
-| `python run.py bootstrap [--with-demo]` | End-to-end onboarding wizard: pick a port → probe → register → optionally deploy demo.  Skip prompts with `--port` / `--device`. |
-| `python run.py status` | Workspace health snapshot — `workspace.yml` / `secrets.toml` validity, `devices.yml` count, projects-tree summary.  Exit 1 only on errors. |
-| `python run.py doctor` | Strict sibling of `status` — adds Python ≥3.11 check and an AST scan for `def run`. |
-| `python run.py new <name>` | Scaffold a new project under `projects/<name>/`.  Name may be nested (`upstairs/bedroom_sensor` or dotted `upstairs.bedroom_sensor`); each segment must be a valid Python identifier. |
-| `python run.py new <name> --from <path>` | Scaffold from an existing tree instead of `projects/_template/`, e.g. `--from examples/wifi_only`. |
-| `python run.py new <name> --library [--into <dir>]` | Scaffold a chumicro-style library tree (full `src/`, `tests/`, `docs/`, `examples/` layout).  Defaults to `<workspace>/libraries/<name>/`. |
-| `python run.py projects` | Tree view of every project.  `--flat` for one-line-per-project slash-form output. |
-| `python run.py discover` | List serial ports the host can see. |
-| `python run.py add-device <id> --address <port> [--runtime <cp\|mp>]` | Probe + register a board.  Runtime auto-detected when omitted. |
-| `python run.py probe` | Read `sys.implementation` from the default device. |
-| `python run.py devices` | Print every entry in `devices.yml`. |
-| `python run.py deploy <project>` | Ship a project to the default board.  Name accepts bare / slash / dotted; bare names disambiguate against the live tree. |
-| `python run.py deploy <project> --device <id>` | Override the default device. |
-| `python run.py deploy <project> --dry-run` | Print the file map without writing — useful for "did the overlay merge flatten?" debugging. |
-| `python run.py deploy <project> --all-devices` | Loop over every device in `devices.yml`.  Failures don't abort the loop; exit code reflects whether any failed. |
-| `python run.py deploy <project> --tail [SECONDS]` | Deploy, then follow the board's serial output for SECONDS (default 30) and exit.  The deploy-then-watch one-liner (replaces the retired `repl <project>` shortcut). |
-| `python run.py deploy <project> --no-wipe` | Additive deploy: reconcile only the entrypoint / state files + `/lib`, leaving other board files in place.  The default is clean-slate — the deploy removes anything that isn't the new payload or a keep-set file (`boot.py`, `boot_out.txt`, `_chu_kv.msgpack`) and evicts a board-resident `settings.toml`. |
-| `python run.py deploy --all-projects` | Walk `workspace.yml`'s `deploy_targets:` mapping and deploy each project to its declared device(s).  Mutually exclusive with positional names / `--device` / `--runtime` / `--all-devices`. |
-| `python run.py demo` | Deploy a built-in print-loop payload to the default board (no wifi, ~5s). |
-| `python run.py repl` | Open an interactive REPL on the board.  Defaults to **line mode** in a TTY: host-side line editor with persistent per-device history, `:edit` opens `$EDITOR` with the recent buffer pre-seeded, `:save NAME` / `:load NAME` / `:snippets` round-trip reusable code, Tab completes against keywords + the on-device namespace (use `:rescan` after a new `import`).  Add `--mode passthrough` for the byte-by-byte mpremote-style flow (raw REPL framing, paste mode). |
-| `python run.py repl --tail 30` | Standalone tail: stream a running board's output for 30 seconds, then exit.  Does not stage code — to deploy *and* follow, use `deploy <project> --tail`. |
-| `python run.py rename --project OLD NEW` | Rename a project dir.  Both sides accept slash/dotted paths; intermediate namespace dirs auto-created. |
-| `python run.py install-firmware --method uf2` | Auto-derived firmware download + flash. |
-| `python run.py upgrade-firmware --method esptool` | Same handler, conventionally for re-flashes. |
-| `python run.py test [-- pytest-args]` | Run pytest across `tests/` + `projects/*/tests/`.  `workspace.yml`'s `quality.coverage_threshold` (when set) prepends `--cov-fail-under=N`. |
-| `python run.py lint` | Run `ruff check` across the workspace.  `workspace.yml`'s `quality.lint.enabled = false` skips with a hint; `quality.lint.select` prepends `--select <list>`. |
-| `python run.py update` | Pull tool-owned file refreshes from the canonical workspace template. |
+| `python3 run.py bootstrap [--with-demo]` | End-to-end onboarding wizard: pick a port → probe → register → optionally deploy demo.  Skip prompts with `--port` / `--device`. |
+| `python3 run.py status` | Workspace health snapshot — `workspace.yml` / `secrets.toml` validity, `devices.yml` count, projects-tree summary.  Exit 1 only on errors. |
+| `python3 run.py doctor` | Strict sibling of `status` — adds Python ≥3.11 check and an AST scan for `def run`. |
+| `python3 run.py new <name>` | Scaffold a new project under `projects/<name>/`.  Name may be nested (`upstairs/bedroom_sensor` or dotted `upstairs.bedroom_sensor`); each segment must be a valid Python identifier. |
+| `python3 run.py new <name> --from <path>` | Scaffold from an existing tree instead of `projects/_template/`, e.g. `--from examples/wifi_only`. |
+| `python3 run.py new <name> --library [--into <dir>]` | Scaffold a chumicro-style library tree (full `src/`, `tests/`, `docs/`, `examples/` layout).  Defaults to `<workspace>/libraries/<name>/`. |
+| `python3 run.py projects` | Tree view of every project.  `--flat` for one-line-per-project slash-form output. |
+| `python3 run.py discover` | List serial ports the host can see. |
+| `python3 run.py add-device <id> --address <port> [--runtime <cp\|mp>]` | Probe + register a board.  Runtime auto-detected when omitted. |
+| `python3 run.py probe` | Read `sys.implementation` from the default device. |
+| `python3 run.py devices` | Print every entry in `devices.yml`. |
+| `python3 run.py deploy <project>` | Ship a project to the default board.  Name accepts bare / slash / dotted; bare names disambiguate against the live tree. |
+| `python3 run.py deploy <project> --device <id>` | Override the default device. |
+| `python3 run.py deploy <project> --dry-run` | Print the file map without writing — useful for "did the overlay merge flatten?" debugging. |
+| `python3 run.py deploy <project> --all-devices` | Loop over every device in `devices.yml`.  Failures don't abort the loop; exit code reflects whether any failed. |
+| `python3 run.py deploy <project> --tail [SECONDS]` | Deploy, then follow the board's serial output for SECONDS (default 30) and exit.  The deploy-then-watch one-liner. |
+| `python3 run.py deploy <project> --no-wipe` | Additive deploy: reconcile only the entrypoint / state files + `/lib`, leaving other board files in place.  The default is clean-slate — the deploy removes anything that isn't the new payload or a keep-set file (`boot.py`, `boot_out.txt`, `_chu_kv.msgpack`) and evicts a board-resident `settings.toml`. |
+| `python3 run.py deploy --all-projects` | Walk `workspace.yml`'s `deploy_targets:` mapping and deploy each project to its declared device(s).  Mutually exclusive with positional names / `--device` / `--runtime` / `--all-devices`. |
+| `python3 run.py demo` | Deploy a built-in print-loop payload to the default board (no wifi, ~5s). |
+| `python3 run.py repl` | Open an interactive REPL on the board.  Defaults to **line mode** in a TTY: host-side line editor with persistent per-device history, `:edit` opens `$EDITOR` with the recent buffer pre-seeded, `:save NAME` / `:load NAME` / `:snippets` round-trip reusable code, Tab completes against keywords + the on-device namespace (use `:rescan` after a new `import`).  Add `--mode passthrough` for the byte-by-byte mpremote-style flow (raw REPL framing, paste mode). |
+| `python3 run.py repl --tail 30` | Standalone tail: stream a running board's output for 30 seconds, then exit.  Does not stage code — to deploy *and* follow, use `deploy <project> --tail`. |
+| `python3 run.py rename OLD NEW` | Rename a registered device in `devices.yml`; `--project OLD NEW` renames a project dir instead (slash/dotted paths accepted, namespace dirs auto-created). |
+| `python3 run.py dump-config <project>` | Print the merged, flattened config the device would receive, without deploying.  The first stop for "which layer did this key come from?" |
+| `python3 run.py library add <name> [--channel experimental]` | Fetch a chumicro library plus its chumicro dependencies into the workspace (stable channel by default); `deploy` then ships what the project imports. |
+| `python3 run.py deploy <project> --import-graph` | Ship on-device libraries resolved through the import graph (in dev mode, straight from the sibling checkout's `library_sources:`). |
+| `python3 run.py preflight` | `lint` then `test` as one gate, honoring `workspace.yml`'s `quality:` knobs. |
+| `python3 run.py install-firmware --method uf2` | Auto-derived firmware download + flash. |
+| `python3 run.py upgrade-firmware --method esptool` | Same handler, conventionally for re-flashes. |
+| `python3 run.py test [-- pytest-args]` | Run pytest across `tests/` + `projects/*/tests/`.  `workspace.yml`'s `quality.coverage_threshold` (when set) prepends `--cov-fail-under=N`. |
+| `python3 run.py lint` | Run `ruff check` across the workspace.  `workspace.yml`'s `quality.lint.enabled = false` skips with a hint; `quality.lint.select` prepends `--select <list>`. |
+| `python3 run.py update` | Pull tool-owned file refreshes from the canonical workspace template. |
 
 ## File ownership
 
@@ -51,9 +55,9 @@ for the workflow primer.
 |---|---|---|
 | `projects/<your-name>/` | YOU | leaves alone |
 | `devices.yml` | tool (via `add-device` / `rename` / `probe`); gitignored, materialized by `setup` from the chumicro-workspace package's canonical starter | leaves alone |
-| `workspace.yml` | YOU (rare — usually only `library_sources:` in dev mode); gitignored, materialized by `setup` from the chumicro-workspace package's canonical starter — workspace machinery only | leaves alone |
+| `workspace.yml` | YOU, except the `library_sources:` block: in dev mode `setup` re-syncs that block on every run, so never hand-edit it.  Gitignored, materialized by `setup` — workspace machinery only | leaves alone |
 | `secrets.toml` | YOU; gitignored, materialized by `setup` from the chumicro-workspace package's canonical starter — holds wifi password / broker auth + device defaults that flow to the board | leaves alone |
-| `shared/` | YOU (drop a `.py`, import as `from shared.foo import bar`) | leaves alone |
+| `shared/` | YOU (drop `foo.py`, projects import it by bare module name: `from foo import bar`) | leaves alone |
 | `packages/` | YOU (manual-drop area; gitignored) | leaves alone |
 | `libraries/` | YOU (lazy-created by `new --library`; absent by default) | leaves alone |
 | `run.py` | NEVER edit | rewrites |
@@ -65,6 +69,8 @@ for the workflow primer.
 | `examples/` | NEVER edit | rewrites |
 
 If the user asks for changes the tool-owned files would need, propose an upstream PR to the [`ChuMicro-Workspace-Template`](https://github.com/ChuMicro/ChuMicro-Workspace-Template) repo rather than editing in place.
+
+**ChuMicro-dev mode:** when a `chumicro-dev.toml` (gitignored) sits next to `run.py`, `setup` pip-installs every library and workbench package from the sibling chumicro checkout it points at as editable, and re-syncs `workspace.yml`'s `library_sources:` block to that checkout.  `deploy --import-graph` then ships on-device libraries straight from the local checkout; the `library add` step is unnecessary in this mode.
 
 ## Skills index
 
@@ -79,24 +85,24 @@ Procedural knowledge for common workflows lives under `.github/skills/`.  Read t
 ## Rules of thumb
 
 - **Projects must export `def run(): ...` from `app.py`** (or define `code.py` / `main.py` directly).  When the project ships `app.py` with `run()`, deploy synthesizes a three-line `code.py` (CP) or `main.py` (MP) at the device root that imports `app.run` and calls it.  When the project ships `code.py` / `main.py` itself, deploy ships those as-is.
-- **Project names are Python identifiers.**  `python run.py new` rejects hyphens / dots / leading-digits / Python-keywords / leading-underscores up-front.  If the user typed a hyphenated name, suggest the underscore version.
+- **Project names are Python identifiers.**  `python3 run.py new` rejects hyphens / dots / leading-digits / Python-keywords / leading-underscores up-front.  If the user typed a hyphenated name, suggest the underscore version.
 - **Credentials live in `secrets.toml` directly** under nested TOML tables (`[wifi] ssid = ...`).  The file is gitignored, so wifi password / broker auth never reaches git.  Per-project `project_config.toml` deep-merges on top.  On-device readers see flat keys (`config["wifi.ssid"]`) — compose-time flattening produces them.
 - **CP boards: do NOT add `CIRCUITPY_WIFI_SSID` to `settings.toml`.**  `chumicro-wifi` owns the radio; CircuitPython's auto-connect supervisor will compete with it.
 - **`run_until` / `runner.wait()` is the main-loop contract for networked projects.**  Drive the loop with `runner.run_until(predicate)` (or `run_until()` for run-forever apps) — it ticks then parks the CPU in `runner.wait(now)` until the next event or deadline, which is the *correct* way to idle between events.  Don't suggest a bare `while True: runner.tick()` busy-spin (never parks — a real on-device power cost) or a `time.sleep_ms()` inside the loop (loses MQTT keepalive timing and stalls inbound bytes).  If the user wants deeper power savings, the answer is a different runner shape (deep-sleep + scheduled wake), not a sleep call.
 - **Flash mode is the default; RAM mode is opt-in for single-library experiments.**  `chumicro-deploy` ships with `deploy_mode: flash` as the default for project deploys, examples, and most functional tests — this matches how production deploys behave on the device.  RAM mode (`deploy_mode: ram`) is only useful for quick single-library iteration where state-doesn't-persist-across-resets is actually fine.  Heavier libraries (`chumicro-mqtt` / `chumicro-requests` / `chumicro-http-server` / `chumicro-websockets`) declare `[tool.chumicro] requires_flash = true` in their pyproject; if a project imports any of them and the device is in `ram` mode, the deployer auto-switches to flash and prints why.  Surface this when the user reports "messages stop after first publish" or `OSError: [Errno 2] ENOENT` on `/runtime_config.msgpack`.
-- **Run `python run.py test` before reporting work as done** when the user has tests under `projects/<name>/tests/` or at the workspace root.
+- **Run `python3 run.py test` before reporting work as done** when the user has tests under `projects/<name>/tests/` or at the workspace root.
 
 ## Tests + lint
 
 | Path | What lives there | Run with |
 |---|---|---|
-| `tests/` | Workspace-level smoke tests (e.g. "every project exposes `run()`"). | `python run.py test tests` |
-| `projects/<name>/tests/` | Per-project host-side unit tests.  Scaffolded into every new project by `python run.py new <name>`. | `python run.py test projects/<name>/tests` |
-| `projects/<name>/functional_tests/` | Real-network / real-hardware acceptance.  The `chumicro-pytest-device` plugin routes these to a connected board.  Tests skip cleanly when no board is configured. | `python run.py test projects/<name>/functional_tests` |
+| `tests/` | Workspace-level smoke tests (e.g. "every project exposes `run()`"). | `python3 run.py test tests` |
+| `projects/<name>/tests/` | Per-project host-side unit tests.  Scaffolded into every new project by `python3 run.py new <name>`. | `python3 run.py test projects/<name>/tests` |
+| `projects/<name>/functional_tests/` | Real-network / real-hardware acceptance.  The `chumicro-pytest-device` plugin routes these to a connected board.  Tests skip cleanly when no board is configured. | `python3 run.py test projects/<name>/functional_tests` |
 
-`python run.py test` with no args runs **everything** under `tests/` + `projects/`.  Functional tests deselect themselves on a sweep with no `functional_tests` path argument — only fire when targeted.
+`python3 run.py test` with no args runs **everything** under `tests/` + `projects/`.  Functional tests deselect themselves on a sweep with no `functional_tests` path argument — only fire when targeted.
 
-`python run.py lint` runs `ruff check` with the workspace's `[tool.ruff]` config (line-length 100, imports sorted, relative-import ban, pyflakes / bugbear / pyupgrade).  Tests + functional tests get the relative-import rule relaxed.  Set `quality.lint.enabled: false` in `workspace.yml` to skip lint without uninstalling ruff.  Set `quality.lint.select: ["E", "F", "I"]` to override the rule list per-workspace.
+`python3 run.py lint` runs `ruff check` with the workspace's `[tool.ruff]` config (line-length 100, imports sorted, relative-import ban, pyflakes / bugbear / pyupgrade).  Tests + functional tests get the relative-import rule relaxed.  Set `quality.lint.enabled: false` in `workspace.yml` to skip lint without uninstalling ruff.  Set `quality.lint.select: ["E", "F", "I"]` to override the rule list per-workspace.
 
 Coverage gate: `[tool.coverage.report] fail_under = 85` in `pyproject.toml` — the per-package floor.  Override per-workspace via `quality.coverage_threshold: <N>` in `workspace.yml` (forwarded to pytest as `--cov-fail-under`); user CLI args after `--` win on conflict.
 
@@ -105,7 +111,7 @@ Coverage gate: `[tool.coverage.report] fail_under = 85` in `pyproject.toml` — 
 When you join a session in a workspace that's been freshly cloned:
 
 1. Read `secrets.toml` to see the workspace-wide credentials + device defaults.
-2. Read `devices.yml` to see what boards are registered.  If empty, `add-device` is the first move.
+2. Read `devices.yml` to see what boards are registered.  If empty, `bootstrap` (the wizard) or `add-device` is the first move.
 3. Read `projects/<name>/project_config.toml` for the project the user is working on.
 4. If the user is hitting an error, read the full deploy / REPL output before suggesting fixes — the recovery layer's messages are precise.
 
@@ -120,13 +126,13 @@ When you join a session in a workspace that's been freshly cloned:
 ## Common pitfalls
 
 - Editing `workspace.yml.example` / `secrets.toml.example` — there aren't any.  Both files are materialized by `setup` from the chumicro-workspace package's canonical starters; just edit the gitignored files directly.
-- Running raw `pytest` — the workspace's pytest config wants `python run.py test` so the venv + paths resolve right.
-- Re-running `setup` thinking it'll "fix" something — it's idempotent and won't overwrite anything.  If a project's broken, the fix is in your code, not in setup.
+- Running raw `pytest` — the workspace's pytest config wants `python3 run.py test` so the venv + paths resolve right.
+- Re-running `setup` thinking it'll "fix" something — it's idempotent and won't overwrite your edits (dev-mode exception: it re-syncs the `library_sources:` block).  If a project's broken, the fix is in your code, not in setup.
 - Trying to debug a TLS handshake without setting the device clock — TLS validity-period checks fail with "validity starts in the future" on a fresh board.  NTP after wifi-up, or backdate the cert's notBefore for development.
 
 ## When you finish a unit of work
 
-1. Run `python run.py test` if the user has tests.
+1. Run `python3 run.py test` if the user has tests.
 2. Show the user the diff (or the file paths you touched).
 3. If you ran a deploy, show the relevant REPL output.
 4. Note anything you noticed but didn't change (out-of-scope tweaks the user might want).

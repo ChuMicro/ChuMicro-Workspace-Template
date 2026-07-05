@@ -7,7 +7,7 @@ confirmed every layer between `secrets.toml` and the radio works.
 ## Why this example exists
 
 Wifi is the layer most likely to surface "config didn't reach the
-device" problems — a typo in `secrets.toml`, a missing `password`
+device" problems: a typo in `secrets.toml`, a missing `password`
 field, a `replace-with-your-...` placeholder forgotten on the
 user's first deploy.  Running this *before* the higher-level
 network examples (HTTP, MQTT) means a failure is unambiguously
@@ -15,16 +15,14 @@ about wifi rather than the protocol layer above it.
 
 ## Try it
 
-1. Edit your workspace's gitignored `secrets.toml` — set
-   `[wifi] password` to your AP's password.
-2. Either set `ssid` in `wifi_only/project_config.toml` (lives in
-   the project's copy under `projects/<name>/`) or in your
-   workspace's `secrets.toml` `[wifi]` block.
+Scaffold your own copy first (the folder here is read-only reference
+material), then set your credentials:
 
 ```
-python run.py new my_first_network --from examples/wifi_only
-# edit projects/my_first_network/project_config.toml or secrets.toml
-python run.py deploy my_first_network --tail 30
+python3 run.py new my_first_network --from examples/wifi_only
+# 1. set [wifi] ssid + password in the workspace's gitignored secrets.toml
+# 2. or set ssid per-project in projects/my_first_network/project_config.toml
+python3 run.py deploy my_first_network --tail 30
 ```
 
 Expected output:
@@ -39,25 +37,25 @@ wifi: connected at 192.168.0.42
 ```
 
 The `connecting → connected` transition can take a few seconds.
-If you see repeated `wifi: failed` lines instead, the wifi
-service's reconnect supervisor is retrying — check the credentials
-and the host SSID first.  The lower-level cause shows up in
-`WifiService.last_error` (drop into `python run.py repl` and run
-`wifi.last_error` to inspect).
+If you see repeated `wifi: failed` lines instead, the wifi service
+is retrying; check your network name and password in `secrets.toml`
+first.  The lower-level cause lands in the service's `last_error`
+attribute, which this example prints alongside the failed state.
 
 ## What it uses
 
 | Library | Why |
 |---|---|
-| `chumicro-config` | reads the merged `/runtime_config.msgpack` deploy lays at the device root |
-| `chumicro-runner` | tick-shaped scheduler — `add_periodic` runs the status beacon; `run_until()` parks the CPU between beats |
-| `chumicro-wifi` | sole-supervisor wifi service with state machine + auto-reconnect |
+| `chumicro-config` | reads the deployed config back on the device |
+| `chumicro-wifi` | the wifi service: state machine + auto-reconnect, sole owner of the radio |
+| `chumicro-runner` | the scheduler: `add_periodic` runs the status beacon; `run_until()` parks the CPU between beats |
 
 ## What's next
 
-Once `wifi_only` is solid, the natural follow-on is a project that
-uses the network for something — `projects/example_sensor/` in this
-template repo is the full reference (wifi → sockets → mqtt →
-kvstore → workspace), or wait for the upcoming `examples/`
-follow-ons (`periodic_get/`, `telemetry_publisher/`,
-`two_projects/`) listed in [`examples/README.md`](../README.md).
+Once `wifi_only` is solid, use the network for something:
+[`periodic_get/`](../periodic_get/) fetches a URL on a heartbeat,
+[`telemetry_publisher/`](../telemetry_publisher/) publishes over
+MQTT, and `projects/example_sensor/` in this template repo is the
+full reference (wifi, MQTT, and persistent state in one program).
+The index with the recommended order is
+[`examples/README.md`](../README.md).

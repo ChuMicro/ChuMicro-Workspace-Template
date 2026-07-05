@@ -7,8 +7,9 @@
 # knobs (broker host, mqtt topic, publish period) belong here.
 
 [wifi]
-# ssid is set per-network — fill in your AP name here.
-ssid = "MyNetwork"
+# ssid normally comes from the workspace's secrets.toml.  Uncomment to
+# pin this project to a specific network (values here override secrets.toml).
+# ssid = "MyNetwork"
 # hostname = "chu-sensor"             # optional: name the board on the AP
 # connect_timeout_ms = 15000          # optional: cap per single connect attempt
 

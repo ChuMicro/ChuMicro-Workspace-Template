@@ -12,15 +12,15 @@ question is "can I actually move bytes through the network
 stack?"  This project answers it: every `period_ms` it issues an
 HTTP GET, prints the status code + body size, and waits for the
 next tick.  Failures (DNS error, timeout, server gone) print a
-descriptive error and the loop continues — wifi reconnects keep
+descriptive error and the loop continues.  Wifi reconnects keep
 working in the gap between requests.
 
 ## Try it
 
 ```
-python run.py new my_fetcher --from examples/periodic_get
-# edit projects/my_fetcher/project_config.toml — set fetch.url to a real URL
-python run.py deploy my_fetcher --tail 60
+python3 run.py new my_fetcher --from examples/periodic_get
+# edit projects/my_fetcher/project_config.toml: set fetch.url to a real URL
+python3 run.py deploy my_fetcher --tail 60
 ```
 
 Expected output:
@@ -58,5 +58,5 @@ The loop keeps going.
 ## What's next
 
 Once `periodic_get` is solid, the natural follow-on is
-[`telemetry_publisher/`](../telemetry_publisher/) — same shape,
+[`telemetry_publisher/`](../telemetry_publisher/): same shape,
 but publishes the data via MQTT instead of pulling via HTTP.

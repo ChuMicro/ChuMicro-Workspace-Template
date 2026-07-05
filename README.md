@@ -1,51 +1,20 @@
 # my-workspace
 
-A clone-and-go ChuMicro project layout.  Safer than editing
-`code.py` directly on the device — atomic deploys, no FAT-filesystem
-wear from save-on-every-keystroke, no losing files when CIRCUITPY
-hiccups.
+A clone-and-go project layout for boards running [ChuMicro](https://github.com/ChuMicro/ChuMicro) libraries.  Your code lives on your laptop, in version control, with your editor and your tests; the tooling ships it to the board when you ask.  Recommended even if you only have one project on one board.
 
-**Recommended even if you only have one project on one board.**
+> Rename this directory and this README's title to whatever you want to call your workspace.  This is your repo now.
 
-> Rename this directory + this README's title to whatever you want
-> to call your workspace.  This is your repo now.
+After the quickstart below, read [CONTRIBUTING.md](CONTRIBUTING.md).  Despite the name, it's the day-to-day user guide: the debugging table, how config reaches the device, RAM vs flash deploys, health checks, and how to work with an AI agent here.
 
-## Why a workspace (instead of editing on the device)
+## Why a workspace instead of editing on the device
 
-When you mount a CircuitPython board and edit files on the
-`/CIRCUITPY` drive, every save writes to the board's FAT filesystem.
-Three things go wrong over time:
+When you mount a CircuitPython board and edit files on the `CIRCUITPY` drive, every save writes to the board's FAT filesystem.  Three things go wrong over time:
 
-* **Flash wear.** CP boards typically have 2–4 MB of flash with
-  modest erase-cycle budgets.  Save-on-every-keystroke editing eats
-  through it faster than you'd think.
-* **FAT corruption.**  CIRCUITPY uses FAT12/FAT16/FAT32, which isn't
-  crash-safe.  An interrupted write — host suspending, cable jiggling,
-  board resetting mid-save — leaves files truncated or corrupt.
-  Worst case the drive becomes unmountable.
-* **Lost work.**  When the drive does hiccup (on macOS, the
-  FSKit / DiskArbitration wedge can leave the drive unmountable
-  until you eject + re-plug), files you thought were saved may
-  be gone.
+* **Flash wear.**  Boards typically have 2 to 4 MB of flash with modest erase-cycle budgets.  Save-on-every-keystroke editing eats through it faster than you'd think.
+* **Corruption.**  FAT isn't crash-safe.  An interrupted write (host suspending, cable jiggling, board resetting mid-save) leaves files truncated, and worst case the drive stops mounting.
+* **Lost work.**  When the drive does hiccup, files you thought were saved may be gone.
 
-A workspace keeps your code on your laptop in version control, runs
-lint + tests against it like any normal Python project, and ships
-it to the board only when you ask.  Deploys are atomic
-(write-then-rename in flash mode, or RAM-mode for fast iteration
-with no flash writes at all).  Your editor, your VCS, your tests,
-your habits — no special "are you sure?" dance because the device
-filesystem isn't in your edit loop.
-
-**Deploys are clean-slate by default.**  Each deploy reconciles the
-board's filesystem to the project's payload: anything that isn't the
-new payload or a device-required keep-set file (`boot.py`,
-`boot_out.txt`, `_chu_kv.msgpack`) is removed, and a board-resident
-`settings.toml` is evicted (it competes with config-driven wifi).
-Pass `--no-wipe` to leave hand-managed board files (uploaded assets,
-`circup`-installed `/lib`) in place.  This is why hand-installing
-libraries with `circup` and then running a *default* deploy can wipe
-them — let `library add` + `deploy` own `/lib`, or opt out with
-`--no-wipe`.
+A workspace keeps your code out of that blast radius.  You edit and version it like any Python project, run lint and tests against it on your laptop, and deploy it to the board deliberately.  A deploy makes the board exactly match your project, atomically; while you iterate, RAM mode runs your code with no flash writes at all.
 
 ## Quickstart
 
@@ -57,212 +26,112 @@ rm -rf .git && git init                 # start your own history
 
 # Option B: GitHub UI -> "Use this template" -> clone the resulting repo
 
-# Then, with the workspace cloned:
-python3 run.py setup                    # creates .venv, installs chumicro-workspace, materializes workspace.yml + secrets.toml + devices.yml
-python run.py add-device my-board --address /dev/cu.usbmodem1101 --runtime micropython
-python run.py new my_project            # scaffolds projects/my_project/
-# Edit secrets.toml (wifi credentials) and projects/my_project/{project_config.toml, app.py}
-python run.py dump-config my_project    # (optional) preview the merged config the device will read
-python run.py deploy my_project
+# Then, with the workspace cloned and a board plugged in:
+python3 run.py setup                    # creates .venv, installs the tooling, materializes workspace.yml + secrets.toml + devices.yml
+python3 run.py bootstrap                # wizard: finds the port, detects CircuitPython vs MicroPython, registers the board
+python3 run.py new my_project           # scaffolds projects/my_project/
+# Edit secrets.toml (your wifi name + password) and projects/my_project/{project_config.toml, app.py}
+python3 run.py library add chumicro_wifi   # once per chumicro library your app imports
+python3 run.py deploy my_project
 ```
 
-`python3 run.py setup` is self-bootstrapping: creates `.venv/`,
-installs `chumicro-workspace`, materializes the gitignored
-`workspace.yml` + `secrets.toml` + `devices.yml` from the workbench's
-canonical starters, and re-execs into the venv.  No `pip install`
-prerequisite — system Python 3.11+ is enough.
+Two prerequisites the wizard will tell you about if they're missing: the board must already run CircuitPython or MicroPython (`python3 run.py install-firmware` can flash one onto a fresh board), and Python 3.11+ on the laptop.  `setup` is self-bootstrapping beyond that: it creates `.venv/`, installs `chumicro-workspace`, and re-enters the venv on every later command, so you never activate anything.
 
-For the full workflow walkthrough — including multi-board / multi-
-project flows once you've outgrown a single project — see
-[chumicro-workspace's hosted docs](https://chumicro.github.io/ChuMicro/workspace/stable/).
+Prefer explicit registration over the wizard?  `python3 run.py add-device my-board --address /dev/cu.usbmodem1101 --runtime micropython` (that's a macOS port path; on Linux boards show up as `/dev/ttyACM0` or `/dev/ttyUSB0`, on Windows as `COM3`-style names, and `python3 run.py discover` lists what's visible).
+
+For the full workflow walkthrough, including multi-board and multi-project flows once you've outgrown a single project, see the [chumicro-workspace hosted docs](https://chumicro.github.io/ChuMicro/workspace/stable/).
+
+<details>
+<summary>What a deploy does to the board's filesystem (and how to opt out)</summary>
+
+Deploys are clean-slate by default: each one reconciles the board's filesystem to the project's payload.  Anything that isn't the new payload or a device-required file (`boot.py`, `boot_out.txt`, the persistent kvstore blob) is removed, and a board-resident `settings.toml` is evicted because it competes with config-driven wifi.  This means hand-installing libraries with `circup` or `mip` and then running a default deploy can wipe them.  Either let `library add` + `deploy` own the board's `/lib`, or pass `--no-wipe` to leave hand-managed files in place.
+
+</details>
+
+## Bring an AI coding agent
+
+This workspace is built so an agent can do the driving.  [AGENTS.md](AGENTS.md) gives it the rules (which files it may edit, which the tooling owns), and the skill files under `.github/skills/` give it step-by-step procedures for the workflows that eat an evening: registering a board, flashing firmware onto one in an unknown state, deploying and debugging.
+
+So this is a realistic prompt here: "I just plugged in a board and I don't know what state it's in.  Get CircuitPython onto it and set up a project that blinks the LED."  The agent can discover the port, flash the runtime, register the board, scaffold the project, deploy it, and read the serial output back to you; every step is a `run.py` command whose failure messages name the fix.  [CONTRIBUTING.md](CONTRIBUTING.md#working-with-an-ai-agent) has patterns for doing this without losing your bearings.
 
 ## Layout
 
-- `projects/<name>/` — your projects.  `def run()` in `app.py`.  Names
-  may be nested (`projects/upstairs/bedroom_sensor/`,
-  `projects/garage/sensors/door_open/`); `python run.py projects` shows
-  the tree.
-  - `projects/_template/` — the blank project copied by `python run.py new`.
-  - `projects/example_sensor/` — a worked example (wifi → mqtt
-    heartbeat with persistent boot counter).  See the walkthrough
-    below.
-- `examples/` — read-only worked demos.  Scaffold a real project
-  from one with `python run.py new <name> --from examples/<example>`;
-  see [`examples/README.md`](examples/README.md) for the index.
-  This folder is tool-owned: `python run.py update` rewrites it from
-  the canonical template upstream.
-- `devices.yml` — gitignored, materialized by `setup` from the
-  `chumicro-workspace` package's canonical starter (single source of
-  truth across every workspace).  Mutated in place by `add-device` /
-  `rename` / `probe`.
-- `workspace.yml` — gitignored, materialised by `setup` from the
-  `chumicro-workspace` package's canonical starter.  Holds host-only
-  workspace machinery (`library_sources`, `deploy_targets`, `quality`).
-  Never reaches a device.
-- `secrets.toml` — gitignored, materialised by `setup` from the same
-  package's starter.  Holds workspace-wide credentials (wifi password,
-  broker auth) and device defaults that flow into
-  `runtime_config.msgpack` at deploy time.  Per-project
-  `project_config.toml` deep-merges on top.
-- `shared/` — flat user-authored helper modules shared between
-  projects.  Drop a `.py` file and `import` it as `from shared.foo
-  import bar`.  See [`shared/README.md`](shared/README.md).
-- `packages/` — gitignored manual-drop area for third-party
-  Python source trees that the workspace's projects import on the
-  device.  See [`packages/README.md`](packages/README.md).
-- `libraries/` — *not present by default.*  `python run.py new
-  --library <name>` materialises it the first time you scaffold a
-  full chumicro-style library package.
+- `projects/<name>/`: your projects.  Each is a directory with an `app.py` defining `def run()` plus a `project_config.toml` for its knobs.  Names may be nested (`projects/garage/sensors/door_open/`); `python3 run.py projects` shows the tree.
+  - `projects/_template/`: the blank project copied by `python3 run.py new`.
+  - `projects/example_sensor/`: a worked example (wifi to MQTT heartbeat with a persistent boot counter).  See the walkthrough below.
+- `examples/`: read-only worked demos.  Scaffold a real project from one with `python3 run.py new <name> --from examples/<example>`; [`examples/README.md`](examples/README.md) is the index.  This folder is tool-owned: `python3 run.py update` rewrites it from upstream.
+- `devices.yml`: your board registry, gitignored, created by `setup`.  Managed by the device commands (`bootstrap`, `add-device`, `rename`, `probe`), so comments and key order survive edits.
+- `workspace.yml`: gitignored, created by `setup`.  Host-only workspace settings (`library_sources`, `deploy_targets`, `quality`).  Never reaches a device.
+- `secrets.toml`: gitignored, created by `setup`.  Workspace-wide credentials (wifi password, broker auth) and device defaults that flow into the deployed config.  Per-project `project_config.toml` values override it.
+- `shared/`: helper modules shared between projects.  Drop `foo.py` here and any project can `from foo import bar`; the deploy ships it to the board alongside the libraries.  See [`shared/README.md`](shared/README.md).
+- `packages/`: gitignored drop area for third-party Python source trees your projects import on the device.  See [`packages/README.md`](packages/README.md).
+- `libraries/`: not present by default.  `python3 run.py new --library <name>` creates it the first time you scaffold a full chumicro-style library package.
 
 ## Worked example: `example_sensor`
 
-The shipped `projects/example_sensor/` exercises the full ChuMicro
-runtime stack (wifi + sockets + mqtt + kvstore + workspace).  Boot
-to first heartbeat on a plugged-in board:
+The shipped `projects/example_sensor/` exercises the full stack: wifi, sockets, MQTT, persistent storage, and the deploy tooling.  Boot to first heartbeat on a plugged-in board:
 
 ```bash
 # 1. Bootstrap the workspace (one-time, after clone)
 python3 run.py setup
 
-# 2. Tell the workspace about your board
-python run.py add-device my-board --address /dev/cu.usbmodem1101 --runtime micropython
+# 2. Tell the workspace about your board (or use the explicit add-device form)
+python3 run.py bootstrap
 
-# 3. Fill in your wifi credentials (edit secrets.toml directly —
-#    `setup` materialised it from the chumicro-workspace package's
-#    canonical starter; the file is gitignored, so just open and edit)
-$EDITOR secrets.toml   # set [wifi] ssid + password to your AP
+# 3. Fill in your wifi credentials (the file is gitignored; open and edit)
+$EDITOR secrets.toml   # set [wifi] ssid + password to your network's name and password
 
-# 4. Point the sensor at your AP + a broker (one line each)
+# 4. Look over the project's own settings.  The defaults publish to a
+#    free public MQTT broker, so you can leave this file as-is for a
+#    first run.  (An MQTT broker is a small server that relays
+#    messages between devices; broker.hivemq.com is public and needs
+#    no signup, which also means anything you publish there is
+#    visible to anyone.  Swap in your own broker when it matters.)
 $EDITOR projects/example_sensor/project_config.toml
-#   [wifi]         ssid = "YourNetwork"
-#   [mqtt.broker]  host = "broker.hivemq.com"   # public test broker; swap for your own
-#   [sensor]       topic = "chumicro/example/temperature"
 
-# 5. (Optional) Sanity-check the merged config before deploying.
-#    Prints the dict that ends up on the device — handy when an
-#    overlay layer didn't deep-merge how you expected.
-python run.py dump-config example_sensor
+# 5. Optional: sanity-check the merged config before deploying.
+#    Prints the dict that ends up on the device.
+python3 run.py dump-config example_sensor
 
-# 6. Pull the chumicro libraries this project uses into the
-#    workspace.  `library add <name>` fetches the named library plus
-#    its transitive chumicro deps from the release channel; the
-#    deploy in step 7 ships the ones the project imports to the
-#    board's `/lib/`.  Skip this step in chumicro-dev mode — the
-#    libraries ship straight from the sibling checkout via
-#    `library_sources:` (see the collapsible note below).  Add
-#    `--channel experimental` to track the pre-release channel.
-python run.py library add chumicro_mqtt
-python run.py library add chumicro_wifi
-python run.py library add chumicro_kvstore
+# 6. Pull the chumicro libraries this project uses into the workspace.
+#    `library add <name>` fetches the named library plus its chumicro
+#    dependencies from the stable release channel; the deploy in step 7
+#    ships the ones the project imports to the board's /lib/.
+#    (Add --channel experimental to track pre-releases instead.
+#    Skip this step entirely in chumicro-dev mode; see the note below.)
+python3 run.py library add chumicro_runner
+python3 run.py library add chumicro_mqtt
+python3 run.py library add chumicro_wifi
+python3 run.py library add chumicro_kvstore
 
-# 7. Deploy + watch.  `--tail` follows the board's serial output
-#    after a successful deploy, then exits (it replaces the old
-#    `repl <project>` deploy-then-watch shortcut).
-python run.py deploy example_sensor --tail
+# 7. Deploy, then watch. --tail follows the board's serial output
+#    after a successful deploy (30 seconds by default; pass
+#    --tail SECONDS to change), then exits.
+python3 run.py deploy example_sensor --tail
 ```
 
-Subscribe to the topic from any MQTT client (`mosquitto_sub -h
-broker.hivemq.com -t 'chumicro/example/temperature'`) and you should
-see one JSON message every 5 seconds carrying the boot counter, the
-on-board temperature reading, and a sequence number.  Reset the
-board and the boot counter increments — `chumicro-kvstore` persisted
-it across resets.
-
-`projects/example_sensor/app.py` is short on purpose — it's the
-canonical reference for how to wire `WifiService` + `MQTTClient` +
-`KVStore` into a tick-shaped `Runner`.  Copy + tweak rather than
-starting from scratch.
-
-<details>
-<summary>Bring your own transport — slimming a deploy that doesn't need <code>chumicro-sockets</code></summary>
-
-If your project supplies its own socket (an upstream library wrapper,
-stdlib `socket.socket`, a hand-rolled fake) instead of letting the
-library default to `chumicro-sockets`, you can declare that intent at
-the top of your project's `app.py` and the deployer filters the
-default factory submodule + its `chumicro-sockets` closure out of the
-on-device file set:
-
-```python
-# projects/<name>/app.py
-__chumicro_skip_factories__ = (
-    "sockets_factory",                          # family form — every <lib>.sockets_factory
-    "chumicro_websockets.sockets_factory",      # exact form — one module
-)
-```
-
-Two forms: a bare stem (`"sockets_factory"`) matches every
-`chumicro_*.sockets_factory` your project transitively imports; a
-dotted path (`"chumicro_mqtt.sockets_factory"`) matches one module.
-
-Typos and dead skips both surface loudly.  An unmatched entry fails
-the deploy with the discovered families named in the message — silent
-skips that ship the unwanted library are worse than refusing to
-deploy.  An entry whose parent library is never imported emits an
-informational dead-skip warning so you can prune the constant.
-
-Calling a library's `from_config(...)` when its factory submodule is
-missing — either skipped at deploy time or not installed on the
-board — raises `RuntimeError` naming the bypass kwarg.  Every
-networked library takes the same one: `transport_factory=` (mqtt,
-requests, websockets, http_server, ntp); mqtt and ntp additionally
-accept a pre-built `socket=`.
-A misuse surfaces at construction time instead of silently
-misbehaving, and a partial install (`circup` / `mip` that omitted
-the factory file) hits the same loud failure mode.
-
-The mechanism only applies to deploys driven through this workspace's
-`python run.py deploy ...`.  `circup` and `mip` resolve transitive
-deps independently — if you install chumicro libraries through them
-directly, the on-device file set is whatever they decide.
-
-</details>
-
-<details>
-<summary>ChuMicro-dev mode — for co-developing chumicro libraries alongside the workspace</summary>
-
-Co-developing chumicro libraries / `chumicro-workspace` from a
-sibling chumicro source checkout (or a fork)?  Drop a
-`chumicro-dev.toml` next to `run.py` with:
-
-```toml
-chumicro_path = "../chumicro"
-```
-
-When `chumicro-dev.toml` is present, `python3 run.py setup` walks
-`<chumicro_path>/libraries/*` and `<chumicro_path>/workbench/*` and
-pip-installs every package found there as editable, BEFORE installing
-the workspace's own pyproject deps.  Edits to your chumicro checkouts
-flow into the workspace immediately — no rebuild, no republish.
-Delete the file (or unset the path) to revert to the PyPI install
-path.  `chumicro-dev.toml` is gitignored by default since different
-contributors keep their checkouts in different places.
-
-In dev mode, `setup` *also* writes a managed `library_sources:` block
-into `workspace.yml` mapping every chumicro library it finds in the
-sibling checkout to its `src/` directory.  `deploy --import-graph`
-(and the `--boot-shim --import-graph` composition) reads that block
-to ship the on-device libraries directly from the local checkout —
-no `circup` / `mip` round-trip and no `library add` step.
-Pulling new chumicro libraries into the sibling checkout is a
-re-run-`setup` away.
-
-In regular mode (no `chumicro-dev.toml`), the `library add` step in
-the worked example above pulls each named library plus its
-transitive chumicro deps from `ChuMicro-Bundle` (the stable channel)
-or the experimental channel into the workspace; `deploy` then ships
-the ones the project imports to the board.  Manual fallback for
-air-gapped / custom-registry rigs — install onto the board directly
-with the runtime's own package manager (both resolve transitive
-chumicro deps automatically):
+Subscribe to the topic from any MQTT client and you should see one JSON message every 5 seconds carrying the boot counter, the on-board temperature reading, and a sequence number.  With the `mosquitto` tools installed (`brew install mosquitto` / `apt install mosquitto-clients`):
 
 ```bash
-# CircuitPython — bundle-add once, then install by name
+mosquitto_sub -h broker.hivemq.com -t 'chumicro/example/temperature'
+```
+
+Reset the board and the boot counter increments: `chumicro-kvstore` persisted it across the reset.
+
+`projects/example_sensor/app.py` is short on purpose.  It's the reference for wiring `WifiService` + `MQTTClient` + `KVStore` into a `Runner`; copy and tweak rather than starting from scratch.
+
+<details>
+<summary>Installing libraries without the workspace tooling (air-gapped or custom-registry rigs)</summary>
+
+You can install chumicro libraries onto the board directly with the runtime's own package manager instead of `library add` + `deploy` (both resolve transitive chumicro dependencies automatically):
+
+```bash
+# CircuitPython: bundle-add once, then install by name
 circup bundle-add ChuMicro/ChuMicro-Bundle
 circup install chumicro-wifi chumicro-mqtt chumicro-runner \
                chumicro-kvstore chumicro-config
 
-# MicroPython — one mip install per library
+# MicroPython: one mip install per library
 mpremote connect /dev/cu.usbmodem1101 mip install \
     github:ChuMicro/ChuMicro-Bundle/chumicro_wifi
 mpremote connect /dev/cu.usbmodem1101 mip install \
@@ -270,8 +139,44 @@ mpremote connect /dev/cu.usbmodem1101 mip install \
 # ... repeat per library
 ```
 
-`circup` uses hyphens (`chumicro-wifi`); `mip` uses the underscore
-import name (`chumicro_wifi`).  Files land at `/lib/chumicro_<name>/`
-either way — the same place a `deploy` writes them.
+`circup` uses hyphens (`chumicro-wifi`); `mip` uses the underscore import name (`chumicro_wifi`).  Files land at `/lib/chumicro_<name>/` either way, the same place a `deploy` writes them.  Remember the clean-slate rule above: a later default `deploy` removes hand-installed libraries unless you pass `--no-wipe`.
+
+</details>
+
+<details>
+<summary>Bring your own transport: slimming a deploy that doesn't need <code>chumicro-sockets</code></summary>
+
+If your project supplies its own socket (an upstream library wrapper, stdlib `socket.socket`, a hand-rolled fake) instead of letting the library default to `chumicro-sockets`, declare that at the top of your project's `app.py` and the deployer filters the default factory submodule and its `chumicro-sockets` closure out of the on-device file set:
+
+```python
+# projects/<name>/app.py
+__chumicro_skip_factories__ = (
+    "sockets_factory",                          # family form: every <lib>.sockets_factory
+    "chumicro_websockets.sockets_factory",      # exact form: one module
+)
+```
+
+Two forms: a bare stem (`"sockets_factory"`) matches every `chumicro_*.sockets_factory` your project transitively imports; a dotted path matches one module.
+
+Typos and dead skips both surface loudly.  An unmatched entry fails the deploy with the discovered families named in the message; an entry whose parent library is never imported prints a dead-skip warning so you can prune it.
+
+Calling a library's `from_config(...)` when its factory submodule is missing (skipped at deploy time, or absent from a partial `circup` / `mip` install) raises `RuntimeError` naming the bypass kwarg.  Every networked library takes the same one, `transport_factory=` (mqtt, requests, websockets, http_server, ntp); mqtt and ntp also accept a pre-built `socket=`.  Misuse surfaces at construction time instead of misbehaving silently.
+
+The mechanism only applies to deploys driven through this workspace's `python3 run.py deploy`.  `circup` and `mip` resolve dependencies on their own; install through them directly and the on-device file set is whatever they decide.
+
+</details>
+
+<details>
+<summary>ChuMicro-dev mode: co-developing the chumicro libraries alongside the workspace</summary>
+
+Co-developing chumicro libraries or `chumicro-workspace` from a sibling source checkout (or a fork)?  Drop a `chumicro-dev.toml` next to `run.py`:
+
+```toml
+chumicro_path = "../chumicro"
+```
+
+When the file is present, `python3 run.py setup` walks `<chumicro_path>/libraries/*` and `<chumicro_path>/workbench/*` and pip-installs every package found there as editable, before installing the workspace's own dependencies.  Edits to your chumicro checkout flow into the workspace immediately; no rebuild, no republish.  Delete the file to revert to the PyPI install path.  `chumicro-dev.toml` is gitignored, since contributors keep their checkouts in different places.
+
+In dev mode, `setup` also maintains a `library_sources:` block in `workspace.yml`, mapping every chumicro library in the sibling checkout to its `src/` directory.  That block is tool-owned: every `setup` re-syncs it to match the checkout, so don't hand-edit it (the rest of `workspace.yml` is yours).  `deploy --import-graph` reads the block and ships the on-device libraries straight from your local checkout, with no `circup` / `mip` round-trip and no `library add` step.
 
 </details>
