@@ -36,17 +36,14 @@ def run():
     wifi = WifiService(WifiConfig.from_config(config))
     mqtt = MQTTClient.from_config(config, radio=wifi.adapter.radio)
 
-    # Call connect() exactly once, on the FIRST wifi link.  After that the
-    # client's self-heal owns reconnection (paced backoff from FAILED);
-    # re-calling connect() on later wifi recoveries raises MQTTError
-    # because the client is FAILED, not DISCONNECTED.
-    started = False
-
+    # The app owns the wifi<->mqtt coordination (Decision 0108): hold()
+    # while the link is down so the client doesn't dial a dead radio,
+    # connect() the moment it's back — an immediate dial, no backoff wait.
     def on_wifi_state(_old, new):
-        nonlocal started
-        if new == WifiState.CONNECTED and not started:
-            started = True
+        if new == WifiState.CONNECTED:
             mqtt.connect()
+        else:
+            mqtt.hold()
 
     wifi.on_state_change(on_wifi_state)
 
