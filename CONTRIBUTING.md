@@ -187,15 +187,22 @@ overlay deep-merged the way you expected.
 ### Quality gate
 
 `python3 run.py preflight` runs `lint` then `test` as a single sanity
-gate.  Set `quality:` knobs in `workspace.yml` to tune:
+gate.  The gates live in two layers:
 
-```yaml
-quality:
-  lint:
-    enabled: true              # set to false to skip ruff
-    select: [E, F, I]          # ruff rule set
-  coverage_threshold: 70       # passed to pytest as --cov-fail-under
-```
+- **`quality.toml`** (committed, at the workspace root): the policy
+  that travels with your repo, so every clone enforces the same bar.
+
+  ```toml
+  coverage_threshold = 70      # passed to pytest as --cov-fail-under
+
+  [lint]
+  enabled = true               # false skips lint entirely
+  select = ["E", "F", "I"]     # ruff rule set
+  ```
+
+- **`workspace.yml`'s `quality:` block** (gitignored): per-machine
+  overrides.  Any key set here wins over `quality.toml`, useful for
+  loosening a gate locally without changing the project's policy.
 
 Both `lint` and `test` are also runnable on their own.
 

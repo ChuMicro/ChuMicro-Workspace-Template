@@ -58,6 +58,7 @@ for the workflow primer.
 | `devices.yml` | tool (via `add-device` / `rename` / `probe`); gitignored, materialized by `setup` from the chumicro-workspace package's canonical starter | leaves alone |
 | `workspace.yml` | YOU, except the `library_sources:` block: in dev mode `setup` re-syncs that block on every run, so never hand-edit it.  Gitignored, materialized by `setup` — workspace machinery only | leaves alone |
 | `secrets.toml` | YOU; gitignored, materialized by `setup` from the chumicro-workspace package's canonical starter — holds wifi password / broker auth + device defaults that flow to the board | leaves alone |
+| `quality.toml` | YOU; committed — the workspace's lint/coverage policy, shared by every clone.  `workspace.yml`'s `quality:` block overrides it per machine | leaves alone |
 | `shared/` | YOU (drop `foo.py`, projects import it by bare module name: `from foo import bar`) | leaves alone |
 | `packages/` | YOU (manual-drop area; gitignored) | leaves alone |
 | `libraries/` | YOU (lazy-created by `new --library`; absent by default) | leaves alone |
@@ -103,9 +104,9 @@ Procedural knowledge for common workflows lives under `.github/skills/`.  Read t
 
 `python3 run.py test` with no args runs **everything** under `tests/` + `projects/`.  Functional tests deselect themselves on a sweep with no `functional_tests` path argument — only fire when targeted.
 
-`python3 run.py lint` runs `ruff check` with the workspace's `[tool.ruff]` config (line-length 100, imports sorted, relative-import ban, pyflakes / bugbear / pyupgrade).  Tests + functional tests get the relative-import rule relaxed.  Set `quality.lint.enabled: false` in `workspace.yml` to skip lint without uninstalling ruff.  Set `quality.lint.select: ["E", "F", "I"]` to override the rule list per-workspace.
+`python3 run.py lint` runs `ruff check` with the workspace's `[tool.ruff]` config (line-length 100, imports sorted, relative-import ban, pyflakes / bugbear / pyupgrade).  Tests + functional tests get the relative-import rule relaxed.  Lint/coverage knobs live in the committed `quality.toml` (`[lint] enabled = false` skips lint; `select = ["E", "F", "I"]` overrides the rule list); `workspace.yml`'s `quality:` block overrides per machine.
 
-Coverage gate: `[tool.coverage.report] fail_under = 85` in `pyproject.toml` — the per-package floor.  Override per-workspace via `quality.coverage_threshold: <N>` in `workspace.yml` (forwarded to pytest as `--cov-fail-under`); user CLI args after `--` win on conflict.
+Coverage gate: `[tool.coverage.report] fail_under = 85` in `pyproject.toml` — the per-package floor.  Set the workspace's own gate via `coverage_threshold = <N>` in the committed `quality.toml` (forwarded to pytest as `--cov-fail-under`); `workspace.yml`'s `quality:` block overrides per machine, and user CLI args after `--` win on conflict.
 
 ## Working in a fresh workspace
 

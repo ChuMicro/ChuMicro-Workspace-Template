@@ -63,6 +63,7 @@ So this is a realistic prompt here: "I just plugged in a board and I don't know 
 - `devices.yml`: your board registry, gitignored, created by `setup`.  Managed by the device commands (`bootstrap`, `add-device`, `rename`, `probe`), so comments and key order survive edits.
 - `workspace.yml`: gitignored, created by `setup`.  Host-only workspace settings (`library_sources`, `deploy_targets`, `quality`).  Never reaches a device.
 - `secrets.toml`: gitignored, created by `setup`.  Workspace-wide credentials (wifi password, broker auth) and device defaults that flow into the deployed config.  Per-project `project_config.toml` values override it.
+- `quality.toml`: committed.  The workspace's lint and coverage gates, shared by every clone of your repo; `workspace.yml`'s `quality:` block overrides it per machine.
 - `shared/`: helper modules shared between projects.  Drop `foo.py` here and any project can `from foo import bar`; the deploy ships it to the board alongside the libraries.  See [`shared/README.md`](shared/README.md).
 - `packages/`: gitignored drop area for third-party Python source trees your projects import on the device.  See [`packages/README.md`](packages/README.md).
 - `libraries/`: not present by default.  `python3 run.py new --library <name>` creates it the first time you scaffold a full chumicro-style library package.

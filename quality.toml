@@ -1,0 +1,16 @@
+# Quality gates for this workspace.  This file is committed: it
+# travels with your repo, so every clone enforces the same bar.
+# Per-machine overrides go in the gitignored workspace.yml
+# `quality:` block; any key set there wins over this file.
+#
+# Everything commented out = the defaults apply (lint enabled with
+# both tools, coverage floor from pyproject.toml).
+#
+# TOML note: top-level keys must stay ABOVE the [lint] table.
+
+# coverage_threshold = 85
+
+# [lint]
+# enabled = true
+# tools = ["ruff", "chumicro-checks"]
+# select = ["E", "F", "I"]
