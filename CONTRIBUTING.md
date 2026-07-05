@@ -242,14 +242,15 @@ Every deploy chooses a mode:
   quick scratch experiments.
 
 Choose the mode with the `deploy_mode:` field on a device's entry in
-`devices.yml`.
+`devices.yml`, or for one run with `deploy <project> --deploy-mode ram`.
 
 > **Auto-switch when libraries declare `requires_flash`.**  Heavier
 > libraries declare `[tool.chumicro] requires_flash = true` in their
 > `pyproject.toml` (currently mqtt, requests, http_server, and
 > websockets).  When you deploy a project that imports one of those
-> and the device's `deploy_mode` is `ram`, the deployer
-> auto-switches to flash for that run and prints why.
+> and the run's mode is `ram`, the deployer auto-switches to flash
+> for that run and prints why.  `--force-deploy-mode ram` bypasses
+> the auto-switch (rare; for debugging that behavior itself).
 
 ## Debugging: when a deploy doesn't work
 

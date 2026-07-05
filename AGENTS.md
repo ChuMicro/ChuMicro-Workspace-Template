@@ -33,6 +33,7 @@ for the workflow primer.
 | `python3 run.py deploy <project> --dry-run` | Print the file map without writing — useful for "did the overlay merge flatten?" debugging. |
 | `python3 run.py deploy <project> --all-devices` | Loop over every device in `devices.yml`.  Failures don't abort the loop; exit code reflects whether any failed. |
 | `python3 run.py deploy <project> --tail [SECONDS]` | Deploy, then follow the board's serial output for SECONDS (default 30) and exit.  The deploy-then-watch one-liner. |
+| `python3 run.py deploy <project> --deploy-mode <ram\|flash>` | Override the device's `deploy_mode` for this run only (`devices.yml` untouched; `requires_flash` pre-flight still applies).  `--force-deploy-mode` also bypasses the pre-flight auto-switch. |
 | `python3 run.py deploy <project> --no-wipe` | Additive deploy: reconcile only the entrypoint / state files + `/lib`, leaving other board files in place.  The default is clean-slate — the deploy removes anything that isn't the new payload or a keep-set file (`boot.py`, `boot_out.txt`, `_chu_kv.msgpack`) and evicts a board-resident `settings.toml`. |
 | `python3 run.py deploy --all-projects` | Walk `workspace.yml`'s `deploy_targets:` mapping and deploy each project to its declared device(s).  Mutually exclusive with positional names / `--device` / `--runtime` / `--all-devices`. |
 | `python3 run.py demo` | Deploy a built-in print-loop payload to the default board (no wifi, ~5s). |
