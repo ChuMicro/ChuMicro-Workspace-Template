@@ -12,6 +12,7 @@ update`` will not touch it.
 from __future__ import annotations
 
 import importlib.util
+import sys
 from pathlib import Path
 
 import pytest
@@ -75,6 +76,20 @@ def test_project_app_exposes_run(project_dir: Path) -> None:
     assert callable(module.run), (
         f"{project_dir.name}/app.py: run must be callable"
     )
+
+
+def test_shared_dir_on_import_path() -> None:
+    """The root ``conftest.py`` puts ``shared/`` on ``sys.path``.
+
+    A project imports a ``shared/foo.py`` helper by its bare module name
+    (``from foo import bar``); the host test run resolves that only
+    because ``shared/`` sits on the import path, matching the device,
+    where deploy stages ``shared/`` modules into ``/lib``.  Assert the
+    directory is on ``sys.path`` so a regression surfaces here rather
+    than as a confusing ImportError while loading a project's ``app.py``.
+    """
+    shared_dir = WORKSPACE_ROOT / "shared"
+    assert str(shared_dir) in sys.path
 
 
 def test_workspace_yml_parses() -> None:
