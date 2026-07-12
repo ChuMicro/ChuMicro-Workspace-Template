@@ -8,12 +8,6 @@ workspace's gitignored ``secrets.toml``.
 
 import json
 
-from chumicro_config import load_runtime_config
-from chumicro_kvstore import KVStore
-from chumicro_mqtt import MQTTClient
-from chumicro_runner import Runner
-from chumicro_wifi import WifiConfig, WifiService, WifiState
-
 
 def read_celsius():
     try:
@@ -24,6 +18,16 @@ def read_celsius():
 
 
 def run():
+    # Import device libraries inside run() so app.py loads on a host that
+    # hasn't installed them (the workspace smoke test imports this module
+    # to check for run()); the boot-time import cost also stays out of the
+    # path that executes before run() is called.
+    from chumicro_config import load_runtime_config
+    from chumicro_kvstore import KVStore
+    from chumicro_mqtt import MQTTClient
+    from chumicro_runner import Runner
+    from chumicro_wifi import WifiConfig, WifiService, WifiState
+
     config = load_runtime_config()
     topic = config.require("sensor.topic")
 
