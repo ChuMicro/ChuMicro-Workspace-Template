@@ -176,7 +176,7 @@ Co-developing chumicro libraries or `chumicro-workspace` from a sibling source c
 chumicro_path = "../chumicro"
 ```
 
-When the file is present, `python3 run.py setup` walks `<chumicro_path>/libraries/*` and `<chumicro_path>/workbench/*` and pip-installs every package found there as editable, before installing the workspace's own dependencies.  Edits to your chumicro checkout flow into the workspace immediately; no rebuild, no republish.  Delete the file to revert to the PyPI install path.  `chumicro-dev.toml` is gitignored, since contributors keep their checkouts in different places.
+When the file is present, `python3 run.py setup` pip-installs every library and workbench package found in your chumicro checkout as editable, before installing the workspace's own dependencies.  Edits to your chumicro checkout flow into the workspace immediately; no rebuild, no republish.  Delete the file to revert to the PyPI install path.  `chumicro-dev.toml` is gitignored, since contributors keep their checkouts in different places.
 
 In dev mode, `setup` also maintains a `library_sources:` block in `workspace.yml`, mapping every chumicro library in the sibling checkout to its `src/` directory.  That block is tool-owned: every `setup` re-syncs it to match the checkout, so don't hand-edit it (the rest of `workspace.yml` is yours).  `deploy --import-graph` reads the block and ships the on-device libraries straight from your local checkout, with no `circup` / `mip` round-trip and no `library add` step.
 

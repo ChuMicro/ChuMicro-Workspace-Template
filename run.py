@@ -23,13 +23,12 @@ ChuMicro-dev mode: drop a ``chumicro-dev.toml`` next to this file with::
 
     chumicro_path = "../chumicro"
 
-When present, ``setup`` walks ``<chumicro_path>/libraries/*`` and
-``<chumicro_path>/workbench/*`` and pip-installs every package found
-there as editable BEFORE the workspace's own install.  Lets you
-co-develop chumicro libraries / chumicro-workspace from a sibling
-checkout without publishing to PyPI.  Delete the file (or unset
-``chumicro_path``) to revert to the PyPI path.  ``chumicro-dev.toml``
-is gitignored by default.
+When present, ``setup`` pip-installs every library and workbench
+package found in your chumicro checkout as editable BEFORE the
+workspace's own install.  Lets you co-develop chumicro libraries /
+chumicro-workspace from a sibling checkout without publishing to PyPI.
+Delete the file (or unset ``chumicro_path``) to revert to the PyPI
+path.  ``chumicro-dev.toml`` is gitignored by default.
 
 Requires Python 3.11+ (system or pyenv) for the initial bootstrap.
 """
