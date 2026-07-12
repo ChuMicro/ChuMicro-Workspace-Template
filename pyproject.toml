@@ -58,7 +58,11 @@ packages = ["projects"]
 # ---------------------------------------------------------------------------
 
 [tool.pytest.ini_options]
-addopts = "-ra --strict-markers"
+# import-mode=importlib lets every project keep the scaffold's
+# tests/test_app.py basename: without it, a second project's test_app.py
+# collides with the first under pytest's default prepend import (same
+# module name, no package __init__.py) and `run.py test` aborts collection.
+addopts = "-ra --strict-markers --import-mode=importlib"
 # Workspace tests live at the root and inside each project.  Functional
 # tests sit under each project's ``functional_tests/`` and run only
 # when explicitly targeted (the ``chumicro-pytest-device`` plugin
