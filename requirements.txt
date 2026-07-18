@@ -1,0 +1,21 @@
+# ChuMicro workspace tooling — installed by `python run.py setup` in regular
+# mode (a plain clone with no chumicro-dev.toml).  One line per package so
+# what a workspace runs is legible and diffable.
+#
+# Pinned to the experimental channel while the stable promotion wave is still
+# publishing: experimental carries the full, current tool set, so the stable
+# names would 404 on a fresh clone today.  At stable launch, drop the
+# `-experimental` suffixes (four lines) and re-cut the template.
+#
+# Tool-owned: `chumicro-workspace update` overwrites this file.  To add your
+# own dependencies, put them in pyproject.toml's `[project].dependencies`.
+
+# The workspace CLI: init / update / deploy / library / repl / etc.
+chumicro-workspace-experimental>=0.48.0
+# Serial REPL bridge — `run.py repl` imports it lazily; without it the
+# command fails with ModuleNotFoundError on a regular-mode clone.
+chumicro-repl-experimental>=0.4.0
+# Real-network functional-test plugin (registers via the pytest11 entry point).
+chumicro-pytest-device-experimental>=0.17.0
+# Workspace lint rules (CHU0NN); most self-no-op, CHU008 is the one that fires.
+chumicro-checks-experimental>=0.17.0

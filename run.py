@@ -193,8 +193,29 @@ def _install_workspace(venv_python: Path) -> None:
                 ],
                 check=True,
             )
-    # Install the workspace's `dev` extra (pytest / ruff /
-    # chumicro-checks) when the pyproject declares one, so `run.py lint`
+    else:
+        # Regular mode (no chumicro-dev.toml): install the chumicro tooling
+        # from requirements.txt — the one-per-line manifest of what a
+        # workspace actually runs (chumicro-workspace, -repl, -pytest-device,
+        # -checks).  Dev mode skips this: its sibling checkout already
+        # provides those packages editable, and pulling the published copies
+        # on top would shadow them.
+        requirements = WORKSPACE_ROOT / "requirements.txt"
+        if requirements.is_file():
+            print(f"installing chumicro tooling from {requirements.name}", flush=True)
+            subprocess.run(
+                [
+                    str(venv_python),
+                    "-m",
+                    "pip",
+                    "install",
+                    "-r",
+                    str(requirements),
+                ],
+                check=True,
+            )
+    # Install the workspace package itself plus the `dev` extra (pytest /
+    # ruff / pytest-cov) when the pyproject declares one, so `run.py lint`
     # and `run.py test` have their tools; fall back to the bare editable
     # install for a deploy-only workspace that skipped the dev tooling.
     if _workspace_declares_dev_extra():

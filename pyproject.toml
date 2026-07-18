@@ -13,37 +13,20 @@ name = "my-workspace"
 version = "0.1.0"
 description = "ChuMicro project workspace."
 requires-python = ">=3.11"
-dependencies = [
-    # Pin chumicro-workspace here so `python run.py setup` can install
-    # it editable into the workspace's venv.  The host CLI carries
-    # `init` / `update` / `deploy` / `repl` / etc.  Lower bound 0.11.0
-    # — that release split the gitignored config into ``workspace.yml``
-    # (host-only machinery) + ``secrets.toml`` (workspace-wide
-    # credentials + device defaults flowing into runtime_config.msgpack).
-    # ``setup`` materialises both starters from the workbench package's
-    # payloads.
-    "chumicro-workspace>=0.11.0",
-]
+# The chumicro tooling a workspace runs (chumicro-workspace, -repl,
+# -pytest-device, -checks) lives in requirements.txt, not here — a plain
+# one-per-line manifest `run.py setup` installs in regular mode.  This
+# array is for YOUR project's own runtime dependencies.
+dependencies = []
 
 [project.optional-dependencies]
-# `python run.py setup` installs both the runtime and dev extras by
-# default.  The split exists so a deploy-only environment (CI runner
-# that flashes boards but never runs unit tests) can install just the
-# runtime deps with `pip install .` and skip the dev tooling.
+# `python run.py setup` installs this `dev` extra alongside the workspace
+# package so `run.py lint` / `run.py test` have their third-party tools.
+# The chumicro dev tooling (pytest-device, checks) is in requirements.txt;
+# only non-chumicro tools live here.  A deploy-only environment (a CI
+# runner that flashes boards but never runs unit tests) can `pip install .`
+# and skip this extra.
 dev = [
-    # Real-network functional-test plugin.  Auto-registers via
-    # ``pytest11`` entry point on `pip install` — no extra config in
-    # the workspace's conftest.py needed.  Activates only for paths
-    # under ``functional_tests/``.
-    "chumicro-pytest-device",
-    # Workspace-internal lint rules (CHU0NN codes).  Most rules
-    # self-no-op in a typical workspace because they target paths
-    # only the chumicro upstream has; the one that fires here is
-    # CHU008 (catches stray ADR pointers and mono-repo planning-tree  # noqa: CHU008  rule-description metadata
-    # references that leaked into your prose or config).  See the
-    # commented ``[tool.chumicro-checks]`` block at the bottom of
-    # this file for how to opt out of any rule.
-    "chumicro-checks",
     "pytest>=8.0",
     "pytest-cov>=5.0",
     "ruff>=0.6",
