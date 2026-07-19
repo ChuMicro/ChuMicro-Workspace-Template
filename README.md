@@ -1,6 +1,6 @@
 # my-workspace
 
-A clone-and-go project layout for boards running [ChuMicro](https://github.com/ChuMicro/ChuMicro) libraries.  Your code lives on your laptop, in version control, with your editor and your tests; the tooling ships it to the board when you ask.  Recommended even if you only have one project on one board.
+A clone-and-go project layout for boards running [ChuMicro](https://chumicro.github.io/ChuMicro/) libraries.  Your code lives on your laptop, in version control, with your editor and your tests; the tooling ships it to the board when you ask.  Recommended even if you only have one project on one board.
 
 > Rename this directory and this README's title to whatever you want to call your workspace.  This is your repo now.
 
@@ -39,7 +39,7 @@ Two prerequisites the wizard will tell you about if they're missing: the board m
 
 Prefer explicit registration over the wizard?  `python3 run.py add-device my-board --address /dev/cu.usbmodem1101 --runtime micropython` (that's a macOS port path; on Linux boards show up as `/dev/ttyACM0` or `/dev/ttyUSB0`, on Windows as `COM3`-style names, and `python3 run.py discover` lists what's visible).
 
-For the full workflow walkthrough, including multi-board and multi-project flows once you've outgrown a single project, see the [chumicro-workspace hosted docs](https://chumicro.github.io/ChuMicro/workspace/stable/).
+For the full workflow walkthrough, including multi-board and multi-project flows once you've outgrown a single project, see the [chumicro-workspace hosted docs](https://chumicro.github.io/ChuMicro/workspace/experimental/) (the experimental-channel docs, matching the channel this template currently pins; the `stable/` path goes live with the first stable release wave).
 
 <details>
 <summary>What a deploy does to the board's filesystem (and how to opt out)</summary>
@@ -96,10 +96,11 @@ python3 run.py dump-config example_sensor
 
 # 6. Pull the chumicro libraries this project uses into the workspace.
 #    `library add <name>` fetches the named library plus its chumicro
-#    dependencies from the stable release channel; the deploy in step 7
-#    ships the ones the project imports to the board's /lib/.
-#    (Add --channel experimental to track pre-releases instead.
-#    Skip this step entirely in chumicro-dev mode; see the note below.)
+#    dependencies; the deploy in step 7 ships the ones the project
+#    imports to the board's /lib/.  The default channel is
+#    experimental while the first stable release wave is still
+#    publishing (pass --channel stable once it's live).
+#    (Skip this step entirely in chumicro-dev mode; see the note below.)
 python3 run.py library add chumicro_runner
 python3 run.py library add chumicro_mqtt
 python3 run.py library add chumicro_wifi
@@ -128,17 +129,21 @@ You can install chumicro libraries onto the board directly with the runtime's ow
 
 ```bash
 # CircuitPython: bundle-add once, then install by name
-circup bundle-add ChuMicro/ChuMicro-Bundle
+circup bundle-add ChuMicro/ChuMicro-Bundle-Experimental
 circup install chumicro-wifi chumicro-mqtt chumicro-runner \
                chumicro-kvstore chumicro-config
 
 # MicroPython: one mip install per library
 mpremote connect /dev/cu.usbmodem1101 mip install \
-    github:ChuMicro/ChuMicro-Bundle/chumicro_wifi
+    github:ChuMicro/ChuMicro-Bundle-Experimental/chumicro_wifi
 mpremote connect /dev/cu.usbmodem1101 mip install \
-    github:ChuMicro/ChuMicro-Bundle/chumicro_mqtt
+    github:ChuMicro/ChuMicro-Bundle-Experimental/chumicro_mqtt
 # ... repeat per library
 ```
+
+(The experimental bundle is the one that's published today, matching
+the channel this template pins; swap in `ChuMicro/ChuMicro-Bundle`
+once the stable release wave is live.)
 
 `circup` uses hyphens (`chumicro-wifi`); `mip` uses the underscore import name (`chumicro_wifi`).  Files land at `/lib/chumicro_<name>/` either way, the same place a `deploy` writes them.  Remember the clean-slate rule above: a later default `deploy` removes hand-installed libraries unless you pass `--no-wipe`.
 

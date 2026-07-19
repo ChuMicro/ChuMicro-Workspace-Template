@@ -334,14 +334,18 @@ ever disagree, that's a bug worth reporting.)
   an agent.
 - **`projects/example_sensor/`**: the worked example.  Read it when
   you're not sure how to wire a service into a `Runner`.
-- **The chumicro-workspace [hosted docs](https://chumicro.github.io/ChuMicro/workspace/stable/)**:
+- **The chumicro-workspace [hosted docs](https://chumicro.github.io/ChuMicro/workspace/experimental/)**:
   reference for the underlying CLI commands and Python API.
 - **The chumicro library [hosted docs](https://chumicro.github.io/ChuMicro/)**:
   per-library guides for `chumicro-wifi`, `chumicro-mqtt`, and the rest.
 - **Issues**, routed by what broke:
   - Template bug (a shipped file here is wrong): [ChuMicro-Workspace-Template issues](https://github.com/ChuMicro/ChuMicro-Workspace-Template/issues).
-  - Tooling bug (`run.py` commands, deploy, REPL, config merging): [ChuMicro issues](https://github.com/ChuMicro/ChuMicro/issues); the tools live there.
-  - Library bug (`chumicro_wifi`, `chumicro_mqtt`, ...): also [ChuMicro issues](https://github.com/ChuMicro/ChuMicro/issues), naming the library.
+  - Tooling bug (`run.py` commands, deploy, REPL, config merging) or
+    library bug (`chumicro_wifi`, `chumicro_mqtt`, ...): file it on
+    [ChuMicro-Workspace-Template issues](https://github.com/ChuMicro/ChuMicro-Workspace-Template/issues)
+    too, naming the tool or library — the main ChuMicro repository
+    isn't public yet, and this tracker is the interim front door for
+    everything ChuMicro-side.
   - Your own project's bug: your workspace repo.
 
 ## Project rules: quick reference

@@ -8,7 +8,9 @@
 # `-experimental` suffixes (four lines) and re-cut the template.
 #
 # Tool-owned: `chumicro-workspace update` overwrites this file.  To add your
-# own dependencies, put them in pyproject.toml's `[project].dependencies`.
+# own host-side dependencies, extend pyproject.toml's
+# `[project].dependencies` (see the ownership caveat in its header);
+# device-side package source goes under packages/ instead.
 
 # The workspace CLI: init / update / deploy / library / repl / etc.
 chumicro-workspace-experimental>=0.48.0

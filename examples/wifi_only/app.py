@@ -36,6 +36,8 @@ def run() -> None:
     def report_status(now_ms: int) -> None:
         if wifi.state == WifiState.CONNECTED:
             print(f"wifi: connected at {wifi.ip}")
+        elif wifi.state == WifiState.FAILED:
+            print(f"wifi: failed ({wifi.last_error!r})")
         else:
             print(f"wifi: {wifi.state}")
 

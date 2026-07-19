@@ -15,10 +15,10 @@ into precise messages — read them before guessing.
 python run.py deploy my_project
 ```
 
-Successful output ends with the entrypoint's stdout (or the
-"executing entrypoint" line followed by your project's prints).
-For projects that drive a `runner.run_until(...)` loop, the
-deploy stays open until you Ctrl-C or the device errors out.
+A successful deploy stages the payload, restarts the board into
+the new code, and exits — it does not follow the board's output on
+its own (most projects then drive a `runner.run_until(...)` loop
+on-device indefinitely).
 
 To deploy *and* follow the board's output in one step, add `--tail`:
 
@@ -88,10 +88,12 @@ module path and check:
 - Is `X` a project-local helper under `projects/<name>/`?  Make sure
   it's imported with the right path (`from . import X` for
   same-dir, or under `shared/` for cross-project code).
-- Is `X` an external pip package?  Add it to
-  `pyproject.toml`'s deps and re-run `setup`; for device-side
-  packages, drop the package source under `packages/` so the
-  deploy ships it.
+- Is `X` an external package?  For device-side code the deploy
+  ships, pip installs don't help — drop the package's source tree
+  under `packages/` so the import-graph walker picks it up.
+  (`pyproject.toml`'s deps are host-side only, and that file is
+  tool-owned — `update` rewrites it, so re-apply any additions
+  from `git diff` afterwards.)
 
 ### "wifi connected but mqtt never publishes"
 

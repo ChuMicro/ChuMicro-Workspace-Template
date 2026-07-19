@@ -46,9 +46,9 @@ Open both and edit:
   loop with `runner.run_until(...)` (which parks the CPU in
   `runner.wait()` between events).
 - `project_config.toml` — fill in per-project knobs (sample
-  period, mqtt topic, sensor pins, etc.).  Per-project file is
-  gitignored when scaffolded by `new`, so per-project secrets can
-  live here when needed.
+  period, mqtt topic, sensor pins, etc.).  This file is versioned
+  with the project, so keep credentials out of it — they belong in
+  the workspace's gitignored `secrets.toml` (step 3).
 
 ## 3. Wire credentials
 

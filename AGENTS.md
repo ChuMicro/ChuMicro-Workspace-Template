@@ -9,7 +9,7 @@ Tool-owned: `python3 run.py update` will rewrite it.  Skim
 A ChuMicro project workspace.  `projects/` are individual deployable
 apps, `devices.yml` registers boards, and `python3 run.py <cmd>`
 dispatches to the `chumicro-workspace` host CLI.  See the package's
-[hosted docs](https://chumicro.github.io/ChuMicro/workspace/stable/)
+[hosted docs](https://chumicro.github.io/ChuMicro/workspace/experimental/)
 for the workflow primer.
 
 ## Day-to-day commands
@@ -41,7 +41,7 @@ for the workflow primer.
 | `python3 run.py repl --tail 30` | Standalone tail: stream a running board's output for 30 seconds, then exit.  Does not stage code — to deploy *and* follow, use `deploy <project> --tail`. |
 | `python3 run.py rename OLD NEW` | Rename a registered device in `devices.yml`; `--project OLD NEW` renames a project dir instead (slash/dotted paths accepted, namespace dirs auto-created). |
 | `python3 run.py dump-config <project>` | Print the merged, flattened config the device would receive, without deploying.  The first stop for "which layer did this key come from?" |
-| `python3 run.py library add <name> [--channel experimental]` | Fetch a chumicro library plus its chumicro dependencies into the workspace (stable channel by default); `deploy` then ships what the project imports. |
+| `python3 run.py library add <name> [--channel stable]` | Fetch a chumicro library plus its chumicro dependencies into the workspace (experimental channel by default while the stable release wave publishes); `deploy` then ships what the project imports. |
 | `python3 run.py deploy <project> --import-graph` | Ship on-device libraries resolved through the import graph (in dev mode, straight from the sibling checkout's `library_sources:`). |
 | `python3 run.py preflight` | `lint` then `test` as one gate, honoring `workspace.yml`'s `quality:` knobs. |
 | `python3 run.py install-firmware --method uf2` | Auto-derived firmware download + flash. |
@@ -82,6 +82,7 @@ Procedural knowledge for common workflows lives under `.github/skills/`.  Read t
 |---|---|
 | `add-new-project` | The user wants to create a new app (`new <name>`, fill config, first deploy). |
 | `register-board` | First-time board onboarding, or when `add-device` errors out. |
+| `install-firmware` | A board is fresh from the factory, in bootloader mode, or needs a runtime (re)flashed before it can be registered or deployed to. |
 | `deploy-and-debug` | A deploy failed, output is unclear, or the user wants to follow REPL after deploy. |
 
 ## Rules of thumb
