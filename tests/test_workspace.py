@@ -22,43 +22,67 @@ PROJECTS_DIR = WORKSPACE_ROOT / "projects"
 
 
 def _project_directories() -> list[Path]:
-    """Return every ``projects/<name>/`` directory that contains an ``app.py``.
+    """Return every project directory under ``projects/`` with an ``app.py``.
 
-    Skips ``_template/`` (the scaffold source) and any directory
-    that doesn't define ``app.py`` yet (a partial scaffold).
+    Projects may be nested (``projects/garage/sensors/door_open/``),
+    so this walks the whole tree rather than one level.  Skips
+    ``_template/`` (the scaffold source), anything under an
+    underscore-prefixed directory, and any directory that doesn't
+    define ``app.py`` yet (a partial scaffold, or a bare namespace
+    directory holding nested projects).
     """
     if not PROJECTS_DIR.is_dir():
         return []
     return sorted(
-        project_dir
-        for project_dir in PROJECTS_DIR.iterdir()
-        if project_dir.is_dir()
-        and not project_dir.name.startswith("_")
-        and (project_dir / "app.py").is_file()
+        app_path.parent
+        for app_path in PROJECTS_DIR.rglob("app.py")
+        if not any(
+            part.startswith("_")
+            for part in app_path.parent.relative_to(PROJECTS_DIR).parts
+        )
     )
 
 
+def _project_id(project_dir: Path) -> str:
+    """Slash-form project name (``garage/sensors/door_open``) for test ids."""
+    return "/".join(project_dir.relative_to(PROJECTS_DIR).parts)
+
+
 def _load_app_module(project_dir: Path):
-    """Load ``projects/<name>/app.py`` directly via importlib.
+    """Load a project's ``app.py`` directly via importlib.
 
     Avoids needing the on-device ``workspace_runtime`` boot module
     in the test path; we want a host-side smoke test, not a real
-    boot.
+    boot.  A module-level import of a chumicro device library that
+    isn't importable on this host yet (fresh clone, ``library add``
+    not run) skips rather than fails: the project may be fine on the
+    device, and the skip message names the fix.
     """
+    dotted = ".".join(project_dir.relative_to(PROJECTS_DIR).parts)
     spec = importlib.util.spec_from_file_location(
-        f"projects.{project_dir.name}.app", project_dir / "app.py",
+        f"projects.{dotted}.app", project_dir / "app.py",
     )
     if spec is None or spec.loader is None:  # pragma: no cover
         pytest.fail(f"could not load spec for {project_dir / 'app.py'}")
     module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+    try:
+        spec.loader.exec_module(module)
+    except ModuleNotFoundError as error:
+        if error.name is not None and error.name.startswith("chumicro"):
+            pytest.skip(
+                f"{_project_id(project_dir)}: imports {error.name} at module "
+                f"level, which isn't installed on this host.  Run `python3 "
+                f"run.py library add {error.name}` (or enable chumicro-dev "
+                f"mode) to host-test this project.",
+            )
+        raise
     return module
 
 
 @pytest.mark.parametrize(
     "project_dir",
     _project_directories(),
-    ids=lambda path: path.name,
+    ids=_project_id,
 )
 def test_project_app_exposes_run(project_dir: Path) -> None:
     """Every project's ``app.py`` must expose a ``run`` callable.
