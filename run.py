@@ -24,9 +24,10 @@ ChuMicro-dev mode: drop a ``chumicro-dev.toml`` next to this file with::
     chumicro_path = "../chumicro"
 
 When present, ``setup`` pip-installs every library and workbench
-package found in your chumicro checkout as editable BEFORE the
-workspace's own install.  Lets you co-develop chumicro libraries /
-chumicro-workspace from a sibling checkout without publishing to PyPI.
+package found in your chumicro checkout as editable (plus their
+third-party requirements) BEFORE the workspace's own install.  Lets
+you co-develop chumicro libraries / chumicro-workspace from a
+sibling checkout without publishing to PyPI.
 Delete the file (or unset ``chumicro_path``) to revert to the PyPI
 path.  ``chumicro-dev.toml`` is gitignored by default.
 
@@ -93,10 +94,11 @@ def _workspace_declares_dev_extra() -> bool:
 
     Read from ``[project.optional-dependencies]`` in
     ``pyproject.toml``.  The template ships a ``dev`` extra (pytest,
-    ruff, chumicro-checks, pytest-cov), so ``setup`` installs ``.[dev]``
-    and ``run.py lint`` / ``run.py test`` have their tools.  A missing
-    or malformed pyproject falls back to False so setup degrades to the
-    bare editable install rather than crashing.
+    pytest-cov, ruff), so ``setup`` installs ``.[dev]`` and ``run.py
+    lint`` / ``run.py test`` have their tools (the chumicro-side dev
+    tooling comes from ``requirements.txt``).  A missing or malformed
+    pyproject falls back to False so setup degrades to the bare
+    editable install rather than crashing.
     """
     pyproject = WORKSPACE_ROOT / "pyproject.toml"
     if not pyproject.is_file():
@@ -125,6 +127,38 @@ def _discover_chumicro_packages(checkout_path: Path) -> list[Path]:
             if entry.is_dir() and (entry / "pyproject.toml").is_file():
                 packages.append(entry)
     return packages
+
+
+def _third_party_requirements(packages: list[Path]) -> list[str]:
+    """Collect the non-chumicro runtime requirements of *packages*.
+
+    The editable installs run ``--no-deps`` so pip never tries to
+    resolve the chumicro-internal dependencies (e.g. the workspace
+    package depending on the deploy package) from PyPI — the sibling
+    checkout provides those.  But ``--no-deps`` also skips the real
+    third-party requirements (ruamel.yaml, msgpack, pyserial, ...),
+    and nothing else installs them, so a fresh dev-mode venv would
+    fail the post-install verify gate.  This gathers every non-chumicro
+    requirement string across the discovered packages, first-seen
+    order, deduplicated, for one explicit install pass.
+    """
+    requirements: list[str] = []
+    seen: set[str] = set()
+    for package_path in packages:
+        try:
+            data = tomllib.loads((package_path / "pyproject.toml").read_text())
+        except (OSError, tomllib.TOMLDecodeError):
+            continue
+        for requirement in data.get("project", {}).get("dependencies", []):
+            if not isinstance(requirement, str):
+                continue
+            name = requirement.split(";")[0].strip().lower()
+            if name.startswith("chumicro"):
+                continue
+            if requirement not in seen:
+                seen.add(requirement)
+                requirements.append(requirement)
+    return requirements
 
 
 def _create_venv() -> None:
@@ -190,6 +224,29 @@ def _install_workspace(venv_python: Path) -> None:
                     "--no-deps",
                     "-e",
                     str(package_path),
+                ],
+                check=True,
+            )
+        # The editable installs above ran --no-deps (so pip never
+        # resolves chumicro-internal deps from PyPI); install the
+        # packages' third-party requirements explicitly or a fresh
+        # dev-mode venv is missing ruamel.yaml / msgpack / pyserial
+        # and the verify gate below can never pass.
+        third_party = _third_party_requirements(packages)
+        if third_party:
+            print(
+                f"chumicro-dev mode: installing {len(third_party)} "
+                "third-party requirement(s)",
+                flush=True,
+            )
+            subprocess.run(
+                [
+                    str(venv_python),
+                    "-m",
+                    "pip",
+                    "install",
+                    "--quiet",
+                    *third_party,
                 ],
                 check=True,
             )
