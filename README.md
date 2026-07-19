@@ -157,12 +157,12 @@ If your project supplies its own socket (an upstream library wrapper, stdlib `so
 ```python
 # projects/<name>/app.py
 __chumicro_skip_factories__ = (
-    "sockets_factory",                          # family form: every <lib>.sockets_factory
-    "chumicro_websockets.sockets_factory",      # exact form: one module
+    "sockets_factory",                          # family form: the sockets_factory stem
+    "chumicro_sockets.sockets_factory",         # exact form: the module in full
 )
 ```
 
-Two forms: a bare stem (`"sockets_factory"`) matches every `chumicro_*.sockets_factory` your project transitively imports; a dotted path matches one module.
+Two forms: a bare stem (`"sockets_factory"`) matches the shared `chumicro_sockets.sockets_factory` module by its stem; a dotted path names it in full.  There is one shared factories module now, so both forms resolve to it.
 
 Typos and dead skips both surface loudly.  An unmatched entry fails the deploy with the discovered families named in the message; an entry whose parent library is never imported prints a dead-skip warning so you can prune it.
 
