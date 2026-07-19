@@ -112,14 +112,16 @@ def _workspace_declares_dev_extra() -> bool:
 
 
 def _discover_chumicro_packages(checkout_path: Path) -> list[Path]:
-    """Return every package dir under *checkout_path*'s ``libraries/``
-    and ``workbench/`` trees that has a ``pyproject.toml``.
+    """Return every package dir under *checkout_path*'s ``libraries/``,
+    ``support/``, and ``workbench/`` trees that has a ``pyproject.toml``.
 
-    Order is alphabetical within each tree, libraries before workbench
-    (deploy + workspace need the libraries' build deps to resolve).
+    Order is alphabetical within each tree, libraries first (deploy +
+    workspace need the libraries' build deps to resolve), then support
+    (the on-device test harness that board-routed functional tests
+    stage), then workbench.
     """
     packages: list[Path] = []
-    for parent_name in ("libraries", "workbench"):
+    for parent_name in ("libraries", "support", "workbench"):
         parent = checkout_path / parent_name
         if not parent.is_dir():
             continue

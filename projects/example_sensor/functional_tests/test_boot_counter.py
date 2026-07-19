@@ -1,17 +1,18 @@
 """On-device acceptance for example_sensor's persistence contract.
 
+Run it by targeting this directory (a plain ``python3 run.py test``
+sweep leaves ``functional_tests/`` trees alone)::
+
+    python3 run.py test projects/example_sensor/functional_tests
+
+``chumicro-pytest-device`` ships this file to a registered board and
+executes it there — the tests below run on the device, not the host.
+
 What it covers: the boot-counter pattern in ``app.py`` assumes a
 value written through ``KVStore`` survives into a *fresh* store
 instance — the same code path a reboot takes.  That's a hardware
 property (NVM / flash substrate behavior), so it belongs on a real
 board rather than mocked on the host.
-
-Today, ``chumicro-pytest-device`` routes ``functional_tests/``
-directories under ``libraries/<name>/`` to a board; routing for
-project trees like this one hasn't landed yet, so on a host
-interpreter this module skips itself rather than exercising the
-host's stand-in backend and calling it hardware coverage.  Once
-project routing lands, these tests run on the board unchanged.
 
 The test uses its own key and removes it afterwards, so the real
 ``boot_count`` of a deployed example_sensor is left alone.
@@ -19,17 +20,22 @@ The test uses its own key and removes it afterwards, so the real
 
 import sys
 
-import pytest
-from chumicro_kvstore import KVStore
-
 if sys.implementation.name == "cpython":
+    # Belt-and-suspenders: on-device this never fires (the runtime is
+    # micropython / circuitpython there), and a host interpreter only
+    # reaches this module on a tooling version that predates
+    # project-tree routing — skip instead of exercising the host's
+    # stand-in backend and calling it hardware coverage.  pytest is
+    # imported inside the branch because boards don't ship it.
+    import pytest
+
     pytest.skip(
-        "board-facing acceptance: runs on-device once chumicro-pytest-device "
-        "routes project functional_tests trees (it routes library trees "
-        "today); on the host these assertions would only exercise the "
-        "stand-in backend",
+        "board-facing acceptance: target this functional_tests directory "
+        "with a registered board attached; host interpreters skip",
         allow_module_level=True,
     )
+
+from chumicro_kvstore import KVStore  # noqa: E402 — after the host guard, which must run first
 
 _TEST_KEY = "functional_test_probe"
 

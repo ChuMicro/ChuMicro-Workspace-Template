@@ -19,5 +19,8 @@ chumicro-workspace-experimental>=0.48.0
 chumicro-repl-experimental>=0.4.0
 # Real-network functional-test plugin (registers via the pytest11 entry point).
 chumicro-pytest-device-experimental>=0.17.0
+# On-device test harness the plugin stages onto boards for
+# `run.py test projects/<name>/functional_tests` runs.
+chumicro-test-harness-experimental>=0.3.0
 # Workspace lint rules (CHU0NN); most self-no-op, CHU008 is the one that fires.
 chumicro-checks-experimental>=0.17.0

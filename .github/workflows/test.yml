@@ -39,11 +39,9 @@ jobs:
         run: python3 run.py test
 
       # Functional tests against real hardware are intentionally
-      # NOT run here — CI runners don't have boards plugged in.
-      # Run them locally before releasing:
+      # NOT run here — CI runners don't have boards plugged in, and
+      # the sweep above never collects functional_tests/ trees
+      # (they only fire when their path is explicitly targeted).
+      # Run them locally against a registered board before releasing:
       #
       #     python3 run.py test projects/<name>/functional_tests
-      #
-      # Board-facing tests carry a host-skip guard (see the shipped
-      # example_sensor functional test), so the sweep above stays
-      # green on runners without boards.
