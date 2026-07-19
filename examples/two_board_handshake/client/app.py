@@ -21,8 +21,8 @@ Before deploying, set ``two_board.server_host`` in
 ``project_config.toml`` to the IP the server printed at startup.
 
 Scaffold a copy with
-``python run.py new two_board/client --from examples/two_board_handshake/client``,
-then ``python run.py deploy two_board/client``.
+``python3 run.py new two_board/client --from examples/two_board_handshake/client``,
+then ``python3 run.py deploy two_board/client``.
 """
 
 import math

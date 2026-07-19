@@ -12,7 +12,7 @@ into precise messages — read them before guessing.
 ## The happy path
 
 ```bash
-python run.py deploy my_project
+python3 run.py deploy my_project
 ```
 
 A successful deploy stages the payload, restarts the board into
@@ -23,15 +23,15 @@ on-device indefinitely).
 To deploy *and* follow the board's output in one step, add `--tail`:
 
 ```bash
-python run.py deploy my_project --tail       # deploy, then tail 30s
-python run.py deploy my_project --tail 60    # override the window
+python3 run.py deploy my_project --tail       # deploy, then tail 30s
+python3 run.py deploy my_project --tail 60    # override the window
 ```
 
 To poke at an already-running board (`repl` never stages code):
 
 ```bash
-python run.py repl              # interactive — Ctrl-X to exit
-python run.py repl --tail 30    # standalone tail, no deploy
+python3 run.py repl              # interactive — Ctrl-X to exit
+python3 run.py repl --tail 30    # standalone tail, no deploy
 ```
 
 ## When deploy fails — what the message means
@@ -42,7 +42,7 @@ to do:
 
 | `DeployFailureKind` | What it means | First fix |
 |---|---|---|
-| `PORT_UNAVAILABLE` | serial port busy or missing (board unplugged, port held by another tool, board is in bootloader) | close any open REPL / tool against the same port; replug the board; if it's in the bootloader run `python run.py install-firmware` first |
+| `PORT_UNAVAILABLE` | serial port busy or missing (board unplugged, port held by another tool, board is in bootloader) | close any open REPL / tool against the same port; replug the board; if it's in the bootloader run `python3 run.py install-firmware` first |
 | `RAW_REPL_UNRESPONSIVE` | the device's raw REPL didn't respond to the handshake | tap the RESET button or replug; if it persists, soft-reset via REPL Ctrl-D before next deploy |
 | `MACOS_FSKIT_WEDGED` | macOS's FSKit wedged on a FAT12 error (CP only) | the message prints an exact `sudo killall … && launchctl kickstart -k …` recovery command — paste it; if persistent, reboot the Mac |
 | `CIRCUITPY_DRIVE_MISSING` | CP flash mode but the CIRCUITPY USB drive isn't mounted (or is mounted but not writable) | wait a few seconds for macOS to mount; check `/Volumes/`; force-eject + replug |
@@ -118,7 +118,7 @@ Two common causes:
 Connect via REPL and force a soft reset:
 
 ```bash
-python run.py repl
+python3 run.py repl
 # then Ctrl-D inside the REPL to soft-reboot
 ```
 
@@ -144,13 +144,13 @@ check the entrypoint (`code.py` on CP, `main.py` on MP).
 
 ```bash
 # What's actually on the device's flash?
-python -m mpremote connect <port> fs ls /
+.venv/bin/python -m mpremote connect <port> fs ls /
 
 # Check the device's runtime config
-python -m mpremote connect <port> fs cat /runtime_config.msgpack | xxd | head
+.venv/bin/python -m mpremote connect <port> fs cat /runtime_config.msgpack | xxd | head
 
 # Run a one-off command to inspect device state
-python -m mpremote connect <port> exec "import sys; print(sys.implementation)"
+.venv/bin/python -m mpremote connect <port> exec "import sys; print(sys.implementation)"
 ```
 
 ## Rules

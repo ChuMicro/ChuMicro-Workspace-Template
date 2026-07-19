@@ -6,7 +6,7 @@ description: Flash CircuitPython or MicroPython onto a board that is fresh from 
 # Install firmware
 
 A board can't join the workspace until it runs CircuitPython or
-MicroPython.  `python run.py install-firmware` downloads a firmware
+MicroPython.  `python3 run.py install-firmware` downloads a firmware
 image and flashes it; `upgrade-firmware` is an alias of the same flow
 (flashing over existing firmware *is* an upgrade — the tool doesn't
 branch).  This skill walks through picking the method, getting the
@@ -15,7 +15,7 @@ image, and verifying the board comes back.
 ## 1. Figure out what state the board is in
 
 ```bash
-python run.py discover     # serial ports the host can see
+python3 run.py discover     # serial ports the host can see
 ls /Volumes/               # macOS: look for RPI-RP2 / <BOARD>BOOT drives
 ```
 
@@ -27,7 +27,7 @@ Three states matter:
 | UF2 bootloader | a mass-storage drive with `INFO_UF2.TXT` (e.g. `RPI-RP2`) | no runtime (or user held BOOTSEL); flash with `--method uf2` |
 | Serial opens, no probe response | port exists but probing hangs | usually an ESP32-family chip with no Python firmware; flash with `--method esptool`, typically with `--erase` on first flash |
 
-`python run.py bootstrap` (the onboarding wizard) runs this
+`python3 run.py bootstrap` (the onboarding wizard) runs this
 classification for you and prints the exact next command — for a
 board in an unknown state, starting there is usually faster than
 diagnosing by hand.
@@ -54,8 +54,8 @@ latest stable for the board id; MicroPython: a curated machine→board
 map; or the entry's `hardware.firmware_source` override):
 
 ```bash
-python run.py install-firmware --method uf2 --device <id>
-python run.py install-firmware --method uf2 --device <id> --allow-prerelease   # CP only: include -rc/-beta builds
+python3 run.py install-firmware --method uf2 --device <id>
+python3 run.py install-firmware --method uf2 --device <id> --allow-prerelease   # CP only: include -rc/-beta builds
 ```
 
 For a fresh board with no entry to derive from, pass the image URL
@@ -63,8 +63,8 @@ explicitly (get it from the board's page on circuitpython.org/downloads
 or micropython.org/download):
 
 ```bash
-python run.py install-firmware --method uf2 --url <firmware-url>
-python run.py install-firmware --method esptool --erase --url <firmware-url>
+python3 run.py install-firmware --method uf2 --url <firmware-url>
+python3 run.py install-firmware --method esptool --erase --url <firmware-url>
 ```
 
 The flash prints progress milestones — a multi-MB download plus write
@@ -77,9 +77,9 @@ After flashing, the board reboots into the new runtime and
 re-enumerates as a serial port (give macOS a few seconds):
 
 ```bash
-python run.py discover                  # port is back?
-python run.py add-device <id> --address <port>   # fresh board: register it now
-python run.py probe --device <id>       # registered board: confirm runtime + version
+python3 run.py discover                  # port is back?
+python3 run.py add-device <id> --address <port>   # fresh board: register it now
+python3 run.py probe --device <id>       # registered board: confirm runtime + version
 ```
 
 Re-running `add-device` for an existing id after a runtime *switch*
@@ -93,7 +93,7 @@ filled up with stage residue, hand-edited `boot.py` misbehaving),
 don't reflash — wipe:
 
 ```bash
-python run.py reset-board --device <id> --yes
+python3 run.py reset-board --device <id> --yes
 ```
 
 That erases every user file the runtime can see (including

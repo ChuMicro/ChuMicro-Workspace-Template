@@ -20,8 +20,8 @@ Architecture:
   network conflicts.
 
 Scaffold a copy with
-``python run.py new two_board/server --from examples/two_board_handshake/server``,
-then ``python run.py deploy two_board/server`` and watch its serial
+``python3 run.py new two_board/server --from examples/two_board_handshake/server``,
+then ``python3 run.py deploy two_board/server`` and watch its serial
 output for the IP it prints — you'll plug that IP into the client's
 ``project_config.toml``.
 """

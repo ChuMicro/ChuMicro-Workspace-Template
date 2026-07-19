@@ -24,7 +24,7 @@ requires-python = ">=3.11"
 dependencies = []
 
 [project.optional-dependencies]
-# `python run.py setup` installs this `dev` extra alongside the workspace
+# `python3 run.py setup` installs this `dev` extra alongside the workspace
 # package so `run.py lint` / `run.py test` have their third-party tools.
 # The chumicro dev tooling (pytest-device, checks) is in requirements.txt;
 # only non-chumicro tools live here.  A deploy-only environment (a CI
@@ -105,8 +105,8 @@ ban-relative-imports = "all"
 # ---------------------------------------------------------------------------
 #
 # `chumicro-checks` ships workspace-internal lint rules numbered
-# CHU0NN.  `python run.py lint` invokes it after ruff finishes (and
-# `chumicro-checks` runs standalone too, after `python run.py setup`
+# CHU0NN.  `python3 run.py lint` invokes it after ruff finishes (and
+# `chumicro-checks` runs standalone too, after `python3 run.py setup`
 # installs the dev extras).
 #
 # Each rule self-scopes — walks the paths it targets and silently

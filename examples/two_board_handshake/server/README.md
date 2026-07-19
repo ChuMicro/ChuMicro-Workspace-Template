@@ -20,8 +20,8 @@ in `devices.yml` (e.g. `pi-pico-w-cp` for the server, `lolin-s2-cp`
 for the client) before deploying.
 
 ```
-python run.py new two_board/server --from examples/two_board_handshake/server
-python run.py deploy two_board/server --device pi-pico-w-cp --tail 30
+python3 run.py new two_board/server --from examples/two_board_handshake/server
+python3 run.py deploy two_board/server --device pi-pico-w-cp --tail 30
 ```
 
 Note the IP the server prints, then deploy the client with that IP

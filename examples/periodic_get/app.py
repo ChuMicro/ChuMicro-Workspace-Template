@@ -7,8 +7,8 @@ between requests.  ``Deadline`` owns the next-fetch arithmetic — no
 raw ticks math to get the 32-bit wrap wrong.
 
 Scaffold a copy with
-``python run.py new <name> --from examples/periodic_get``, then
-``python run.py deploy <name>``.
+``python3 run.py new <name> --from examples/periodic_get``, then
+``python3 run.py deploy <name>``.
 """
 
 from chumicro_config import load_runtime_config

@@ -17,9 +17,9 @@ just prints status.  Great as the second deploy after
 through to the device.
 
 Scaffold a copy with
-``python run.py new <name> --from examples/wifi_only``, edit the
+``python3 run.py new <name> --from examples/wifi_only``, edit the
 wifi credentials in your workspace's gitignored ``secrets.toml``
-under ``[wifi]``, then ``python run.py deploy <name>``.
+under ``[wifi]``, then ``python3 run.py deploy <name>``.
 """
 
 from chumicro_config import load_runtime_config

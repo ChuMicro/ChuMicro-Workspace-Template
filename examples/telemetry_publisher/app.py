@@ -9,8 +9,8 @@ so the publisher needs no CONNECTED guard.  See
 `projects/example_sensor/` for the full network-stack reference.
 
 Scaffold a copy with
-``python run.py new <name> --from examples/telemetry_publisher``,
-then ``python run.py deploy <name>``.
+``python3 run.py new <name> --from examples/telemetry_publisher``,
+then ``python3 run.py deploy <name>``.
 """
 
 import json

@@ -6,14 +6,14 @@ description: Register a physical board in devices.yml so deploys can target it. 
 # Register a board
 
 `devices.yml` is the workspace's board registry — one entry per
-physical board you deploy to.  `python run.py deploy` can't ship
+physical board you deploy to.  `python3 run.py deploy` can't ship
 without at least one matching entry.  This skill walks through
 discovery → adding → verification.
 
 ## 1. Discover what the host can see
 
 ```bash
-python run.py discover
+python3 run.py discover
 ```
 
 Lists every serial port the host has noticed.  Output looks like:
@@ -44,13 +44,13 @@ Convention: `<board-shape>-<runtime>-<location-or-purpose>`.  Examples:
 - `feather-s3-mp-test`
 
 The id is the user's choice — anything string-shaped works.  But
-`python run.py deploy` uses it as the `--device`, so memorable
+`python3 run.py deploy` uses it as the `--device`, so memorable
 names pay off.
 
 ## 3. Add the entry
 
 ```bash
-python run.py add-device pi-pico-w-mp-back-porch \
+python3 run.py add-device pi-pico-w-mp-back-porch \
     --address /dev/cu.usbmodem213101 \
     --runtime micropython
 ```
@@ -71,7 +71,7 @@ mismatch — re-run with the correct value.
 ## 4. It becomes the default automatically
 
 `add-device` sets the first board you register for a runtime as that
-runtime's default, so `python run.py deploy <project>` targets it
+runtime's default, so `python3 run.py deploy <project>` targets it
 without `--device`.  Adding a second board of the same runtime
 leaves the existing default alone.
 
@@ -88,15 +88,15 @@ defaults:
 ## 5. Verify
 
 ```bash
-python run.py probe                       # uses default
-python run.py probe --device <id>      # specific board
+python3 run.py probe                       # uses default
+python3 run.py probe --device <id>      # specific board
 ```
 
 Should print the device's runtime + version + machine + UID.  A
 good sanity check before the first deploy.
 
 ```bash
-python run.py devices
+python3 run.py devices
 ```
 
 Shows every entry one-per-line.

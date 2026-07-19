@@ -20,13 +20,13 @@ import breaks deploy.
 If the user typed `back-porch`, suggest `back_porch`.  If they
 typed `1sensor`, suggest `sensor_one` or similar.
 
-`python run.py new <name>` rejects invalid names up-front with a
+`python3 run.py new <name>` rejects invalid names up-front with a
 clear message — that's a fast way to validate.
 
 ## 2. Scaffold
 
 ```bash
-python run.py new my_project
+python3 run.py new my_project
 ```
 
 Copies `projects/_template/` into `projects/my_project/`.  The
@@ -83,7 +83,7 @@ msgpack does.
 ## 4. First deploy
 
 ```bash
-python run.py deploy my_project
+python3 run.py deploy my_project
 ```
 
 If a default device is set in `devices.yml` (`defaults.micropython`
@@ -108,8 +108,8 @@ After deploy, the entrypoint runs forever (most projects drive a
 deploy *and* follow the board's output in one step:
 
 ```bash
-python run.py deploy my_project --tail       # deploy, then tail 30s
-python run.py deploy my_project --tail 60    # override the window
+python3 run.py deploy my_project --tail       # deploy, then tail 30s
+python3 run.py deploy my_project --tail 60    # override the window
 ```
 
 `--tail` is convenient for "did the heartbeat fire?" sanity checks.
@@ -117,20 +117,20 @@ To poke at variables on a board that's already running, open an
 interactive REPL (`repl` never stages code — use `deploy` for that):
 
 ```bash
-python run.py repl              # interactive — Ctrl-X to exit
-python run.py repl --tail 30    # standalone tail, no deploy
+python3 run.py repl              # interactive — Ctrl-X to exit
+python3 run.py repl --tail 30    # standalone tail, no deploy
 ```
 
 ## Rules
 
-- **One name move only** — `python run.py new` doesn't rename or
+- **One name move only** — `python3 run.py new` doesn't rename or
   copy from non-template sources.  If the user wants to fork an
   existing project, copy the directory by hand and rename
   carefully.
 - **Don't edit `projects/_template/`** — it's tool-owned and
   `update` will rewrite it.  If the user wants a different
   template starter, that's an upstream change.
-- **Run `python run.py test`** if the user has tests under
+- **Run `python3 run.py test`** if the user has tests under
   `projects/<name>/tests/` before reporting the work done.
 - **Surface the deploy output** to the user — don't summarize
   the success message unless they ask.  The full deploy log

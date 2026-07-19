@@ -11,8 +11,8 @@ Useful as your *first* deploy on a freshly-onboarded board: when
 Anything that breaks before that line is a deploy / boot-shim
 problem; anything after is your code.
 
-Scaffold a copy with ``python run.py new <name> --from examples/hello_world``,
-then ``python run.py deploy <name>``.
+Scaffold a copy with ``python3 run.py new <name> --from examples/hello_world``,
+then ``python3 run.py deploy <name>``.
 """
 
 from chumicro_timing import ticks_add, ticks_diff, ticks_ms
