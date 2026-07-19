@@ -4,6 +4,8 @@ __pycache__/
 *.pyc
 *.mpy
 .pytest_cache/
+.ruff_cache/
+.coverage
 
 # Your projects under projects/ are yours to version in your clone;
 # only generated runtime-config msgpacks (rebuilt on every deploy)

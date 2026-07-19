@@ -15,8 +15,12 @@ description = "ChuMicro project workspace."
 requires-python = ">=3.11"
 # The chumicro tooling a workspace runs (chumicro-workspace, -repl,
 # -pytest-device, -checks) lives in requirements.txt, not here — a plain
-# one-per-line manifest `run.py setup` installs in regular mode.  This
-# array is for YOUR project's own runtime dependencies.
+# one-per-line manifest `run.py setup` installs in regular mode.
+# Host-side dependencies of your own can go in this array, with the
+# caveat in the header: `update` rewrites this file, so after an update
+# re-apply your additions from `git diff` — or keep them in a fork and
+# point `update --from <fork>` at it.  (Device-side packages don't
+# belong here at all; drop their source under packages/.)
 dependencies = []
 
 [project.optional-dependencies]
@@ -73,7 +77,13 @@ skip_covered = false
 [tool.ruff]
 line-length = 100
 target-version = "py311"
-extend-exclude = [".venv", "packages", "shared", "projects/*/_generated"]
+# `libraries/` is excluded like `packages/` and `shared/`: library
+# source acquired by `library add` follows its own upstream style
+# (line-length 110), and a library you scaffold with `new --library`
+# carries its own pyproject + gates.  Linting either against the
+# workspace's stricter knobs turns `run.py lint` red on code you
+# don't own here.
+extend-exclude = [".venv", "libraries", "packages", "shared", "projects/*/_generated"]
 
 [tool.ruff.lint]
 # pyflakes + import sorting + bugbear + pyupgrade + relative-import
