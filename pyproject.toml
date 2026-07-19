@@ -82,8 +82,9 @@ target-version = "py311"
 # (line-length 110), and a library you scaffold with `new --library`
 # carries its own pyproject + gates.  Linting either against the
 # workspace's stricter knobs turns `run.py lint` red on code you
-# don't own here.
-extend-exclude = [".venv", "libraries", "packages", "shared", "projects/*/_generated"]
+# don't own here.  `_library-backups/` holds `library update`'s
+# pre-upgrade copies of those same trees, so it gets the same pass.
+extend-exclude = [".venv", "libraries", "packages", "shared", "projects/*/_generated", "_library-backups"]
 
 [tool.ruff.lint]
 # pyflakes + import sorting + bugbear + pyupgrade + relative-import
