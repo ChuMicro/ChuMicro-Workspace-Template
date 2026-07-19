@@ -29,8 +29,8 @@ If the user's board isn't here:
 - **Cable might be charge-only.**  Try a different USB cable —
   even a known-working data cable is worth re-plugging.
 - **Board might be in bootloader / DFU mode.**  Look for
-  `RPI-RP2` or similar mass-storage drives; if so, jump to the
-  `install-firmware` flow instead.
+  `RPI-RP2` or similar mass-storage drives; if so, load the
+  `install-firmware` skill and flash a runtime first.
 - **macOS may have just lost the port** after an unclean
   unplug.  Pull and re-seat once; if still missing, check
   `ls /dev/cu.*` for clues.
