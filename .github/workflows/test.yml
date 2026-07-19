@@ -30,20 +30,20 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Set up workspace
-        run: python run.py setup
+        run: python3 run.py setup
 
       - name: Lint
-        run: python run.py lint
+        run: python3 run.py lint
 
       - name: Test
-        run: python run.py test
+        run: python3 run.py test
 
       # Functional tests against real hardware are intentionally
       # NOT run here — CI runners don't have boards plugged in.
       # Run them locally before releasing:
       #
-      #     python run.py test projects/<name>/functional_tests
+      #     python3 run.py test projects/<name>/functional_tests
       #
-      # The chumicro-pytest-device plugin auto-skips when
-      # devices.yml has no targets, so you can run the same
-      # command on a runner without boards as a sanity check.
+      # Board-facing tests carry a host-skip guard (see the shipped
+      # example_sensor functional test), so the sweep above stays
+      # green on runners without boards.

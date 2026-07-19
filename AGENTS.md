@@ -101,9 +101,9 @@ Procedural knowledge for common workflows lives under `.github/skills/`.  Read t
 |---|---|---|
 | `tests/` | Workspace-level smoke tests (e.g. "every project exposes `run()`"). | `python3 run.py test tests` |
 | `projects/<name>/tests/` | Per-project host-side unit tests.  Scaffolded into every new project by `python3 run.py new <name>`. | `python3 run.py test projects/<name>/tests` |
-| `projects/<name>/functional_tests/` | Real-network / real-hardware acceptance.  The `chumicro-pytest-device` plugin routes these to a connected board.  Tests skip cleanly when no board is configured. | `python3 run.py test projects/<name>/functional_tests` |
+| `projects/<name>/functional_tests/` | Board-facing acceptance tests.  `chumicro-pytest-device` currently routes `libraries/<name>/functional_tests/` trees to a board; **project** trees collect as plain host pytest until project routing lands upstream, so guard them with a host skip (see the shipped `projects/example_sensor/functional_tests/` example — it self-skips on CPython and runs unchanged on-device once routing lands). | `python3 run.py test projects/<name>/functional_tests` |
 
-`python3 run.py test` with no args runs **everything** under `tests/` + `projects/`.  Functional tests deselect themselves on a sweep with no `functional_tests` path argument — only fire when targeted.
+`python3 run.py test` with no args runs **everything** under `tests/` + `projects/` — including `functional_tests/` files, which is why board-facing tests carry the host-skip guard.
 
 `python3 run.py lint` runs `ruff check` with the workspace's `[tool.ruff]` config (line-length 100, imports sorted, relative-import ban, pyflakes / bugbear / pyupgrade).  Tests + functional tests get the relative-import rule relaxed.  Lint/coverage knobs live in the committed `quality.toml` (`[lint] enabled = false` skips lint; `select = ["E", "F", "I"]` overrides the rule list); `workspace.yml`'s `quality:` block overrides per machine.
 
