@@ -271,6 +271,7 @@ Common patterns:
 | Symptom | Likely cause | First thing to try |
 |---|---|---|
 | `port not found` / `failed to access` | board unplugged or claimed by another process | `python3 run.py discover` to list what's actually visible |
+| permission denied opening the port (Linux) | your user isn't in the serial-port group | `sudo usermod -a -G dialout $USER` (Debian/Ubuntu; the group is `uucp` on Arch), then log out and back in |
 | `no firmware detected` | board is in bootloader / fresh-flash state | `python3 run.py install-firmware --method uf2` (or `esptool` on ESP32) |
 | `ImportError: no module named ...` on boot | missing library not yet on flash | check the deploy log; the error names the missing module |
 | messages stop after first publish | RAM mode against a project that needs persistent state | switch to flash mode (per-device override in `devices.yml`) |

@@ -35,7 +35,7 @@ python3 run.py library add chumicro_wifi   # once per chumicro library your app 
 python3 run.py deploy my_project
 ```
 
-Two prerequisites the wizard will tell you about if they're missing: the board must already run CircuitPython or MicroPython (`python3 run.py install-firmware` can flash one onto a fresh board), and Python 3.11+ on the laptop.  `setup` is self-bootstrapping beyond that: it creates `.venv/`, installs `chumicro-workspace`, and re-enters the venv on every later command, so you never activate anything.
+Two prerequisites the wizard will tell you about if they're missing: the board must already run CircuitPython or MicroPython (`python3 run.py install-firmware` can flash one onto a fresh board), and Python 3.11+ on the laptop.  Hardware-wise that means RP2040 / RP2350 and ESP32-family boards are the well-worn paths (they're what the chumicro libraries target and what the firmware tooling auto-derives images for); other boards those runtimes support generally work with a manually supplied firmware image.  `setup` is self-bootstrapping beyond that: it creates `.venv/`, installs `chumicro-workspace`, and re-enters the venv on every later command, so you never activate anything.
 
 Prefer explicit registration over the wizard?  `python3 run.py add-device my-board --address /dev/cu.usbmodem1101 --runtime micropython` (that's a macOS port path; on Linux boards show up as `/dev/ttyACM0` or `/dev/ttyUSB0`, on Windows as `COM3`-style names, and `python3 run.py discover` lists what's visible).
 

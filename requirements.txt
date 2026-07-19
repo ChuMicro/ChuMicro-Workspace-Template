@@ -1,4 +1,4 @@
-# ChuMicro workspace tooling — installed by `python run.py setup` in regular
+# ChuMicro workspace tooling — installed by `python3 run.py setup` in regular
 # mode (a plain clone with no chumicro-dev.toml).  One line per package so
 # what a workspace runs is legible and diffable.
 #

@@ -16,7 +16,7 @@ libraries/*/examples/_generated/
 # workspace.yml — workspace machinery (library_sources, deploy_targets,
 # quality, environments).  Gitignored so the auto-populated
 # library_sources block (paths into a sibling chumicro/ checkout in
-# dev mode) doesn't reach git.  Materialised by ``python run.py setup``
+# dev mode) doesn't reach git.  Materialised by ``python3 run.py setup``
 # from the chumicro-workspace package's canonical starter.
 /workspace.yml
 
