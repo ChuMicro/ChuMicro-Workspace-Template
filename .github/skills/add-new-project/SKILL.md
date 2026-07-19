@@ -5,14 +5,14 @@ description: Scaffold a new project in this ChuMicro workspace, wire its config 
 
 # Add a new project
 
-A project is one deployable program — a directory under `projects/`
+A project is one deployable program, a directory under `projects/`
 with an `app.py` defining `def run(): ...` and a
 `project_config.toml` for its knobs.  This skill walks through
 scaffolding one and getting to the first successful deploy.
 
 ## 1. Pick a name
 
-Project directory names must be valid Python identifiers — letters,
+Project directory names must be valid Python identifiers: letters,
 digits, underscores; **no hyphens**, no dots, no leading digit.
 The runtime imports `projects.<name>.app`, so anything Python can't
 import breaks deploy.
@@ -21,7 +21,7 @@ If the user typed `back-porch`, suggest `back_porch`.  If they
 typed `1sensor`, suggest `sensor_one` or similar.
 
 `python3 run.py new <name>` rejects invalid names up-front with a
-clear message — that's a fast way to validate.
+clear message.  That's a fast way to validate.
 
 ## 2. Scaffold
 
@@ -32,22 +32,22 @@ python3 run.py new my_project
 Copies `projects/_template/` into `projects/my_project/`.  The
 template typically ships:
 
-- `app.py` — minimal `def run(): print("hello")` placeholder.
-- `project_config.toml` — empty config sections matching the
+- `app.py`: minimal `def run(): print("hello")` placeholder.
+- `project_config.toml`: empty config sections matching the
   libraries the template imports.
 
 Open both and edit:
 
-- `app.py` — write the actual logic.  Most networked projects
+- `app.py`: write the actual logic.  Most networked projects
   follow the pattern in `projects/example_sensor/app.py`: build
   services with `from_config`, register them with a `Runner`, wire
   a `wifi.on_state_change` callback to kick off connect, schedule
   periodic work with `runner.add_periodic(...)`, and drive the main
   loop with `runner.run_until(...)` (which parks the CPU in
   `runner.wait()` between events).
-- `project_config.toml` — fill in per-project knobs (sample
+- `project_config.toml`: fill in per-project knobs (sample
   period, mqtt topic, sensor pins, etc.).  This file is versioned
-  with the project, so keep credentials out of it — they belong in
+  with the project, so keep credentials out of it.  They belong in
   the workspace's gitignored `secrets.toml` (step 3).
 
 ## 3. Wire credentials
@@ -58,7 +58,7 @@ materialises that file from the chumicro-workspace package's
 canonical starter on first run; open it and fill in your values:
 
 ```toml
-# secrets.toml — gitignored; workspace-wide credentials + device defaults
+# secrets.toml: gitignored; workspace-wide credentials + device defaults
 [wifi]
 ssid = "YourNetwork"
 password = "your-actual-passphrase"
@@ -77,7 +77,7 @@ The deploy-time deep-merge is two layers: `secrets.toml` →
 any key.  The merged dict is then flattened to dotted keys
 (`wifi.ssid`, `mqtt.broker.host`) and shipped to the device as
 `/runtime_config.msgpack`.  Neither `secrets.toml` nor per-project
-`project_config.toml` lands on the device — only the merged + flat
+`project_config.toml` lands on the device.  Only the merged + flat
 msgpack does.
 
 ## 4. First deploy
@@ -98,8 +98,8 @@ deploy: executing entrypoint
 <your project's stdout here>
 ```
 
-If the deploy fails, **load the `deploy-and-debug` skill** —
-don't guess at fixes.
+If the deploy fails, **load the `deploy-and-debug` skill**.
+Don't guess at fixes.
 
 ## 5. Follow the output
 
@@ -114,25 +114,25 @@ python3 run.py deploy my_project --tail 60    # override the window
 
 `--tail` is convenient for "did the heartbeat fire?" sanity checks.
 To poke at variables on a board that's already running, open an
-interactive REPL (`repl` never stages code — use `deploy` for that):
+interactive REPL (`repl` never stages code, use `deploy` for that):
 
 ```bash
-python3 run.py repl              # interactive — Ctrl-X to exit
+python3 run.py repl              # interactive (Ctrl-X to exit)
 python3 run.py repl --tail 30    # standalone tail, no deploy
 ```
 
 ## Rules
 
-- **One name move only** — `python3 run.py new` doesn't rename or
+- **One name move only**: `python3 run.py new` doesn't rename or
   copy from non-template sources.  If the user wants to fork an
   existing project, copy the directory by hand and rename
   carefully.
-- **Don't edit `projects/_template/`** — it's tool-owned and
+- **Don't edit `projects/_template/`**: it's tool-owned and
   `update` will rewrite it.  If the user wants a different
   template starter, that's an upstream change.
 - **Run `python3 run.py test`** if the user has tests under
   `projects/<name>/tests/` before reporting the work done.
-- **Surface the deploy output** to the user — don't summarize
+- **Surface the deploy output** to the user.  Don't summarize
   the success message unless they ask.  The full deploy log
   contains diagnostics future agents (or human re-runs) might
   need.

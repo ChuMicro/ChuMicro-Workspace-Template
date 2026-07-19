@@ -1,4 +1,4 @@
-"""Starter test for this project — edit freely.
+"""Starter test for this project.  Edit freely.
 
 Scaffolded by ``python3 run.py new <project>``.  Lives alongside
 ``app.py`` so test code can import the project's helpers directly.
@@ -11,7 +11,7 @@ The workspace-level ``tests/`` directory at the repo root is for
 cross-project smoke tests; per-project tests like this one cover the
 project's own internals.
 
-The starter test below is intentionally trivial — replace it with
+The starter test below is intentionally trivial.  Replace it with
 real assertions about your project's behaviour as you build it out.
 """
 

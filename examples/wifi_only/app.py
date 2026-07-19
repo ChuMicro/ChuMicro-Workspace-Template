@@ -1,4 +1,4 @@
-"""wifi_only project — bring wifi up, log status on a heartbeat.
+"""wifi_only project: bring wifi up, log status on a heartbeat.
 
 Smallest example that exercises:
 
@@ -11,7 +11,7 @@ Smallest example that exercises:
   and ``run_until()`` drives ``tick`` + ``wait`` so the CPU parks
   between beats instead of busy-spinning.
 
-No sockets, no upper-layer protocols — once wifi is up, the loop
+No sockets, no upper-layer protocols.  Once wifi is up, the loop
 just prints status.  Great as the second deploy after
 ``hello_world/`` to confirm credentials in ``secrets.toml`` flow
 through to the device.
@@ -49,4 +49,4 @@ def run() -> None:
     runner.add_periodic(report_status, period_ms=period_ms)
 
     print("wifi_only: connecting ...")
-    runner.run_until()  # never completes — parks the CPU between beats
+    runner.run_until()  # never completes: parks the CPU between beats

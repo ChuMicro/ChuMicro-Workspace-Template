@@ -1,4 +1,4 @@
-"""Telemetry publisher — wifi up, MQTT-publish on a heartbeat.
+"""Telemetry publisher: wifi up, MQTT-publish on a heartbeat.
 
 Pairs wifi with `chumicro-mqtt` to push a JSON payload to a topic
 every ``period_ms``.  ``MQTTClient.from_config`` owns the transport,

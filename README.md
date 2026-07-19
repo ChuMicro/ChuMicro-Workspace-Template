@@ -29,17 +29,23 @@ rm -rf .git && git init                 # start your own history
 # Then, with the workspace cloned and a board plugged in:
 python3 run.py setup                    # creates .venv, installs the tooling, materializes workspace.yml + secrets.toml + devices.yml
 python3 run.py bootstrap                # wizard: finds the port, detects CircuitPython vs MicroPython, registers the board
-python3 run.py new my_project           # scaffolds projects/my_project/
-# Edit secrets.toml (your wifi name + password) and projects/my_project/{project_config.toml, app.py}
+python3 run.py new my_project --from examples/wifi_only   # scaffolds projects/my_project/ from the wifi starter
+# Edit secrets.toml (your wifi name + password); tweak projects/my_project/{project_config.toml, app.py} if you like
 python3 run.py library add chumicro_wifi   # once per chumicro library your app imports
 python3 run.py deploy my_project
 ```
 
-Two prerequisites the wizard will tell you about if they're missing: the board must already run CircuitPython or MicroPython (`python3 run.py install-firmware` can flash one onto a fresh board), and Python 3.11+ on the laptop.  Hardware-wise that means RP2040 / RP2350 and ESP32-family boards are the well-worn paths (they're what the chumicro libraries target and what the firmware tooling auto-derives images for); other boards those runtimes support generally work with a manually supplied firmware image.  `setup` is self-bootstrapping beyond that: it creates `.venv/`, installs `chumicro-workspace`, and re-enters the venv on every later command, so you never activate anything.
+No board on hand yet?  Everything except `bootstrap` and `deploy` works without one: `setup`, `new`, the config commands, and the test tooling all run on the laptop alone, so you can set up the workspace and write your project first and plug in hardware later.
+
+If `setup` itself fails, the usual causes are a Python older than 3.11 (`python3 --version`), no network to reach PyPI, or a half-built venv from an interrupted run; delete `.venv/` and rerun `python3 run.py setup`, which is safe and idempotent at any time.
+
+Two prerequisites the wizard will tell you about if they're missing: the board must already run CircuitPython or MicroPython (`python3 run.py install-firmware --method uf2`, or `--method esptool` for ESP32-style boards, can flash one onto a fresh board), and Python 3.11+ on the laptop.  Hardware-wise that means RP2040 / RP2350 and ESP32-family boards are the well-worn paths (they're what the chumicro libraries target and what the firmware tooling auto-derives images for); other boards those runtimes support generally work with a manually supplied firmware image.  `setup` is self-bootstrapping beyond that: it creates `.venv/`, installs `chumicro-workspace`, and re-enters the venv on every later command, so you never activate anything.
 
 Prefer explicit registration over the wizard?  `python3 run.py add-device my-board --address /dev/cu.usbmodem1101 --runtime micropython` (that's a macOS port path; on Linux boards show up as `/dev/ttyACM0` or `/dev/ttyUSB0`, on Windows as `COM3`-style names, and `python3 run.py discover` lists what's visible).
 
-For the full workflow walkthrough, including multi-board and multi-project flows once you've outgrown a single project, see the [chumicro-workspace hosted docs](https://chumicro.github.io/ChuMicro/workspace/experimental/) (the experimental-channel docs, matching the channel this template currently pins; the `stable/` path goes live with the first stable release wave).
+Once you have more than one project or board, name the target: `python3 run.py deploy <project>` picks the project (the bare form only works while exactly one exists, and the shipped `example_sensor` means your first scaffold is already the second), and `--device <id>` picks the board.  `python3 run.py projects` and `python3 run.py devices` list what's registered.
+
+For the full workflow walkthrough, including multi-board and multi-project flows once you've outgrown a single project, see the [chumicro-workspace hosted docs](https://chumicro.github.io/ChuMicro/workspace/stable/) (use the version selector in the docs header to read the pre-release `experimental/` docs instead).
 
 <details>
 <summary>What a deploy does to the board's filesystem (and how to opt out)</summary>
@@ -97,9 +103,8 @@ python3 run.py dump-config example_sensor
 # 6. Pull the chumicro libraries this project uses into the workspace.
 #    `library add <name>` fetches the named library plus its chumicro
 #    dependencies; the deploy in step 7 ships the ones the project
-#    imports to the board's /lib/.  The default channel is
-#    experimental while the first stable release wave is still
-#    publishing (pass --channel stable once it's live).
+#    imports to the board's /lib/ from the stable channel
+#    (pass --channel experimental to track pre-release snapshots).
 #    (Skip this step entirely in chumicro-dev mode; see the note below.)
 python3 run.py library add chumicro_runner
 python3 run.py library add chumicro_mqtt
@@ -129,21 +134,22 @@ You can install chumicro libraries onto the board directly with the runtime's ow
 
 ```bash
 # CircuitPython: bundle-add once, then install by name
-circup bundle-add ChuMicro/ChuMicro-Bundle-Experimental
+circup bundle-add ChuMicro/ChuMicro-Bundle
 circup install chumicro-wifi chumicro-mqtt chumicro-runner \
                chumicro-kvstore chumicro-config
 
 # MicroPython: one mip install per library
 mpremote connect /dev/cu.usbmodem1101 mip install \
-    github:ChuMicro/ChuMicro-Bundle-Experimental/chumicro_wifi
+    github:ChuMicro/ChuMicro-Bundle/chumicro_wifi
 mpremote connect /dev/cu.usbmodem1101 mip install \
-    github:ChuMicro/ChuMicro-Bundle-Experimental/chumicro_mqtt
+    github:ChuMicro/ChuMicro-Bundle/chumicro_mqtt
 # ... repeat per library
 ```
 
-(The experimental bundle is the one that's published today, matching
-the channel this template pins; swap in `ChuMicro/ChuMicro-Bundle`
-once the stable release wave is live.)
+(These are the stable-channel bundle paths, matching the channel this
+template pins.  For pre-release snapshots swap in
+`ChuMicro/ChuMicro-Bundle-Experimental`, and register only one bundle
+per machine, never both.)
 
 `circup` uses hyphens (`chumicro-wifi`); `mip` uses the underscore import name (`chumicro_wifi`).  Files land at `/lib/chumicro_<name>/` either way, the same place a `deploy` writes them.  Remember the clean-slate rule above: a later default `deploy` removes hand-installed libraries unless you pass `--no-wipe`.
 

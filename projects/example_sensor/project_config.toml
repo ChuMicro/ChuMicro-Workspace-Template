@@ -1,4 +1,4 @@
-# Per-project config for example_sensor — deep-merged over the
+# Per-project config for example_sensor, deep-merged over the
 # workspace's gitignored ``secrets.toml`` at deploy time.  Values
 # here win at any nesting depth.
 #

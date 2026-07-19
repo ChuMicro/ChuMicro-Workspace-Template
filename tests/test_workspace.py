@@ -5,7 +5,7 @@ project: every ``projects/<name>/app.py`` and ``examples/**/app.py``
 exposes a ``run`` callable; ``workspace.yml`` (machinery) and
 ``secrets.toml`` (device config) parse cleanly.
 
-This file is YOUR territory — edit freely.  ``chumicro-workspace
+This file is YOUR territory.  Edit freely.  ``chumicro-workspace
 update`` will not touch it.
 """
 
@@ -115,14 +115,14 @@ def test_example_app_exposes_run(example_dir: Path) -> None:
     so a broken example becomes a broken first project.  On a host
     where the chumicro libraries are importable (chumicro-dev mode,
     or after ``library add``), this also exercises every example's
-    module-level imports against the live library APIs — a tripwire
+    module-level imports against the live library APIs, a tripwire
     for examples silently rotting as the libraries move.  Hosts
     without the libraries skip via the loader.
     """
     module = _load_app_module(EXAMPLES_DIR, example_dir)
     assert callable(getattr(module, "run", None)), (
         f"examples/{_tree_id(EXAMPLES_DIR, example_dir)}/app.py must "
-        f"define a run() callable — it's a scaffold source for new "
+        f"define a run() callable: it's a scaffold source for new "
         f"projects"
     )
 
@@ -163,7 +163,7 @@ def test_workspace_yml_parses() -> None:
 def test_secrets_toml_parses() -> None:
     """``secrets.toml`` must parse as TOML.
 
-    Same shape as ``test_workspace_yml_parses`` — surface a malformed
+    Same shape as ``test_workspace_yml_parses``: surface a malformed
     secrets file at host-side test time rather than as a cryptic
     deploy-time error.
     """

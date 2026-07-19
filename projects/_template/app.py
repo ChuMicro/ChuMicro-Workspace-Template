@@ -2,7 +2,7 @@
 
 The on-device boot module imports ``projects.<name>.app`` and calls
 ``run()``.  Anything ``app.py`` does at import time runs on every
-boot before ``run()`` is called — keep heavyweight setup inside
+boot before ``run()`` is called.  Keep heavyweight setup inside
 ``run()`` so a slow init doesn't trip the boot watchdog.
 """
 

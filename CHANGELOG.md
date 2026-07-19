@@ -3,7 +3,22 @@
 Notable changes to the workspace template.  Versions are git tags;
 pin a workspace to one with `python3 run.py update --ref v<version>`.
 
-## v0.1.0 — 2026-07-18
+## Unreleased
+
+- Tooling now pins the stable release channel (`requirements.txt`
+  carries the stable names; `chumicro-workspace` 0.51.0 defaults
+  `library add` to stable), and every channel note in the docs
+  matches.
+- GA documentation pass: the quickstart scaffolds from the
+  `wifi_only` starter so its wifi and secrets steps connect, a
+  boardless on-ramp and an "if setup fails" note landed in the
+  README, `setup --help` no longer triggers an install, the
+  chumicro-dev error messages name their own fix, multi-project and
+  multi-board targeting is documented, AGENTS.md matches the real
+  CLI flags, and em-dashes are gone repo-wide per the ChuMicro
+  docs voice.
+
+## v0.1.0 (2026-07-18)
 
 First tagged release.  The template as of this tag:
 
@@ -15,7 +30,7 @@ First tagged release.  The template as of this tag:
   `quality.toml`, and gitignored `workspace.yml` / `secrets.toml` /
   `devices.yml` materialized by `setup`.
 - Agent support: `AGENTS.md` conventions plus four skills under
-  `.github/skills/` — add-new-project, register-board,
+  `.github/skills/`: add-new-project, register-board,
   install-firmware, deploy-and-debug.
 - Tooling pinned to the experimental release channel while the first
   stable wave publishes (`requirements.txt` carries the rationale and
@@ -24,7 +39,7 @@ First tagged release.  The template as of this tag:
   every shipped example (nested projects included), `conftest.py`
   mirrors the device import search path (`shared/` →
   `libraries/*/src` → `packages/`), and `example_sensor` ships both
-  per-project unit tests and a board-routed functional test —
+  per-project unit tests and a board-routed functional test:
   `python3 run.py test projects/<name>/functional_tests` ships the
   tree to a registered board and runs it there (sweeps leave
   functional trees alone).  Requires the chumicro tooling wave that

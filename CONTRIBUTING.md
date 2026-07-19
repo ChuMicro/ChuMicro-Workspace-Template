@@ -193,7 +193,7 @@ gate.  The gates live in two layers:
   that travels with your repo, so every clone enforces the same bar.
 
   ```toml
-  coverage_threshold = 70      # passed to pytest as --cov-fail-under
+  coverage_threshold = 70      # example override; the shipped default is 85
 
   [lint]
   enabled = true               # false skips lint entirely
@@ -278,7 +278,11 @@ Common patterns:
 | TLS connection rejected | clock unset, so the cert validity check fails | NTP-sync after wifi connect, or backdate the cert's `notBefore` for development |
 
 The skill files under `.github/skills/` (loaded by your AI agent on
-demand) cover each of these in more detail.
+demand) cover each of these in more detail.  When the table's first
+move doesn't resolve it, the ChuMicro repository's
+[troubleshooting section](https://github.com/ChuMicro/ChuMicro/tree/main/docs/troubleshooting)
+has a page per symptom area: board not found, firmware, deploys and
+persistence, WiFi, TLS, memory, and per-board quirks.
 
 ## Working with an AI agent
 
@@ -335,7 +339,7 @@ ever disagree, that's a bug worth reporting.)
   an agent.
 - **`projects/example_sensor/`**: the worked example.  Read it when
   you're not sure how to wire a service into a `Runner`.
-- **The chumicro-workspace [hosted docs](https://chumicro.github.io/ChuMicro/workspace/experimental/)**:
+- **The chumicro-workspace [hosted docs](https://chumicro.github.io/ChuMicro/workspace/stable/)**:
   reference for the underlying CLI commands and Python API.
 - **The chumicro library [hosted docs](https://chumicro.github.io/ChuMicro/)**:
   per-library guides for `chumicro-wifi`, `chumicro-mqtt`, and the rest.
@@ -344,7 +348,7 @@ ever disagree, that's a bug worth reporting.)
   - Tooling bug (`run.py` commands, deploy, REPL, config merging) or
     library bug (`chumicro_wifi`, `chumicro_mqtt`, ...): file it on
     [ChuMicro-Workspace-Template issues](https://github.com/ChuMicro/ChuMicro-Workspace-Template/issues)
-    too, naming the tool or library — the main ChuMicro repository
+    too, naming the tool or library.  The main ChuMicro repository
     isn't public yet, and this tracker is the interim front door for
     everything ChuMicro-side.
   - Your own project's bug: your workspace repo.

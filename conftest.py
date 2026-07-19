@@ -4,15 +4,15 @@ Mirrors the deploy tooling's import search path on the host so a
 project's imports resolve under ``python3 run.py test`` the same way
 they do on the device:
 
-* ``shared/`` — a file ``shared/foo.py`` is imported as ``from foo
+* ``shared/``: a file ``shared/foo.py`` is imported as ``from foo
   import bar`` (no ``shared`` package prefix); on the device, deploy
   stages ``shared/`` modules into ``/lib`` and the runtime finds them
   by that bare name.
-* ``libraries/<name>/src/`` — chumicro libraries acquired with
+* ``libraries/<name>/src/``: chumicro libraries acquired with
   ``python3 run.py library add`` (and any library you scaffold with
   ``new --library``) live here as source; the deploy ships them to
   ``/lib`` from these trees.
-* ``packages/`` — third-party source trees you dropped in by hand.
+* ``packages/``: third-party source trees you dropped in by hand.
 
 Directories that don't exist are skipped, so a fresh workspace pays
 nothing.  (In chumicro-dev mode the libraries are pip-installed

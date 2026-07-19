@@ -17,28 +17,28 @@ libraries/*/examples/_generated/
 # here.  A local recovery net, not workspace content.
 /_library-backups/
 
-# workspace.yml — workspace machinery (library_sources, deploy_targets,
+# workspace.yml: workspace machinery (library_sources, deploy_targets,
 # quality, environments).  Gitignored so the auto-populated
 # library_sources block (paths into a sibling chumicro/ checkout in
 # dev mode) doesn't reach git.  Materialised by ``python3 run.py setup``
 # from the chumicro-workspace package's canonical starter.
 /workspace.yml
 
-# secrets.toml — workspace-wide credentials + device defaults that
+# secrets.toml: workspace-wide credentials + device defaults that
 # flow into ``runtime_config.msgpack`` at deploy time.  Materialised
 # on first ``setup`` from the chumicro-workspace package's canonical
-# starter — your clone holds your wifi password / broker auth and
+# starter.  Your clone holds your wifi password / broker auth and
 # never travels with the workspace.
 /secrets.toml
 
 # Materialized from the workbench's canonical devices.yml starter
 # at setup time and mutated in place by `add-device` / `rename` /
 # `probe`.  Per-user / per-host (port paths and UIDs vary), so it
-# never travels with the workspace — each contributor builds their
+# never travels with the workspace; each contributor builds their
 # own with `add-device`.
 /devices.yml
 
-# chumicro-dev mode — per-user; gitignored.  When this file exists,
+# chumicro-dev mode: per-user, gitignored.  When this file exists,
 # `python3 run.py setup` walks the chumicro source-checkout path it
 # points at and pip-installs every libraries/<name>/ + workbench/<name>/
 # as editable instead of resolving them from PyPI.  Different
@@ -50,7 +50,7 @@ libraries/*/examples/_generated/
 # inside that dir handles "ignore everything except itself" so the dir
 # itself stays tracked.
 
-# Agent scratch space — commit messages, log captures, temporary
+# Agent scratch space: commit messages, log captures, temporary
 # notes.  Tool-owned by convention but never committed.
 .scratch/
 
@@ -59,7 +59,7 @@ libraries/*/examples/_generated/
 .vscode/
 .DS_Store
 
-# TLS material — bench CA certs / keys / DER blobs never travel with
+# TLS material: bench CA certs / keys / DER blobs never travel with
 # the template.
 *.pem
 *.der

@@ -39,7 +39,7 @@ jobs:
         run: python3 run.py test
 
       # Functional tests against real hardware are intentionally
-      # NOT run here — CI runners don't have boards plugged in, and
+      # NOT run here: CI runners don't have boards plugged in, and
       # the sweep above never collects functional_tests/ trees
       # (they only fire when their path is explicitly targeted).
       # Run them locally against a registered board before releasing:

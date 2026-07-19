@@ -1,4 +1,4 @@
-# Per-project config — deep-merged over the workspace's gitignored
+# Per-project config: deep-merged over the workspace's gitignored
 # ``secrets.toml`` at deploy time.  Keep credentials out of git: set
 # ``[wifi] password`` in the gitignored ``secrets.toml`` rather than
 # inlining secrets here.
@@ -19,7 +19,7 @@ publish_period_ms = 5000
 keep_alive_seconds = 60
 
 [mqtt.broker]
-# Broker connection — `broker.hivemq.com` is a public test broker
+# Broker connection: `broker.hivemq.com` is a public test broker
 # useful for first-deploy validation; swap for your own once round-
 # trip is confirmed.  For TLS, pass ssl_context= to
 # MQTTClient.from_config in app.py and use port 8883.

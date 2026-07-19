@@ -1,4 +1,4 @@
-"""Example sensor — temperature publisher with persistent boot counter.
+"""Example sensor: temperature publisher with persistent boot counter.
 
 The canonical reference for wiring `WifiService` + `MQTTClient` +
 `KVStore` into a tick-shaped `Runner`.  Edit ``project_config.toml``
@@ -42,7 +42,7 @@ def run():
 
     # The app owns the wifi<->mqtt coordination: hold() while the link
     # is down so the client doesn't dial a dead radio, connect() the
-    # moment it's back — an immediate dial, no backoff wait.
+    # moment it's back (an immediate dial, no backoff wait).
     def on_wifi_state(_old, new):
         if new == WifiState.CONNECTED:
             mqtt.connect()

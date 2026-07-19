@@ -1,4 +1,4 @@
-# Per-project config — deep-merged over the workspace's gitignored
+# Per-project config: deep-merged over the workspace's gitignored
 # ``secrets.toml`` at deploy time.  Keep credentials out of git: set
 # ``[wifi] password`` in the gitignored ``secrets.toml`` rather than
 # inlining secrets here.

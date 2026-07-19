@@ -1,4 +1,4 @@
-"""Host-side tests for example_sensor — the shape to copy.
+"""Host-side tests for example_sensor: the shape to copy.
 
 Run with::
 
@@ -7,12 +7,12 @@ Run with::
 Demonstrates the two things a per-project test can cover without a
 board plugged in:
 
-* the boot contract (``app.py`` defines a ``run`` callable) — cheap
+* the boot contract (``app.py`` defines a ``run`` callable), cheap
   insurance the on-device boot shim will find its entrypoint;
 * pure logic that happens to live in a device app.  ``read_celsius``
   falls back to a synthetic reading when the runtime has no
   ``microcontroller`` module, which is exactly the situation on the
-  host — so the fallback path is testable here, no hardware needed.
+  host, so the fallback path is testable here, no hardware needed.
 
 Device-library wiring (wifi, mqtt, kvstore) lives inside ``run()``
 and needs a board; that's what ``functional_tests/`` directories and
@@ -47,7 +47,7 @@ def test_read_celsius_returns_float_without_hardware() -> None:
     On a board, ``microcontroller.cpu.temperature`` supplies the real
     value; on the host that import fails and the function returns its
     fixed fallback.  Either way the contract is "a float you can put
-    in a JSON payload" — assert that, not the exact number, so the
+    in a JSON payload": assert that, not the exact number, so the
     test also passes in exotic environments that do expose a
     ``microcontroller`` module.
     """

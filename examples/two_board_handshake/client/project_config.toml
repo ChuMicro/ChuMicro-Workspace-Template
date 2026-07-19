@@ -1,4 +1,4 @@
-# Per-project config — deep-merged over the workspace's gitignored
+# Per-project config: deep-merged over the workspace's gitignored
 # ``secrets.toml`` at deploy time.  Keep credentials out of git: set
 # ``[wifi] password`` in the gitignored ``secrets.toml`` rather than
 # inlining secrets here.
@@ -7,7 +7,7 @@
 # ssid = "MyNetwork"   # set here or in the workspace's secrets.toml
 
 [two_board]
-# IP + port the server-side board printed at startup.  Required —
+# IP + port the server-side board printed at startup.  Required:
 # the client won't boot without ``server_host`` set.
 # server_host = "192.168.0.42"
 server_port = 8080

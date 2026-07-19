@@ -1,4 +1,4 @@
-"""Two-board handshake — client side.
+"""Two-board handshake: client side.
 
 Pairs with ``examples/two_board_handshake/server/`` running on a
 *different* physical board on the same wifi network.  This side
@@ -123,4 +123,4 @@ def run() -> None:
         period_ms=period_ms,
     ))
 
-    runner.run_until()  # never completes — parks the CPU between posts
+    runner.run_until()  # never completes: parks the CPU between posts

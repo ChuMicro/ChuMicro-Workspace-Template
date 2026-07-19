@@ -8,7 +8,7 @@ description: Flash CircuitPython or MicroPython onto a board that is fresh from 
 A board can't join the workspace until it runs CircuitPython or
 MicroPython.  `python3 run.py install-firmware` downloads a firmware
 image and flashes it; `upgrade-firmware` is an alias of the same flow
-(flashing over existing firmware *is* an upgrade — the tool doesn't
+(flashing over existing firmware *is* an upgrade, the tool doesn't
 branch).  This skill walks through picking the method, getting the
 image, and verifying the board comes back.
 
@@ -23,23 +23,23 @@ Three states matter:
 
 | State | What you see | What it means |
 |---|---|---|
-| Python REPL reachable | board listed by `discover`, `probe` answers | firmware present — this is the *upgrade* path |
+| Python REPL reachable | board listed by `discover`, `probe` answers | firmware present, this is the *upgrade* path |
 | UF2 bootloader | a mass-storage drive with `INFO_UF2.TXT` (e.g. `RPI-RP2`) | no runtime (or user held BOOTSEL); flash with `--method uf2` |
 | Serial opens, no probe response | port exists but probing hangs | usually an ESP32-family chip with no Python firmware; flash with `--method esptool`, typically with `--erase` on first flash |
 
 `python3 run.py bootstrap` (the onboarding wizard) runs this
-classification for you and prints the exact next command — for a
+classification for you and prints the exact next command.  For a
 board in an unknown state, starting there is usually faster than
 diagnosing by hand.
 
 ## 2. Pick the method
 
-- **`--method uf2`** — RP2040 / RP2350 and other boards with a UF2
+- **`--method uf2`**: RP2040 / RP2350 and other boards with a UF2
   bootloader.  The board must be *in* the bootloader (hold BOOTSEL
   while plugging in, or double-tap reset on many boards) so its UF2
   drive is mounted.  If the drive mounts somewhere unusual, point at
   it with `--bootloader-drive <path>`.
-- **`--method esptool`** — ESP32 family (ESP32-S2, S3, C3, ...).
+- **`--method esptool`**: ESP32 family (ESP32-S2, S3, C3, ...).
   Flashes over serial, no bootloader drive involved.  Add `--erase`
   to erase the flash before writing (recommended for a first flash or
   a runtime *switch*, e.g. MicroPython → CircuitPython); `--offset`
@@ -67,7 +67,7 @@ python3 run.py install-firmware --method uf2 --url <firmware-url>
 python3 run.py install-firmware --method esptool --erase --url <firmware-url>
 ```
 
-The flash prints progress milestones — a multi-MB download plus write
+The flash prints progress milestones.  A multi-MB download plus write
 can take a minute, so silence does not mean it hung unless a minute
 has passed with no new milestone.
 
@@ -83,14 +83,14 @@ python3 run.py probe --device <id>       # registered board: confirm runtime + v
 ```
 
 Re-running `add-device` for an existing id after a runtime *switch*
-prompts before overwriting the `hardware:` block — that's expected;
+prompts before overwriting the `hardware:` block.  That's expected;
 confirm it, since the runtime really did change.
 
 ## Related: wiping without reflashing
 
 If the goal is a clean filesystem rather than new firmware (flash
 filled up with stage residue, hand-edited `boot.py` misbehaving),
-don't reflash — wipe:
+don't reflash.  Wipe:
 
 ```bash
 python3 run.py reset-board --device <id> --yes
@@ -118,7 +118,7 @@ no-op for devices configured in RAM/mount mode.
   If unsure, run `bootstrap` and let the classifier name it.
 - **Read the failure message before retrying.**  Flash errors carry
   their own recovery guidance (bootloader-mode steps, missing
-  esptool, wrapped download errors) — surface it to the user
+  esptool, wrapped download errors).  Surface it to the user
   verbatim.
 - **`reset-board` is destructive.**  Never pass `--yes` on the
   user's behalf without confirming they understand every user file

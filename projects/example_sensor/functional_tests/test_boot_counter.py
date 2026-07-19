@@ -6,11 +6,11 @@ sweep leaves ``functional_tests/`` trees alone)::
     python3 run.py test projects/example_sensor/functional_tests
 
 ``chumicro-pytest-device`` ships this file to a registered board and
-executes it there — the tests below run on the device, not the host.
+executes it there: the tests below run on the device, not the host.
 
 What it covers: the boot-counter pattern in ``app.py`` assumes a
 value written through ``KVStore`` survives into a *fresh* store
-instance — the same code path a reboot takes.  That's a hardware
+instance, the same code path a reboot takes.  That's a hardware
 property (NVM / flash substrate behavior), so it belongs on a real
 board rather than mocked on the host.
 
@@ -24,7 +24,7 @@ if sys.implementation.name == "cpython":
     # Belt-and-suspenders: on-device this never fires (the runtime is
     # micropython / circuitpython there), and a host interpreter only
     # reaches this module on a tooling version that predates
-    # project-tree routing — skip instead of exercising the host's
+    # project-tree routing.  Skip instead of exercising the host's
     # stand-in backend and calling it hardware coverage.  pytest is
     # imported inside the branch because boards don't ship it.
     import pytest
@@ -35,7 +35,7 @@ if sys.implementation.name == "cpython":
         allow_module_level=True,
     )
 
-from chumicro_kvstore import KVStore  # noqa: E402 — after the host guard, which must run first
+from chumicro_kvstore import KVStore  # noqa: E402 (after the host guard, which must run first)
 
 _TEST_KEY = "functional_test_probe"
 

@@ -1,6 +1,6 @@
-"""Hello-world project — proves the deploy chain works end-to-end.
+"""Hello-world project: proves the deploy chain works end-to-end.
 
-No wifi, no sensors, no third-party imports — just a print loop.
+No wifi, no sensors, no third-party imports: just a print loop.
 Useful as your *first* deploy on a freshly-onboarded board: when
 ``run`` reaches the ``hello`` print, you know
 
@@ -23,7 +23,7 @@ def run() -> None:
     print("hello from a ChuMicro project")
     next_tick = ticks_ms()
     for index in range(10):
-        # Wraparound-safe wait — never `time.sleep` in real apps;
+        # Wraparound-safe wait: never `time.sleep` in real apps;
         # see the `chumicro-timing` library docs for why.
         next_tick = ticks_add(next_tick, 1000)
         while ticks_diff(ticks_ms(), next_tick) < 0:

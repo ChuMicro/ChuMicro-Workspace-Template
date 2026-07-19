@@ -1,4 +1,4 @@
-"""Two-board handshake — server side.
+"""Two-board handshake: server side.
 
 Pairs with ``examples/two_board_handshake/client/`` running on a
 *different* physical board on the same wifi network.  This side
@@ -13,16 +13,16 @@ Architecture:
   tick at a time, so an LED can keep blinking through inbound
   request handling.  ``HttpServer.from_config`` builds the listener
   from ``http_server.bind_host`` / ``bind_port`` in config.
-* In-memory state — no persistence (a reset clears the latest
+* In-memory state: no persistence (a reset clears the latest
   reading; the client just keeps POSTing).
-* Listens on ``0.0.0.0:8080`` by default — adjust
+* Listens on ``0.0.0.0:8080`` by default.  Adjust
   ``http_server.bind_port`` in ``project_config.toml`` if your
   network conflicts.
 
 Scaffold a copy with
 ``python3 run.py new two_board/server --from examples/two_board_handshake/server``,
 then ``python3 run.py deploy two_board/server`` and watch its serial
-output for the IP it prints — you'll plug that IP into the client's
+output for the IP it prints.  You'll plug that IP into the client's
 ``project_config.toml``.
 """
 
@@ -54,7 +54,7 @@ def _register_routes(server: HttpServer, state: _SensorState) -> None:
         if state.value is None:
             body = (
                 "<html><body><h1>two_board_handshake</h1>"
-                "<p>No readings yet — waiting for client POST.</p>"
+                "<p>No readings yet; waiting for client POST.</p>"
                 "</body></html>"
             )
         else:
@@ -110,4 +110,4 @@ def run() -> None:
     _register_routes(server, state)
     runner.add(server)
 
-    runner.run_until()  # never completes — parks the CPU between requests
+    runner.run_until()  # never completes: parks the CPU between requests

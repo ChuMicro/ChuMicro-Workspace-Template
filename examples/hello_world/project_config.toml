@@ -1,4 +1,4 @@
-# hello_world has no runtime knobs — it's a print loop.  This file
+# hello_world has no runtime knobs.  It's a print loop.  This file
 # exists so the deploy-time config-merge pipeline has something to
 # read; the merged runtime_config.msgpack lands on the device but
 # `app.py` never opens it.

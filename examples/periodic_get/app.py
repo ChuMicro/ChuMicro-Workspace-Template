@@ -1,9 +1,9 @@
-"""Periodic HTTP GET — wifi up, fetch a URL on a heartbeat.
+"""Periodic HTTP GET: wifi up, fetch a URL on a heartbeat.
 
 Demonstrates `chumicro-requests` driven by the `chumicro-runner`
 tick scheduler.  The fetcher's `check` / `handle` shape never
 block-calls the loop, so wifi reconnects keep working in the gap
-between requests.  ``Deadline`` owns the next-fetch arithmetic — no
+between requests.  ``Deadline`` owns the next-fetch arithmetic: no
 raw ticks math to get the 32-bit wrap wrong.
 
 Scaffold a copy with
@@ -86,4 +86,4 @@ def run():
         period_ms=config.get("fetch.period_ms", 30_000),
     ))
 
-    runner.run_until()  # never completes — parks the CPU between fetches
+    runner.run_until()  # never completes: parks the CPU between fetches

@@ -47,6 +47,22 @@ VENV_DIR = WORKSPACE_ROOT / ".venv"
 CHUMICRO_DEV_FILE = WORKSPACE_ROOT / "chumicro-dev.toml"
 MIN_PYTHON = (3, 11)
 
+#: Printed for ``setup --help`` before the first setup has built the
+#: venv.  The installed CLI owns the real option list; this preview
+#: exists so asking for help is never what triggers the install.
+SETUP_HELP = """\
+python3 run.py setup: create .venv/ and install the workspace tooling.
+
+Creates .venv/ if absent, installs the ChuMicro tooling (from
+requirements.txt, or editable from a sibling chumicro checkout when
+chumicro-dev.toml is present), installs the workspace package itself,
+then verifies the CLI imports.  Safe to re-run at any time: an
+existing venv is repaired in place, never recreated.
+
+This preview covers the bootstrap only.  Once setup has run, the
+installed CLI answers `python3 run.py setup --help` with the full
+option list."""
+
 
 def _venv_python() -> Path:
     if sys.platform == "win32":
@@ -136,7 +152,7 @@ def _third_party_requirements(packages: list[Path]) -> list[str]:
 
     The editable installs run ``--no-deps`` so pip never tries to
     resolve the chumicro-internal dependencies (e.g. the workspace
-    package depending on the deploy package) from PyPI — the sibling
+    package depending on the deploy package) from PyPI: the sibling
     checkout provides those.  But ``--no-deps`` also skips the real
     third-party requirements (ruamel.yaml, msgpack, pyserial, ...),
     and nothing else installs them, so a fresh dev-mode venv would
@@ -174,7 +190,7 @@ def _create_venv() -> None:
 def _install_workspace(venv_python: Path) -> None:
     """Install (or repair) the workspace into *venv_python*.
 
-    Idempotent and safe to re-run — this is what makes ``setup`` a
+    Idempotent and safe to re-run.  This is what makes ``setup`` a
     self-healing bootstrap rather than a one-shot.  In chumicro-dev mode
     the sibling packages are (re)installed editable, then the
     workspace's own pyproject deps resolve normally, which is precisely
@@ -199,15 +215,21 @@ def _install_workspace(venv_python: Path) -> None:
         if not chumicro_path.is_dir():
             raise SystemExit(
                 f"error: chumicro-dev.toml points at {chumicro_path} "
-                "but that path does not exist or is not a directory.",
+                "but that path does not exist or is not a directory.\n"
+                "chumicro-dev.toml enables co-developing chumicro from a "
+                "sibling source checkout.  Fix its chumicro_path, or if "
+                "you didn't mean to be in dev mode, delete "
+                "chumicro-dev.toml and rerun `python3 run.py setup`.",
             )
         packages = _discover_chumicro_packages(chumicro_path)
         if not packages:
             raise SystemExit(
-                f"error: no chumicro packages found under {chumicro_path} — "
-                "expected libraries/<name>/pyproject.toml or "
-                "workbench/<name>/pyproject.toml.  Does the chumicro_path "
-                "in chumicro-dev.toml point at a chumicro source checkout?",
+                f"error: no chumicro packages found under {chumicro_path}. "
+                "Expected libraries/<name>/pyproject.toml or "
+                "workbench/<name>/pyproject.toml.  Point chumicro_path in "
+                "chumicro-dev.toml at a chumicro source checkout, or "
+                "delete chumicro-dev.toml and rerun `python3 run.py setup` "
+                "to use the published packages instead.",
             )
         print(
             f"chumicro-dev mode: installing {len(packages)} package(s) from "
@@ -254,7 +276,7 @@ def _install_workspace(venv_python: Path) -> None:
             )
     else:
         # Regular mode (no chumicro-dev.toml): install the chumicro tooling
-        # from requirements.txt — the one-per-line manifest of what a
+        # from requirements.txt, the one-per-line manifest of what a
         # workspace actually runs (chumicro-workspace, -repl, -pytest-device,
         # -checks).  Dev mode skips this: its sibling checkout already
         # provides those packages editable, and pulling the published copies
@@ -343,13 +365,21 @@ def main() -> int:
     _check_python_version()
     args = sys.argv[1:]
     is_setup = args[:1] == ["setup"]
+    wants_help = any(argument in ("-h", "--help") for argument in args)
 
-    if is_setup and not _running_in_venv():
+    if is_setup and wants_help and not VENV_DIR.exists():
+        # Asking for help must never be what triggers the install.
+        # Without a venv the installed CLI's argparse help is
+        # unreachable, so print the shim-level preview instead.
+        print(SETUP_HELP)
+        return 0
+
+    if is_setup and not wants_help and not _running_in_venv():
         # Bootstrap + self-repair.  Runs once in the outer (system)
         # interpreter; the post-verify re-exec re-enters main() inside
         # the venv where _running_in_venv() short-circuits past this
         # block straight to dispatch (so we never double-install).
-        # Reinstalling unconditionally — not just when .venv/ is absent —
+        # Reinstalling unconditionally (not just when .venv/ is absent)
         # is what heals a venv whose deps drifted behind a moved-ahead
         # chumicro-dev checkout.
         if not VENV_DIR.exists():
@@ -376,7 +406,7 @@ def main() -> int:
         from chumicro_workspace.cli import main as workspace_main
     except ModuleNotFoundError as exc:
         raise SystemExit(
-            f"error: the workspace venv is missing '{exc.name}' — its "
+            f"error: the workspace venv is missing '{exc.name}'; its "
             f"dependencies have drifted (common in chumicro-dev mode "
             f"after the sibling chumicro checkout moves ahead).\n"
             f"Repair it (idempotent, keeps your venv):\n"

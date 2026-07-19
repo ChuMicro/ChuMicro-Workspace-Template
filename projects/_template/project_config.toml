@@ -1,4 +1,4 @@
-# Per-project config — deep-merged over the workspace's gitignored
+# Per-project config, deep-merged over the workspace's gitignored
 # ``secrets.toml`` at deploy time.  Values here win at any nesting depth.
 #
 # Workspace-wide credentials (wifi password, broker auth) live in

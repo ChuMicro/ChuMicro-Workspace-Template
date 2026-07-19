@@ -1,4 +1,4 @@
-# Workspace dependencies + dev tooling.  Tool-owned —
+# Workspace dependencies + dev tooling.  Tool-owned:
 # `chumicro-workspace update` will overwrite it.  If you need extra
 # dependencies, add them to a sibling file or extend the dependency
 # tree in your fork of the template (then push the fork to git so
@@ -14,11 +14,11 @@ version = "0.1.0"
 description = "ChuMicro project workspace."
 requires-python = ">=3.11"
 # The chumicro tooling a workspace runs (chumicro-workspace, -repl,
-# -pytest-device, -checks) lives in requirements.txt, not here — a plain
+# -pytest-device, -checks) lives in requirements.txt, not here: a plain
 # one-per-line manifest `run.py setup` installs in regular mode.
 # Host-side dependencies of your own can go in this array, with the
 # caveat in the header: `update` rewrites this file, so after an update
-# re-apply your additions from `git diff` — or keep them in a fork and
+# re-apply your additions from `git diff`, or keep them in a fork and
 # point `update --from <fork>` at it.  (Device-side packages don't
 # belong here at all; drop their source under packages/.)
 dependencies = []
@@ -110,8 +110,8 @@ ban-relative-imports = "all"
 # `chumicro-checks` runs standalone too, after `python3 run.py setup`
 # installs the dev extras).
 #
-# Each rule self-scopes — walks the paths it targets and silently
-# no-ops where those paths don't exist — so this workspace's typical
+# Each rule self-scopes (walks the paths it targets and silently
+# no-ops where those paths don't exist), so this workspace's typical
 # fire is CHU008 (catches upstream-derivative framing like leftover
 # ADR-number pointers and command-runner references that don't  # noqa: CHU008  rule-description metadata
 # belong in a workspace).  Rules that target ``libraries/<name>/``
@@ -119,7 +119,7 @@ ban-relative-imports = "all"
 # scaffolded; rules that target ``plans/`` fire automatically when
 # a planning tree is added.
 #
-# CHU007 is the one rule that genuinely doesn't apply here — it
+# CHU007 is the one rule that genuinely doesn't apply here.  It
 # enforces the chumicro upstream's library-vs-workbench split,
 # which a workspace cloned from this template doesn't have.  Listed
 # in `ignore` below so the intent is explicit; without the entry,

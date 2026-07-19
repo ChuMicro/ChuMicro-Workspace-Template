@@ -1,5 +1,5 @@
 # Manual-drop area for third-party Python source trees that the
-# workspace's projects import on the device.  Gitignored by default —
+# workspace's projects import on the device.  Gitignored by default;
 # third-party trees are usually big and license-varied.  See
 # README.md for what goes here.
 *
